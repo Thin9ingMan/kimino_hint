@@ -1,9 +1,11 @@
 import "./App.css";
+import Detail from "./Detail";
 
 function App() {
   return (
     <>
-      <div>Hello World</div>
+      <h1>キミのヒント</h1>
+      <Detail />
     </>
   );
 }

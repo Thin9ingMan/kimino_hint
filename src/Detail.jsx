@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 const Detail = () => {
   return (
     <>
@@ -10,6 +11,9 @@ const Detail = () => {
       <div>
         ゲームを楽しみながら相手のプロフィールを自動で記録する機能が備わっている。
       </div>
+      <Link to="/">
+        <button>戻る</button>
+      </Link>
     </>
   );
 };

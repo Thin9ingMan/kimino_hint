@@ -37,14 +37,14 @@ const Question = () => {
       answer: "吉幾三",
     },
   ];
+  console.log("確認", count);
   const answer = (selectedAnswer) => {
     const currentQuestion = questions[count];
     const judge = selectedAnswer === currentQuestion.answer;
-    setCount((prev) => prev + 1);
     navigate("/answer", {
       state: {
         judge: judge, // 正誤判定 (true/false)
-        count: count, // 現在の問題番号
+        count: count + 1, // 現在の問題番号
         selected: selectedAnswer, // ユーザーが選んだ回答
         correctAnswer: currentQuestion.answer, // 正解の答え
       },
@@ -65,9 +65,15 @@ const Question = () => {
         <button onClick={() => answer(questions[count].select[0])}>
           {questions[count].select[0]}
         </button>
-        <button>{questions[count].select[1]}</button>
-        <button>{questions[count].select[2]}</button>
-        <button>{questions[count].select[3]}</button>
+        <button onClick={() => answer(questions[count].select[1])}>
+          {questions[count].select[1]}
+        </button>
+        <button onClick={() => answer(questions[count].select[2])}>
+          {questions[count].select[2]}
+        </button>
+        <button onClick={() => answer(questions[count].select[3])}>
+          {questions[count].select[3]}
+        </button>
       </div>
     </>
   );

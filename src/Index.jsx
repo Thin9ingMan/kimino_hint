@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import "./start_page.css";
 
 const Index = () => {
   return (
@@ -9,6 +10,9 @@ const Index = () => {
       </Link>
       <Link to="/question">
         <button>クイズへ</button>
+      </Link>
+      <Link to="/profile">
+        <button>プロフィールへ</button>
       </Link>
     </>
   );

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Question.css";
 const Question = () => {
   const location = useLocation();
@@ -34,7 +34,7 @@ const Question = () => {
     {
       question: "好きなアーティストは誰でしょう？",
       select: ["ヨルシカ", "RADWIMPS", "YOASOBI", "吉幾三"],
-      answer: "吉幾三",
+      answer: "RADWIMPS",
     },
   ];
   console.log("確認", count);
@@ -52,10 +52,9 @@ const Question = () => {
   };
   if (count >= questions.length) {
     return (
-      <div>
-        <h1>クイズ終了</h1>
-        <p>お疲れ様でした！</p>
-      </div>
+      <Link to="/profile">
+        <button>プロフィールへ進む</button>
+      </Link>
     );
   }
   return (

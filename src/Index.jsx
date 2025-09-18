@@ -11,9 +11,6 @@ const Index = () => {
       <Link to="/question">
         <button>クイズへ</button>
       </Link>
-      <Link to="/profile">
-        <button>プロフィールへ</button>
-      </Link>
     </>
   );
 };

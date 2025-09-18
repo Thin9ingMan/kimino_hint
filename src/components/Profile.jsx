@@ -10,23 +10,23 @@ const Profile = () => {
         <dl className="pf-table">
           <div className="pf-row">
             <dt className="pf-label">名前</dt>
-            <dd className="pf-value">山田 太郎</dd>
+            <dd className="pf-value">深海　真</dd>
           </div>
           <div className="pf-row">
             <dt className="pf-label">学部</dt>
-            <dd className="pf-value">情報学群 知識情報・図書館学類</dd>
+            <dd className="pf-value">芸術専門学群</dd>
           </div>
           <div className="pf-row">
             <dt className="pf-label">趣味</dt>
-            <dd className="pf-value">バドミントン / 写真</dd>
+            <dd className="pf-value">絵を描くこと</dd>
           </div>
-          <div className="pf-row">
+          {/* <div className="pf-row">
             <dt className="pf-label">好きな音楽</dt>
             <dd className="pf-value">J-POP, Piano</dd>
-          </div>
+          </div> */}
           <div className="pf-row">
             <dt className="pf-label">好きなアーティスト</dt>
-            <dd className="pf-value">YOASOBI, 米津玄師</dd>
+            <dd className="pf-value">RADWIMPS</dd>
           </div>
         </dl>
 

@@ -1,0 +1,20 @@
+.question-container button {
+  background-color: #4CAF50; /* 背景色 */
+  border: none;
+  color: white; /* 文字色 */
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 8px 2px; /* ボタン同士の間隔 */
+  cursor: pointer;
+  border-radius: 8px; /* 角を丸くする */
+  width: 200px; /* ボタンの幅を統一 */
+  transition: background-color 0.3s ease; /* ホバー時のアニメーション */
+}
+
+/* ボタンにカーソルを合わせた時のスタイル */
+.question-container button:hover {
+  background-color: #45a049; /* 少し暗い緑色に */
+}

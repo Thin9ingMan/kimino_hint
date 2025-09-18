@@ -1,0 +1,46 @@
+.answer-container {
+  display: flex;
+  flex-direction: column; /* 要素を縦に並べる */
+  align-items: center; /* 水平方向の中央揃え */
+  justify-content: center; /* 垂直方向の中央揃え */
+  height: 100vh; /* 画面全体の高さ */
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+}
+
+/* 「正解/不正解」のメイン見出し */
+.answer-container h1 {
+  font-size: 2.5rem; /* 文字を大きく */
+  margin-bottom: 24px;
+}
+
+/* 「正解は：」「あなたの回答は」のテキストスタイル */
+.answer-container div {
+  font-size: 1.2rem;
+  margin-bottom: 16px; /* 各行の間隔 */
+  background-color: #f4f4f4; /* 背景色を少しつける */
+  padding: 10px 20px;
+  border-radius: 8px; /* 角を丸くする */
+  min-width: 300px; /* 最小幅を指定して揃える */
+}
+
+/* 「次の問題へ」ボタンのスタイル */
+.answer-container button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px; /* 上の要素との間隔 */
+  transition: background-color 0.3s ease; /* ホバー時のアニメーション */
+  text-decoration: none; /* Linkタグによる下線を消す */
+}
+
+/* ボタンにカーソルを合わせた時のスタイル */
+.answer-container button:hover {
+  background-color: #0056b3;
+}

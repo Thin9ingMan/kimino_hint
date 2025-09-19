@@ -150,6 +150,7 @@ const Question = () => {
   return (
     <>
       <h1>{questions[count].question}</h1>
+      <div className="score">現在のスコア:{score}</div>
       <h2>残り時間: {timeLeft}秒</h2>
       {questions[count].type == "4select" ? (
         <div className="question-container">

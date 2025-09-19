@@ -9,11 +9,11 @@ const Answer = () => {
   const answer = location.state?.correctAnswer;
   const user_answer = location.state?.selected;
   const count = location.state?.count;
+  const point = location.state?.point;
   const currentScore = location.state?.score || 0;
 
   // 正解ならスコアを1加算、不正解ならそのまま
-  const newScore = judge ? currentScore + 1 : currentScore;
-
+  const newScore = judge ? currentScore + point : currentScore;
 
   const nextquestion = () => {
     navigate("/question", {

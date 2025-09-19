@@ -5,6 +5,7 @@ const Question = () => {
   const location = useLocation();
   const [count, setCount] = useState(location.state?.count || 0);
   const [timeLeft, setTimeLeft] = useState(10); //制限時間
+  const score = location.state?.score || 0;
   const navigate = useNavigate();
   const questions = [
     {
@@ -61,6 +62,7 @@ const Question = () => {
       state: {
         judge: judge, // 正誤判定 (true/false)
         count: count + 1, // 現在の問題番号
+        score: score, //現在のスコア
         selected: selectedAnswer, // ユーザーが選んだ回答
         correctAnswer: currentQuestion.answer, // 正解の答え
       },
@@ -73,6 +75,7 @@ const Question = () => {
       state: {
         judge: false, // 正誤判定 (true/false)
         count: count + 1, // 現在の問題番号
+        score: score, //現在のスコア
         selected: "時間切れ", // ユーザーが選んだ回答
         correctAnswer: currentQuestion.answer, // 正解の答え
       },

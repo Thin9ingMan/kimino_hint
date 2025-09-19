@@ -16,12 +16,12 @@ const Room = () => {
       />
 
       <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "16px" }}>
-        <Link to={roomId ? "/question" : "#"} style={{ pointerEvents: roomId ? "auto" : "none" }}>
-          <button disabled={!roomId}>確認</button>
-        </Link>
-
         <Link to="/">
           <button>ホームへ戻る</button>
+        </Link>
+        
+        <Link to={roomId ? "/question" : "#"} style={{ pointerEvents: roomId ? "auto" : "none" }}>
+          <button disabled={!roomId}>確認</button>
         </Link>
       </div>
     </>

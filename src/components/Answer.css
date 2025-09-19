@@ -44,3 +44,12 @@
 .answer-container button:hover {
   background-color: #0056b3;
 }
+
+.score {
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}

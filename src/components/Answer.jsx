@@ -25,13 +25,15 @@ const Answer = () => {
   };
   console.log(count);
   return (
-    <div className="answer-container">
-      <h1>あなたの回答は{judge ? "正解" : "不正解"}です</h1>
-      <div> 正解は：{answer}</div>
-      <div>あなたの回答は{user_answer}です</div>
-      <div>現在のスコアは{newScore}です</div>
-      <button onClick={nextquestion}>次の問題へ</button>
-    </div>
+    <>
+      <div className="score">現在のスコア:{newScore}</div>
+      <div className="answer-container">
+        <h1>あなたの回答は{judge ? "正解" : "不正解"}です</h1>
+        <div>正解は：{answer}</div>
+        <div>あなたの回答は {user_answer} です</div>
+        <button onClick={nextquestion}>次の問題へ</button>
+      </div>
+    </>
   );
 };
 

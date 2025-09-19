@@ -6,6 +6,7 @@ import Profile from "./components/Profile";
 import Answer from "./components/Answer";
 import Result from "./components/Result";
 import Room from "./components/room";
+import Profile_history from "./components/Profile_history";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/answer" element={<Answer />} />
         <Route path="/result" element={<Result />} />
         <Route path="/room" element={<Room />} />
+        <Route path="/profile_history" element={<Profile_history />} />
       </Routes>
     </BrowserRouter>
   );

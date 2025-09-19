@@ -5,7 +5,8 @@
   justify-content: center; /* 垂直方向の中央揃え */
   height: 100vh; /* 画面全体の高さ */
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
   color: #333;
 }
 
@@ -49,7 +50,7 @@
   position: absolute;
   top: 12px;
   right: 20px;
-  font-size: 16px;
+  font-size: 40px;
   font-weight: 600;
   color: #0f172a;
 }

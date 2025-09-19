@@ -8,7 +8,7 @@ const Index = () => {
       <Link to="/detail">
         <button>詳細ページへ</button>
       </Link>
-      <Link to="/question">
+      <Link to="/room">
         <button>クイズへ</button>
       </Link>
     </>

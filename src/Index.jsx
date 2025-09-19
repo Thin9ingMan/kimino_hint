@@ -11,6 +11,9 @@ const Index = () => {
       <Link to="/room">
         <button>クイズへ</button>
       </Link>
+      <Link to="/profile_history">
+        <button>プロフィール一覧へ</button>
+      </Link>
     </>
   );
 };

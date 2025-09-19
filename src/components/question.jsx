@@ -81,13 +81,22 @@ const Question = () => {
       },
     });
   };
+  useEffect(() => {
+    if (count >= questions.length) {
+      navigate("/result", {
+        state: {
+          score: score,
+          count: questions.length, 
+        },
+      });
+    }
+  }, [count, questions.length, score, navigate]);
+   // 全ての問題が終わる前のレンダリングを制御
   if (count >= questions.length) {
-    return (
-      <Link to="/profile">
-        <button>プロフィールへ進む</button>
-      </Link>
-    );
+    // 結果ページに遷移するまでの間、何も表示しないかローディング画面などを表示
+    return <div>結果を計算中...</div>;
   }
+
   return (
     <>
       <h1>{questions[count].question}</h1>

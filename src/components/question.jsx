@@ -4,10 +4,12 @@ import "./Question.css";
 const Question = () => {
   const location = useLocation();
   const [count, setCount] = useState(location.state?.count || 0);
-  const [timeLeft, setTimeLeft] = useState(10); //制限時間
+  const [timeLeft, setTimeLeft] = useState(30); //制限時間
   const [yourAnswer, setYourAnswer] = useState("");
+  const [hint, setHint] = useState("");
   const score = location.state?.score || 0;
   const navigate = useNavigate();
+  let point = 3;
   const questions = [
     {
       question: "名前は何でしょう？",
@@ -59,7 +61,7 @@ const Question = () => {
   }, [timeLeft]);
 
   useEffect(() => {
-    setTimeLeft(10);
+    setTimeLeft(30);
   }, [count]);
 
   const answer = (selectedAnswer) => {
@@ -70,6 +72,7 @@ const Question = () => {
         judge: judge, // 正誤判定 (true/false)
         count: count + 1, // 現在の問題番号
         score: score, //現在のスコア
+        point: point, //加点
         selected: selectedAnswer, // ユーザーが選んだ回答
         correctAnswer: currentQuestion.answer, // 正解の答え
       },
@@ -100,17 +103,45 @@ const Question = () => {
       },
     });
   };
+
+  // 時間経過を監視してヒントを更新する
+  useEffect(() => {
+    if (count < questions.length) {
+      const currentAnswer = questions[count].answer;
+      const answerLength = currentAnswer.length;
+
+      // 表示する文字数を決める
+      let revealCount = 0;
+      if (timeLeft <= 10) {
+        revealCount = 2;
+        point = 1;
+      } else if (timeLeft <= 20) {
+        revealCount = 1;
+        point = 2;
+      }
+
+      if (revealCount > 0) {
+        const revealedPart = currentAnswer.slice(0, revealCount);
+        const maskedPart = "〇".repeat(answerLength - revealCount);
+        setHint(revealedPart + maskedPart);
+      } else {
+        // 初期状態では、すべての文字を〇で表示
+        setHint("〇".repeat(answerLength));
+      }
+    }
+  }, [timeLeft, count]);
+
   useEffect(() => {
     if (count >= questions.length) {
       navigate("/result", {
         state: {
           score: score,
-          count: questions.length, 
+          count: questions.length,
         },
       });
     }
   }, [count, questions.length, score, navigate]);
-   // 全ての問題が終わる前のレンダリングを制御
+  // 全ての問題が終わる前のレンダリングを制御
   if (count >= questions.length) {
     // 結果ページに遷移するまでの間、何も表示しないかローディング画面などを表示
     return <div>結果を計算中...</div>;
@@ -137,6 +168,7 @@ const Question = () => {
         </div>
       ) : (
         <div className="question-container">
+          <div className="hint">{hint}</div>
           <form onSubmit={handleSubmit} className="question-form">
             <input
               type="text"

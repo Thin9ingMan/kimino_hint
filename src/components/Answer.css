@@ -28,7 +28,7 @@
 /* 「次の問題へ」ボタンのスタイル */
 .answer-container button {
   background-color: #007bff;
-  color: white;
+  color: rgb(39, 39, 39);
   border: none;
   padding: 12px 24px;
   font-size: 1rem;

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Question.css";
 const Question = () => {
   const location = useLocation();
   const [count, setCount] = useState(location.state?.count || 0);
+  const [timeLeft, setTimeLeft] = useState(10); //制限時間
   const navigate = useNavigate();
   const questions = [
     {
@@ -37,7 +38,22 @@ const Question = () => {
       answer: "RADWIMPS",
     },
   ];
-  console.log("確認", count);
+  useEffect(() => {
+    if (timeLeft === 0) {
+      timeUp();
+      return;
+    }
+
+    const timeId = setInterval(() => {
+      setTimeLeft(timeLeft - 1);
+    }, 1000);
+    return () => clearInterval(timeId);
+  }, [timeLeft]);
+
+  useEffect(() => {
+    setTimeLeft(10);
+  }, [count]);
+
   const answer = (selectedAnswer) => {
     const currentQuestion = questions[count];
     const judge = selectedAnswer === currentQuestion.answer;
@@ -46,6 +62,18 @@ const Question = () => {
         judge: judge, // 正誤判定 (true/false)
         count: count + 1, // 現在の問題番号
         selected: selectedAnswer, // ユーザーが選んだ回答
+        correctAnswer: currentQuestion.answer, // 正解の答え
+      },
+    });
+  };
+
+  const timeUp = () => {
+    const currentQuestion = questions[count];
+    navigate("/answer", {
+      state: {
+        judge: false, // 正誤判定 (true/false)
+        count: count + 1, // 現在の問題番号
+        selected: "時間切れ", // ユーザーが選んだ回答
         correctAnswer: currentQuestion.answer, // 正解の答え
       },
     });
@@ -60,6 +88,7 @@ const Question = () => {
   return (
     <>
       <h1>{questions[count].question}</h1>
+      <h2>残り時間: {timeLeft}秒</h2>
       <div className="question-container">
         <button onClick={() => answer(questions[count].select[0])}>
           {questions[count].select[0]}

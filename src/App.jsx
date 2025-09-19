@@ -4,6 +4,7 @@ import Detail from "./components/Detail";
 import Question from "./components/question";
 import Profile from "./components/Profile";
 import Answer from "./components/Answer";
+import Result from "./components/Result";
 import Room from "./components/room";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -16,6 +17,7 @@ function App() {
         <Route path="/question" element={<Question />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/answer" element={<Answer />} />
+        <Route path="/result" element={<Result />} />
         <Route path="/room" element={<Room />} />
       </Routes>
     </BrowserRouter>

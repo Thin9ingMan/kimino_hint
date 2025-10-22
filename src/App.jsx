@@ -8,6 +8,7 @@ import Result from "./components/Result";
 import Room from "./components/room";
 import Profile_history from "./components/Profile_history";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import MakeQuestion from "./components/MakeQuestion";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/result" element={<Result />} />
         <Route path="/room" element={<Room />} />
         <Route path="/profile_history" element={<Profile_history />} />
+        <Route path="/make_question" element={<MakeQuestion />} />
       </Routes>
     </BrowserRouter>
   );

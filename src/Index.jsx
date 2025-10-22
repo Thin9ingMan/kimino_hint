@@ -14,6 +14,9 @@ const Index = () => {
       <Link to="/profile_history">
         <button>プロフィール一覧へ</button>
       </Link>
+      <Link to="/make_question">
+        <button>問題作成へ</button>
+      </Link>
     </>
   );
 };

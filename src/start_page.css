@@ -14,7 +14,7 @@ body {
                Roboto, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
   color: #0f172a; /* 落ち着いた濃紺グレー */
   position: relative;
-  overflow: hidden;
+  overflow: auto;
 
   /* ===== 背景：パステル基調の“やわらかい明るさ”+ さりげない変化 =====
      1) 底面：クリーム→ミストのグラデーション

@@ -13,7 +13,7 @@ const MakeQuestion = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const answers = [answer1, answer2, answer3, answer4, answer5, answer6];
-    window.localStorage.setItem("answers", answers);
+    window.localStorage.setItem("answers", JSON.stringify(answers));
     navigate("/");
   };
   return (

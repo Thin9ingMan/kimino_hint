@@ -13,10 +13,10 @@ const MakeQuestion = () => {
     e.preventDefault();
     const answers = [answer1, answer2, answer3, answer4, answer1, answer5];
     console.log(answers);
-    if(answer1 && answer2 && answer3 && answer4 && answer5 ){
-      window.localStorage.setItem("answers", answers);
+    if (answer1 && answer2 && answer3 && answer4 && answer5) {
+      window.localStorage.setItem("answers", JSON.stringify(answers));
       navigate("/");
-    }else{
+    } else {
       window.alert("入力してください");
     }
   };

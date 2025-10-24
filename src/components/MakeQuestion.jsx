@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useState } from "react";
 const MakeQuestion = () => {
@@ -9,11 +9,12 @@ const MakeQuestion = () => {
   const [answer4, setAnswer4] = useState("");
   const [answer5, setAnswer5] = useState("");
   const [answer6, setAnswer6] = useState("");
-
+  const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
     const answers = [answer1, answer2, answer3, answer4, answer5, answer6];
     window.localStorage.setItem("answers", answers);
+    navigate("/");
   };
   return (
     <>

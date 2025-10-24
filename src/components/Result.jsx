@@ -7,31 +7,10 @@ const Result = () => {
   const count = Number(location.state?.count || 0);
   const percent = count > 0 ? Math.round((score / (count * 3)) * 100) : 0;
 
-  const getReward = (p) => {
-    if (p === 100)
-      return {
-        msg: "完璧！あなたは彼のことを完全に理解している✨",
-        tone: "excellent",
-      };
-    if (p >= 80) return { msg: "すごい！かなり詳しいね👍", tone: "great" };
-    if (p >= 50)
-      return { msg: "いいペース！もう少しでマスター！", tone: "good" };
-    if (p >= 20)
-      return { msg: "序章クリア。次はもっと深掘りしよう！", tone: "warm" };
-    return { msg: "ここからがスタート。挑戦あるのみ！", tone: "soft" };
-  };
-
-  const reward = getReward(percent);
-
   return (
     <div className="res-wrap">
       <div className="res-card">
         <h1 className="res-title">結果</h1>
-
-        {/* ご褒美バブル */}
-        <div className={`res-bubble res-bubble--${reward.tone}`}>
-          {reward.msg}
-        </div>
 
         <div className="res-kpi">
           {/* 右側に置きたい場合はこの2つのブロックの順番を逆にしてください */}

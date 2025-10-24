@@ -10,6 +10,7 @@ const Question = () => {
   const score = location.state?.score || 0;
   const navigate = useNavigate();
   let point = 3;
+  const answers = localStorage.getItem("answers");
   const questions = [
     {
       question: "名前は何でしょう？",

@@ -8,13 +8,17 @@ const MakeQuestion = () => {
   const [answer3, setAnswer3] = useState("");
   const [answer4, setAnswer4] = useState("");
   const [answer5, setAnswer5] = useState("");
-  const [answer6, setAnswer6] = useState("");
   const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
-    const answers = [answer1, answer2, answer3, answer4, answer5, answer6];
-    window.localStorage.setItem("answers", answers);
-    navigate("/");
+    const answers = [answer1, answer2, answer3, answer4, answer1, answer5];
+    console.log(answers);
+    if(answer1 && answer2 && answer3 && answer4 && answer5 ){
+      window.localStorage.setItem("answers", answers);
+      navigate("/");
+    }else{
+      window.alert("入力してください");
+    }
   };
   return (
     <>
@@ -60,21 +64,11 @@ const MakeQuestion = () => {
           ></input>
         </label>
         <label>
-          名前
+          好きなアーティスト
           <input
             type="text"
             value={answer5}
             onChange={(e) => setAnswer5(e.target.value)}
-            placeholder="名前"
-            autoFocus
-          ></input>
-        </label>
-        <label>
-          好きなアーティスト
-          <input
-            type="text"
-            value={answer6}
-            onChange={(e) => setAnswer6(e.target.value)}
             placeholder="好きなアーティスト"
             autoFocus
           ></input>

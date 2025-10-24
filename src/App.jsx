@@ -5,7 +5,7 @@ import Question from "./components/question";
 import Profile from "./components/Profile";
 import Answer from "./components/Answer";
 import Result from "./components/Result";
-import Room from "./components/room";
+import Room from "./components/Room";
 import Profile_history from "./components/Profile_history";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MakeQuestion from "./components/MakeQuestion";

@@ -5,7 +5,7 @@ const Result = () => {
   const location = useLocation();
   const score = Number(location.state?.score || 0);
   const count = Number(location.state?.count || 0);
-  const percent = count > 0 ? Math.round((score / (count * 3)) * 100) : 0;
+  const percent = count > 0 ? Math.round((score / count) * 100) : 0;
 
   return (
     <div className="res-wrap">
@@ -31,7 +31,7 @@ const Result = () => {
             <div className="res-stat">
               <span className="res-stat-label">点数</span>
               <span className="res-stat-value">
-                {score}/{count * 3}
+                {score}/{count}
               </span>
             </div>
           </div>

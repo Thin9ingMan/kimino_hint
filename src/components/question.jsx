@@ -4,10 +4,8 @@ import "./Question.css";
 const Question = () => {
   const location = useLocation();
   const count = location.state?.count || 0;
-  const [timeLeft, setTimeLeft] = useState(30); //制限時間
   const score = location.state?.score || 0;
   const navigate = useNavigate();
-  let point = 3;
   const answers = JSON.parse(localStorage.getItem("answers")); //ユーザが保存した回答
   const questions = [
     {
@@ -41,21 +39,15 @@ const Question = () => {
       answer: answers[5],
     },
   ];
-  useEffect(() => {
-    if (timeLeft === 0) {
-      timeUp();
-      return;
-    }
 
-    const timeId = setInterval(() => {
-      setTimeLeft(timeLeft - 1);
-    }, 1000);
-    return () => clearInterval(timeId);
-  }, [timeLeft]);
-
-  useEffect(() => {
-    setTimeLeft(30);
-  }, [count]);
+  const randomSelect = (arr) => {
+    //選択肢の順番を変更
+    const shuffled = arr
+      .map((value) => ({ value, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value);
+    return shuffled;
+  };
 
   const checkAnswer = (selectedAnswer) => {
     const currentQuestion = questions[count];
@@ -65,21 +57,7 @@ const Question = () => {
         judge: judge, // 正誤判定 (true/false)
         count: count + 1, // 現在の問題番号
         score: score, //現在のスコア
-        point: point, //加点
         selected: selectedAnswer, // ユーザーが選んだ回答
-        correctAnswer: currentQuestion.answer, // 正解の答え
-      },
-    });
-  };
-
-  const timeUp = () => {
-    const currentQuestion = questions[count];
-    navigate("/answer", {
-      state: {
-        judge: false, // 正誤判定 (true/false)
-        count: count + 1, // 現在の問題番号
-        score: score, //現在のスコア
-        selected: "時間切れ", // ユーザーが選んだ回答
         correctAnswer: currentQuestion.answer, // 正解の答え
       },
     });
@@ -101,23 +79,24 @@ const Question = () => {
     return <div>結果を計算中...</div>;
   }
 
+  // 現在の問題の選択肢
+  const nowQuestionSelect = randomSelect(questions[count].select);
+
   return (
     <>
       <h1>{questions[count].question}</h1>
-      <div className="score">現在のスコア:{score}</div>
-      <h2>残り時間: {timeLeft}秒</h2>
       <div className="question-container">
-        <button onClick={() => checkAnswer(questions[count].select[0])}>
-          {questions[count].select[0]}
+        <button onClick={() => checkAnswer(nowQuestionSelect[0])}>
+          {nowQuestionSelect[0]}
         </button>
-        <button onClick={() => checkAnswer(questions[count].select[1])}>
-          {questions[count].select[1]}
+        <button onClick={() => checkAnswer(nowQuestionSelect[1])}>
+          {nowQuestionSelect[1]}
         </button>
-        <button onClick={() => checkAnswer(questions[count].select[2])}>
-          {questions[count].select[2]}
+        <button onClick={() => checkAnswer(nowQuestionSelect[2])}>
+          {nowQuestionSelect[2]}
         </button>
-        <button onClick={() => checkAnswer(questions[count].select[3])}>
-          {questions[count].select[3]}
+        <button onClick={() => checkAnswer(nowQuestionSelect[3])}>
+          {nowQuestionSelect[3]}
         </button>
       </div>
     </>

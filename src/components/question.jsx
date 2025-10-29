@@ -10,33 +10,38 @@ const Question = () => {
   const questions = [
     {
       question: "名前は何でしょう？",
-      select: [answers[0], "森林誠", "洞窟誠", "天空誠"],
-      answer: answers[0],
+      select: [answers["username"], "森林誠", "洞窟誠", "天空誠"],
+      answer: answers["username"],
     },
     {
       question: "学部は何でしょう？",
-      select: ["情報科学", "情報メディア創生", "知識情報・図書館", answers[1]],
-      answer: answers[1],
+      select: [
+        "情報科学",
+        "情報メディア創生",
+        "知識情報・図書館",
+        answers["department"],
+      ],
+      answer: answers["department"],
     },
     {
       question: "学年は何でしょう？",
-      select: ["1", "2", answers[2], "4"],
-      answer: answers[2],
+      select: ["1", "2", answers["grade"], "4"],
+      answer: answers["grade"],
     },
     {
       question: "趣味は何でしょう？",
-      select: [answers[3], "サッカー", "将棋", "ゲーム"],
-      answer: answers[3],
+      select: [answers["hobby"], "サッカー", "将棋", "ゲーム"],
+      answer: answers["hobby"],
     },
     {
       question: "名前は何でしょう？",
-      select: ["深海誠", "深海慎", "深海真人", answers[4]],
-      answer: answers[4],
+      select: ["深海誠", "深海慎", "深海真人", answers["username"]],
+      answer: answers["username"],
     },
     {
       question: "好きなアーティストは誰でしょう？",
-      select: ["ヨルシカ", answers[5], "YOASOBI", "吉幾三"],
-      answer: answers[5],
+      select: ["ヨルシカ", answers["artist"], "YOASOBI", "吉幾三"],
+      answer: answers["artist"],
     },
   ];
 

@@ -11,7 +11,13 @@ const MakeQuestion = () => {
   const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
-    const answers = [answer1, answer2, answer3, answer4, answer1, answer5];
+    const answers = {
+      username: answer1,
+      department: answer2,
+      grade: answer3,
+      hobby: answer4,
+      artist: answer5,
+    };
     console.log(answers);
     if (answer1 && answer2 && answer3 && answer4 && answer5) {
       window.localStorage.setItem("answers", JSON.stringify(answers));

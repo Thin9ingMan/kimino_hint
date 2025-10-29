@@ -9,11 +9,10 @@ const Answer = () => {
   const answer = location.state?.correctAnswer;
   const user_answer = location.state?.selected;
   const count = location.state?.count;
-  const point = location.state?.point;
   const currentScore = location.state?.score || 0;
 
   // 正解ならスコアを1加算、不正解ならそのまま
-  const newScore = judge ? currentScore + point : currentScore;
+  const newScore = judge ? currentScore + 1 : currentScore;
 
   const nextquestion = () => {
     navigate("/question", {
@@ -26,7 +25,6 @@ const Answer = () => {
   console.log(count);
   return (
     <>
-      <div className="score">現在のスコア:{newScore}</div>
       <div className="answer-container">
         <h1>あなたの回答は{judge ? "正解" : "不正解"}です</h1>
         <div>正解は：{answer}</div>

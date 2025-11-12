@@ -8,7 +8,10 @@ const MakeQuestion = () => {
   const [answer3, setAnswer3] = useState("");
   const [answer4, setAnswer4] = useState("");
   const [answer5, setAnswer5] = useState("");
+  const [addtionalInformation, setAddtionalInformation ] = useState("")
   const navigate = useNavigate();
+  const faculty = ["法学部", "経済学部", "経営学部", "商学部", "社会学部", "国際学部", "文学部", "外国語学部", "教育学部", "心理学部", "家政学部", "芸術学部", "体育学部", "理学部", "工学部", "情報学部", "農学部", "医学部", "歯学部", "薬学部", "看護学部"]
+  const grade = ["学部1年", "学部2年", "学部3年", "学部4年", "修士1年", "修士2年"]
   const handleSubmit = (e) => {
     e.preventDefault();
     const answers = {
@@ -25,6 +28,7 @@ const MakeQuestion = () => {
     } else {
       window.alert("入力してください");
     }
+    window.localStorage.setItem("addtionalInformation", JSON.stringify(addtionalInformation))
   };
   return (
     <>
@@ -41,6 +45,18 @@ const MakeQuestion = () => {
         </label>
         <label>
           学部
+          <select
+            onChange = {(e) => setAnswer2(e.target.value)}
+            value = {answer2}>
+            {faculty.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          学部
           <input
             type="text"
             value={answer2}
@@ -48,6 +64,28 @@ const MakeQuestion = () => {
             placeholder="学部"
             autoFocus
           ></input>
+        </label>
+        <label>
+          備考
+          <input
+            type="text"
+            value={addtionalInformation}
+            onChange={(e) => setAddtionalInformation(e.target.value)}
+            placeholder="備考欄"
+            autoFocus
+          ></input>
+        </label>
+        <label>
+          学年
+          <select
+          onChange={(e) => setAnswer3(e.target.value)}
+          value = {answer3}>
+            {grade.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
         </label>
         <label>
           学年
@@ -59,6 +97,7 @@ const MakeQuestion = () => {
             autoFocus
           ></input>
         </label>
+        
         <label>
           趣味
           <input

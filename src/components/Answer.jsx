@@ -23,9 +23,14 @@ const Answer = () => {
     });
   };
   console.log(count);
+
+  //正誤によるクラス分け
+const containerClass = `answer-container ${judge ? "correct" : "incorrect"}`;
+
+
   return (
     <>
-      <div className="answer-container">
+      <div className={containerClass}>
         <h1>あなたの回答は{judge ? "正解" : "不正解"}です</h1>
         <div>正解は：{answer}</div>
         <div>あなたの回答は {user_answer} です</div>

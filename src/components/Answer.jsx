@@ -10,6 +10,9 @@ const Answer = () => {
   const user_answer = location.state?.selected;
   const count = location.state?.count;
   const currentScore = location.state?.score || 0;
+  const addtionalInformation = JSON.parse(
+    localStorage.getItem("addtionalInformation")
+  );
 
   // 正解ならスコアを1加算、不正解ならそのまま
   const newScore = judge ? currentScore + 1 : currentScore;
@@ -25,14 +28,14 @@ const Answer = () => {
   console.log(count);
 
   //正誤によるクラス分け
-const containerClass = `answer-container ${judge ? "correct" : "incorrect"}`;
-
+  const containerClass = `answer-container ${judge ? "correct" : "incorrect"}`;
 
   return (
     <>
       <div className={containerClass}>
         <h1>あなたの回答は{judge ? "正解" : "不正解"}です</h1>
         <div>正解は：{answer}</div>
+        {count == 2 && <div>{addtionalInformation}</div>}
         <div>あなたの回答は {user_answer} です</div>
         <button onClick={nextquestion}>次の問題へ</button>
       </div>

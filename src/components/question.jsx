@@ -2,11 +2,28 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Question.css";
 const Question = () => {
+  const faculty = ["法学部", "経済学部", "経営学部", "商学部", "社会学部", "国際学部", "文学部", "外国語学部", "教育学部", "心理学部", "家政学部", "芸術学部", "体育学部", "理学部", "工学部", "情報学部", "農学部", "医学部", "歯学部", "薬学部", "看護学部"]
+  const grade = ["学部1年", "学部2年", "学部3年", "学部4年", "修士1年", "修士2年"]
   const location = useLocation();
   const count = location.state?.count || 0;
   const score = location.state?.score || 0;
   const navigate = useNavigate();
   const answers = JSON.parse(localStorage.getItem("answers")); //ユーザが保存した回答
+  console.log(answers)
+  function getRandomThreeExcludingElement(originalArray, elementToExclude) {
+    const filteredArray = originalArray.filter(item => item !== elementToExclude);
+    const shuffledArray = [...filteredArray]; 
+    for (let i = shuffledArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+    }
+    const result = shuffledArray.slice(0, 3);
+    
+    return result;
+  }
+  const falseFaculty = getRandomThreeExcludingElement(faculty, answers.department);
+  const falseGrade = getRandomThreeExcludingElement(grade, answers.grade)
+  console.log(falseFaculty)
   const questions = [
     {
       question: "名前は何でしょう？",
@@ -16,16 +33,16 @@ const Question = () => {
     {
       question: "学部は何でしょう？",
       select: [
-        "情報科学",
-        "情報メディア創生",
-        "知識情報・図書館",
+        falseFaculty[0],
+        falseFaculty[1],
+        falseFaculty[2],
         answers["department"],
       ],
       answer: answers["department"],
     },
     {
       question: "学年は何でしょう？",
-      select: ["1", "2", answers["grade"], "4"],
+      select: [falseGrade[0], falseGrade[1] , answers["grade"], falseGrade[2]],
       answer: answers["grade"],
     },
     {

@@ -11,9 +11,6 @@ const Index = () => {
   return (
     <>
       <h1>キミのヒント</h1>
-      <Link to="/detail">
-        <button>詳細ページへ</button>
-      </Link>
       {answers ? (
         <Link to="/room">
           <button>クイズへ</button>
@@ -25,7 +22,7 @@ const Index = () => {
         <button>プロフィール一覧へ</button>
       </Link>
       <Link to="/make_question">
-        <button>問題作成へ</button>
+        <button>プロフィール作成へ</button>
       </Link>
     </>
   );

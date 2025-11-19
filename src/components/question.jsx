@@ -10,7 +10,7 @@ const Question = () => {
   const questions = [
     {
       question: "名前は何でしょう？",
-      select: [answers["username"], "森林誠", "洞窟誠", "天空誠"],
+      select: [answers["username"], "田中陽介", "鈴木信二", "宮久保健太"],
       answer: answers["username"],
     },
     {
@@ -35,7 +35,7 @@ const Question = () => {
     },
     {
       question: "名前は何でしょう？",
-      select: ["深海誠", "深海慎", "深海真人", answers["username"]],
+      select: ["佐藤花", "石川凛", "清水葵", answers["username"]],
       answer: answers["username"],
     },
     {

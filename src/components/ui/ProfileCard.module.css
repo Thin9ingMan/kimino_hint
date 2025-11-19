@@ -1,4 +1,11 @@
-.pf-wrap {
+.profile{
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.wrap {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -9,10 +16,10 @@
   font-family: ui-sans-serif, system-ui, "Noto Sans JP", sans-serif;
 }
 
-.pf-card {
+.card {
   width: 100%;
   max-width: 600px;
-  background: rgba(255, 255, 255, 0.88); /* 半透明で少し浮かせる */
+  background: rgb(255, 255, 255); /* 半透明で少し浮かせる */
   backdrop-filter: blur(6px);
   border-radius: 22px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
@@ -20,12 +27,12 @@
   animation: fadeIn 0.4s ease;
 }
 
-.pf-title {
+.title {
   text-align: center;
   font-size: 30px;
   font-weight: 700;
   margin: 0 0 22px;
-  color: #090d17;
+  color: #0f172a;
 }
 
 .table {
@@ -33,7 +40,7 @@
   gap: 12px;
 }
 
-.pf-row {
+.row {
   display: flex;
   background: #f0fdfa; /* ミント寄りの明るい背景に変更 */
   border-radius: 12px;
@@ -41,12 +48,12 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.pf-row:hover {
+.row:hover {
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
 }
 
-.pf-label {
+.label {
   width: 120px;
   font-weight: 600;
   padding: 12px;
@@ -58,20 +65,20 @@
   border-radius: 12px 0 0 12px;
 }
 
-.pf-value {
+.value {
   flex: 1;
   padding: 12px;
   background: white;
   border-radius: 0 12px 12px 0;
 }
 
-.pf-actions {
+.actions {
   margin-top: 24px;
   display: flex;
   justify-content: center;
 }
 
-.pf-btn {
+.btn {
   padding: 10px 22px;
   border: none;
   border-radius: 8px;
@@ -86,7 +93,7 @@
   transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
 
-.pf-btn:hover {
+.btn:hover {
   background: linear-gradient(135deg, #aef0e1, #8ed9fb);
   transform: translateY(-1px);
   box-shadow: 0 10px 20px rgba(14, 165, 233, 0.25);

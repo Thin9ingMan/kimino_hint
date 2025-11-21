@@ -48,10 +48,7 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.row:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
-}
+
 
 .label {
   width: 120px;

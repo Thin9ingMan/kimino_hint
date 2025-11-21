@@ -9,7 +9,9 @@ const Question = () => {
   const score = location.state?.score || 0;
   const navigate = useNavigate();
   const answers = JSON.parse(localStorage.getItem("answers")); //ユーザが保存した回答
+  const falseAnswers = JSON.parse(localStorage.getItem("falseAnswers"))
   console.log(answers)
+  console.log(falseAnswers)
   function getRandomThreeExcludingElement(originalArray, elementToExclude) {
     const filteredArray = originalArray.filter(item => item !== elementToExclude);
     const shuffledArray = [...filteredArray]; 
@@ -27,7 +29,7 @@ const Question = () => {
   const questions = [
     {
       question: "名前は何でしょう？",
-      select: [answers["username"], "田中陽介", "鈴木信二", "宮久保健太"],
+      select: [answers["username"], falseAnswers?.username?.[0] || "田中陽介", falseAnswers?.username?.[1] || "鈴木信二", falseAnswers?.username?.[2] || "宮久保健太"],
       answer: answers["username"],
     },
     {
@@ -47,7 +49,7 @@ const Question = () => {
     },
     {
       question: "趣味は何でしょう？",
-      select: [answers["hobby"], "サッカー", "将棋", "ゲーム"],
+      select: [answers["hobby"], falseAnswers?.hobby?.[0] || "サッカー", falseAnswers?.hobby?.[1] || "将棋", falseAnswers?.hobby?.[2] || "ゲーム"],
       answer: answers["hobby"],
     },
     {
@@ -57,7 +59,7 @@ const Question = () => {
     },
     {
       question: "好きなアーティストは誰でしょう？",
-      select: ["ヨルシカ", answers["artist"], "YOASOBI", "吉幾三"],
+      select: [falseAnswers?.artist?.[0] || "ヨルシカ", answers["artist"] , falseAnswers?.artist?.[1] || "YOASOBI", falseAnswers?.artist?.[2] || "吉幾三"],
       answer: answers["artist"],
     },
   ];

@@ -67,6 +67,7 @@
 
 .pf-actions {
   margin-top: 24px;
+  flex-direction: column; /*縦に並べる*/
   display: flex;
   justify-content: center;
 }

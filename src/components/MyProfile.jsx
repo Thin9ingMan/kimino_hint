@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import "./Profile.css";
+import { ProfileCard } from "./ui/ProfileCard";
 
 const MyProfile = () => {
   const answers = JSON.parse(localStorage.getItem("answers"));
@@ -7,29 +8,14 @@ const MyProfile = () => {
     <div className="pf-wrap">
       <div className="pf-card">
         <h1 className="pf-title">プロフィール</h1>
-
-        <dl className="pf-table">
-          <div className="pf-row">
-            <dt className="pf-label">名前</dt>
-            <dd className="pf-value">{answers?.["username"]}</dd>
-          </div>
-          <div className="pf-row">
-            <dt className="pf-label">学部</dt>
-            <dd className="pf-value">{answers?.["department"]}</dd>
-          </div>
-          <div className="pf-row">
-            <dt className="pf-label">学年</dt>
-            <dd className="pf-value">{answers?.["grade"]}</dd>
-          </div>
-          <div className="pf-row">
-            <dt className="pf-label">趣味</dt>
-            <dd className="pf-value">{answers?.["hobby"]}</dd>
-          </div>
-          <div className="pf-row">
-            <dt className="pf-label">好きなアーティスト</dt>
-            <dd className="pf-value">{answers?.["artist"]}</dd>
-          </div>
-        </dl>
+<ProfileCard
+                        profile={{
+                            name: answers.username,
+                            faculty: answers.department,
+                            hobby: answers.hobby,
+                            favoriteArtist: answers.artist,
+                        }}
+                        />
 
         <div className="pf-actions">
           <Link to="/">

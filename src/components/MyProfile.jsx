@@ -10,10 +10,12 @@ const MyProfile = () => {
         <h1 className="pf-title">プロフィール</h1>
         <ProfileCard
           profile={{
-            name: answers.username,
-            faculty: answers.department,
-            hobby: answers.hobby,
-            favoriteArtist: answers.artist,
+            name: answers?.username,
+            furigana: answers?.furigana,
+            grade: answers?.grade,
+            faculty: answers?.department,
+            hobby: answers?.hobby,
+            favoriteArtist: answers?.artist,
           }}
         />
 

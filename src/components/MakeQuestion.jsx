@@ -101,6 +101,7 @@ const MakeQuestion = () => {
               onChange={(e) => setAnswer2(e.target.value)}
               value={answer2}
             >
+               <option value="">選択してください</option>
               {faculty.map((name) => (
                 <option key={name} value={name}>
                   {name}
@@ -126,6 +127,7 @@ const MakeQuestion = () => {
               onChange={(e) => setAnswer3(e.target.value)}
               value={answer3}
             >
+               <option value="">選択してください</option>
               {grade.map((name) => (
                 <option key={name} value={name}>
                   {name}

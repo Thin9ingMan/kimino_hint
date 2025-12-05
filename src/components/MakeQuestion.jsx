@@ -7,12 +7,12 @@ const MakeQuestion = () => {
   const detail_department = JSON.parse(
     localStorage.getItem("addtionalInformation")
   );
-  const [answer1, setAnswer1] = useState(pre_answers?.username);
-  const [furigana, setFurigana] = useState(pre_answers?.furigana);
-  const [answer2, setAnswer2] = useState(pre_answers?.department);
-  const [answer3, setAnswer3] = useState(pre_answers?.grade);
-  const [answer4, setAnswer4] = useState(pre_answers?.hobby);
-  const [answer5, setAnswer5] = useState(pre_answers?.artist);
+  const [answer1, setAnswer1] = useState(pre_answers?.username || "");
+  const [furigana, setFurigana] = useState(pre_answers?.furigana || "");
+  const [answer2, setAnswer2] = useState(pre_answers?.department || "");
+  const [answer3, setAnswer3] = useState(pre_answers?.grade || "");
+  const [answer4, setAnswer4] = useState(pre_answers?.hobby || "");
+  const [answer5, setAnswer5] = useState(pre_answers?.artist || "");
   const [addtionalInformation, setAddtionalInformation] =
     useState(detail_department);
   const navigate = useNavigate();
@@ -101,8 +101,8 @@ const MakeQuestion = () => {
               onChange={(e) => setAnswer2(e.target.value)}
               value={answer2}
             >
-               <option value="">選択してください</option>
-              {faculty.map((name) => (
+              <option value="">選択してください</option>
+              {faculty.slice(1).map((name) => (
                 <option key={name} value={name}>
                   {name}
                 </option>
@@ -127,8 +127,8 @@ const MakeQuestion = () => {
               onChange={(e) => setAnswer3(e.target.value)}
               value={answer3}
             >
-               <option value="">選択してください</option>
-              {grade.map((name) => (
+              <option value="">選択してください</option>
+              {grade.slice(1).map((name) => (
                 <option key={name} value={name}>
                   {name}
                 </option>

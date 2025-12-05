@@ -17,6 +17,7 @@ const MakeQuestion = () => {
     useState(detail_department);
   const navigate = useNavigate();
   const faculty = [
+    "選択してください",
     "法学部",
     "経済学部",
     "経営学部",
@@ -40,6 +41,7 @@ const MakeQuestion = () => {
     "看護学部",
   ];
   const grade = [
+    "選択してください",
     "学部1年",
     "学部2年",
     "学部3年",
@@ -58,7 +60,7 @@ const MakeQuestion = () => {
       artist: answer5,
     };
     console.log(answers);
-    if (answer1 && answer2 && answer3 && answer4 && answer5) {
+    if (answer1 && answer2 !== "" && answer3 !== "" && answer4 && answer5) {
       window.localStorage.setItem("answers", JSON.stringify(answers));
       navigate("/");
     } else {

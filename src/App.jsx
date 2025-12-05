@@ -9,6 +9,7 @@ import Profile_history from "./components/Profile_history";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MakeQuestion from "./components/MakeQuestion";
 import MyProfile from "./components/MyProfile";
+import MakeFalseSelection from "./components/makeFalseSelection";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/profile_history" element={<Profile_history />} />
         <Route path="/make_question" element={<MakeQuestion />} />
         <Route path="/my_profile" element={<MyProfile />} />
+        <Route path="/make_false_selection" element={<MakeFalseSelection />} />
       </Routes>
     </BrowserRouter>
   );

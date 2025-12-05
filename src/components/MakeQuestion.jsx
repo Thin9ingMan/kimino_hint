@@ -3,12 +3,18 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { useState } from "react";
 const MakeQuestion = () => {
-  const [answer1, setAnswer1] = useState("");
-  const [answer2, setAnswer2] = useState("");
-  const [answer3, setAnswer3] = useState("");
-  const [answer4, setAnswer4] = useState("");
-  const [answer5, setAnswer5] = useState("");
-  const [addtionalInformation, setAddtionalInformation] = useState("");
+  const pre_answers = JSON.parse(localStorage.getItem("answers"));
+  const detail_department = JSON.parse(
+    localStorage.getItem("addtionalInformation")
+  );
+  const [answer1, setAnswer1] = useState(pre_answers?.username);
+  const [furigana, setFurigana] = useState(pre_answers?.furigana);
+  const [answer2, setAnswer2] = useState(pre_answers?.department);
+  const [answer3, setAnswer3] = useState(pre_answers?.grade);
+  const [answer4, setAnswer4] = useState(pre_answers?.hobby);
+  const [answer5, setAnswer5] = useState(pre_answers?.artist);
+  const [addtionalInformation, setAddtionalInformation] =
+    useState(detail_department);
   const navigate = useNavigate();
   const faculty = [
     "法学部",
@@ -45,6 +51,7 @@ const MakeQuestion = () => {
     e.preventDefault();
     const answers = {
       username: answer1,
+      furigana: furigana || "",
       department: answer2,
       grade: answer3,
       hobby: answer4,
@@ -72,6 +79,16 @@ const MakeQuestion = () => {
             value={answer1}
             onChange={(e) => setAnswer1(e.target.value)}
             placeholder="名前"
+            autoFocus
+          ></input>
+        </label>
+        <label>
+          フリガナ
+          <input
+            type="text"
+            value={furigana}
+            onChange={(e) => setFurigana(e.target.value)}
+            placeholder="フリガナ"
             autoFocus
           ></input>
         </label>

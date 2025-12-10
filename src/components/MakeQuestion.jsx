@@ -2,6 +2,8 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { faculty, grade } from "./Array";
 import { useState } from "react";
+import "./MakeQuestion.css";
+
 const MakeQuestion = () => {
   const pre_answers = JSON.parse(localStorage.getItem("answers"));
   const detail_department = JSON.parse(

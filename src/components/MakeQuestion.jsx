@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { faculty, grade } from "./Array";
 import { useState } from "react";
 const MakeQuestion = () => {
   const pre_answers = JSON.parse(localStorage.getItem("answers"));
@@ -16,39 +16,6 @@ const MakeQuestion = () => {
   const [addtionalInformation, setAddtionalInformation] =
     useState(detail_department);
   const navigate = useNavigate();
-  const faculty = [
-    "選択してください",
-    "法学部",
-    "経済学部",
-    "経営学部",
-    "商学部",
-    "社会学部",
-    "国際学部",
-    "文学部",
-    "外国語学部",
-    "教育学部",
-    "心理学部",
-    "家政学部",
-    "芸術学部",
-    "体育学部",
-    "理学部",
-    "工学部",
-    "情報学部",
-    "農学部",
-    "医学部",
-    "歯学部",
-    "薬学部",
-    "看護学部",
-  ];
-  const grade = [
-    "選択してください",
-    "学部1年",
-    "学部2年",
-    "学部3年",
-    "学部4年",
-    "修士1年",
-    "修士2年",
-  ];
   const handleSubmit = (e) => {
     e.preventDefault();
     const answers = {

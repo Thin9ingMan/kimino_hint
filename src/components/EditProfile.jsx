@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { apis } from "../api/client";
 import styles from "./EditProfile.module.css";
@@ -16,40 +16,43 @@ const EditProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await apis.profiles().getMyProfile();
-        const profileData = response.profileData || {};
+  const fetchProfile = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await apis.profiles().getMyProfile();
+      const profileData = response.profileData || {};
+      setProfile({
+        name: profileData.displayName || "",
+        furigana: profileData.furigana || "",
+        grade: profileData.grade || "",
+        faculty: profileData.faculty || "",
+        hobby: profileData.hobby || "",
+        favoriteArtist: profileData.favoriteArtist || "",
+      });
+    } catch (err) {
+      if (err.response.status === 404) {
         setProfile({
-          name: profileData.displayName || "",
-          furigana: profileData.furigana || "",
-          grade: profileData.grade || "",
-          faculty: profileData.faculty || "",
-          hobby: profileData.hobby || "",
-          favoriteArtist: profileData.favoriteArtist || "",
+          name: "",
+          furigana: "",
+          grade: "",
+          faculty: "",
+          hobby: "",
+          favoriteArtist: "",
         });
-      } catch (err) {
-        if (err.response.status === 404) {
-          setProfile({
-            name: "",
-            furigana: "",
-            grade: "",
-            faculty: "",
-            hobby: "",
-            favoriteArtist: "",
-          });
-        } else {
-          
-          console.error("Failed to fetch profile:", err);
-          setError("プロフィールの取得に失敗しました");
-        }
-      } finally {
-        setLoading(false);
+      } else {
+        
+        console.error("Failed to fetch profile:", err);
+        setError("プロフィールの取得に失敗しました");
       }
-    };
-    fetchProfile();
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -98,7 +101,7 @@ const EditProfile = () => {
         <div className={styles.card}>
           <h1 className={styles.title}>プロフィール編集</h1>
           <p style={{ color: "red" }}>{error}</p>
-          <button onClick={() => window.location.reload()}>再試行</button>
+          <button onClick={fetchProfile}>再試行</button>
         </div>
       </div>
     );

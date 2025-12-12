@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import "./Profile.css";
 import { ProfileCard } from "./ui/ProfileCard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { apis } from "../api/client";
 
 const MyProfile = () => {
@@ -9,28 +9,31 @@ const MyProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await apis.profiles().getMyProfileRaw();
-        if (response.raw.status === 404) {
-          setProfile(null);
-        } else {
-          const profileData = await response.value();
-          setProfile({
-            ...profileData.profileData,
-            name: profileData.profileData.displayName,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch profile:", err);
-        setError("プロフィールの取得に失敗しました");
-      } finally {
-        setLoading(false);
+  const fetchProfile = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await apis.profiles().getMyProfileRaw();
+      if (response.raw.status === 404) {
+        setProfile(null);
+      } else {
+        const profileData = await response.value();
+        setProfile({
+          ...profileData.profileData,
+          name: profileData.profileData.displayName,
+        });
       }
-    };
-    fetchProfile();
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+      setError("プロフィールの取得に失敗しました");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   if (loading) {
     return (
@@ -49,7 +52,7 @@ const MyProfile = () => {
         <div className="pf-card">
           <h1 className="pf-title">プロフィール</h1>
           <p style={{ color: "red" }}>{error}</p>
-          <button onClick={() => window.location.reload()}>再試行</button>
+          <button onClick={fetchProfile}>再試行</button>
         </div>
       </div>
     );

@@ -1,3 +1,4 @@
+import { useGuestAuth } from "./hooks/useGuestAuth";
 import "./App.css";
 import Index from "./Index";
 import Question from "./components/question";
@@ -9,9 +10,31 @@ import Profile_history from "./components/Profile_history";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MakeQuestion from "./components/MakeQuestion";
 import MyProfile from "./components/MyProfile";
-import MakeFalseSelection from "./components/makeFalseSelection";
+import EditProfile from "./components/EditProfile";
+
+
 
 function App() {
+  const { ready, error, retry } = useGuestAuth();
+
+  if (error) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "30vh" }}>
+        <div style={{ fontSize: 22, marginBottom: 12 }}>認証に失敗しました</div>
+        <div style={{ color: "#64748b", marginBottom: 16 }}>{String(error.message || error)}</div>
+        <button onClick={retry}>再試行</button>
+      </div>
+    );
+  }
+
+  if (!ready) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "30vh", fontSize: 24 }}>
+        認証中...
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
@@ -24,7 +47,7 @@ function App() {
         <Route path="/profile_history" element={<Profile_history />} />
         <Route path="/make_question" element={<MakeQuestion />} />
         <Route path="/my_profile" element={<MyProfile />} />
-        <Route path="/make_false_selection" element={<MakeFalseSelection />} />
+        <Route path="/edit_profile" element={<EditProfile />} />
       </Routes>
     </BrowserRouter>
   );

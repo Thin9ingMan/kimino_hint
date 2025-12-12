@@ -72,6 +72,50 @@
   justify-content: center;
 }
 
+.pf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pf-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pf-form-group label {
+  font-weight: 600;
+  color: #065f46;
+  font-size: 14px;
+}
+
+.pf-form-group input {
+  padding: 10px 12px;
+  border: 1px solid #ccfbf1;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #f0fdfa;
+  transition: border 0.2s ease;
+}
+
+.pf-form-group input:focus {
+  outline: none;
+  border: 2px solid #a7f3d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.2);
+}
+
+.pf-btn-ghost {
+  background: transparent;
+  color: #0b1220;
+  border: 1px solid #99e2ff;
+}
+
+.pf-btn-ghost:hover {
+  background: rgba(153, 226, 255, 0.2);
+  transform: translateY(-1px);
+}
+
 .pf-btn {
   padding: 10px 22px;
   border: none;

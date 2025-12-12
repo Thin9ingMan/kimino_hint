@@ -1,0 +1,1127 @@
+---
+openapi: 3.0.3
+info:
+  title: Quarkus CRUD API
+  description: "REST API for quiz events, user profiles, friendships, and authentication.\
+    \ Guests authenticate with JWT bearer tokens and interact with events in real\
+    \ time via Server-Sent Events."
+  contact:
+    name: API Support
+  version: 0.0.1
+servers:
+- url: http://localhost:8080
+  description: Local development server
+- url: https://quarkus-crud.ouchiserver.aokiapp.com
+  description: Production server
+security:
+- bearerAuth: []
+tags:
+- name: Authentication
+  description: Guest user authentication and identity endpoints
+- name: Users
+  description: User lookups and self-service endpoints
+- name: Profiles
+  description: User profile retrieval and updates
+- name: Friendships
+  description: Profile card exchanges between users
+- name: Events
+  description: "Event management, attendees, and live updates"
+paths:
+  /api/auth/guest:
+    post:
+      tags:
+      - Authentication
+      summary: Create a guest user
+      description: Create an anonymous guest user and return a JWT bearer token.
+      operationId: createGuestUser
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: JWT bearer token for subsequent authenticated requests.
+              schema:
+                type: string
+                example: Bearer eyJhbGciOi...
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security: []
+  /api/me:
+    get:
+      tags:
+      - Authentication
+      summary: Get current user
+      description: Retrieve the authenticated user associated with the bearer token.
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/users/{userId}:
+    get:
+      tags:
+      - Users
+      summary: Get user by ID
+      description: Retrieve a public representation of the specified user.
+      operationId: getUserById
+      parameters:
+      - name: userId
+        in: path
+        description: Identifier of the user to fetch.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPublic"
+        "404":
+          description: The user was not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/users/{userId}/profile:
+    get:
+      tags:
+      - Profiles
+      summary: Get user profile
+      description: Retrieve the current profile card for the specified user.
+      operationId: getUserProfile
+      parameters:
+      - name: userId
+        in: path
+        description: Identifier of the user whose profile is requested.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "404":
+          description: The user or profile does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/me/profile:
+    get:
+      tags:
+      - Profiles
+      summary: Get my profile
+      description: Retrieve the current profile card for the authenticated user.
+      operationId: getMyProfile
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Profile not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+      - Profiles
+      summary: Update my profile
+      description: Replace the authenticated user's current profile with a new revision.
+      operationId: updateMyProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "400":
+          description: Invalid profile data supplied.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/users/{userId}/friendship:
+    post:
+      tags:
+      - Friendships
+      summary: Share my profile card with another user
+      description: Record that the authenticated user has shared their profile card
+        with the specified user.
+      operationId: receiveFriendship
+      parameters:
+      - name: userId
+        in: path
+        description: Identifier of the user whose card is being received.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        description: Sender information for the exchange.
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+              - $ref: "#/components/schemas/ReceiveFriendshipRequest"
+              properties:
+                meta:
+                  description: Free-form metadata captured for the exchange.
+                  type: object
+                  additionalProperties: true
+        required: true
+      responses:
+        "201":
+          description: Friendship created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friendship"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: The specified user was not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Friendship already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+  /api/me/friendships/received:
+    get:
+      tags:
+      - Friendships
+      summary: List friendships received by me
+      description: List profile cards received by the authenticated user.
+      operationId: listReceivedFriendships
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Friendship"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/events:
+    post:
+      tags:
+      - Events
+      summary: Create event
+      description: Create a new event with the authenticated user as the initiator.
+      operationId: createEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventCreateRequest"
+        required: true
+      responses:
+        "201":
+          description: Event created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          description: Invalid event data supplied.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "200":
+          description: OK
+  /api/events/{eventId}:
+    get:
+      tags:
+      - Events
+      summary: Get event by ID
+      description: Fetch event details.
+      operationId: getEventById
+      parameters:
+      - name: eventId
+        in: path
+        description: Identifier of the event to fetch.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Event not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/users/{userId}/events:
+    get:
+      tags:
+      - Events
+      summary: List events initiated by a user
+      description: Retrieve events created by the specified user.
+      operationId: listEventsByUser
+      parameters:
+      - name: userId
+        in: path
+        description: Identifier of the user.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/events/join-by-code:
+    post:
+      tags:
+      - Events
+      summary: Join event by invitation code
+      description: Join an event by providing a valid invitation code.
+      operationId: joinEventByCode
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventJoinByCodeRequest"
+        required: true
+      responses:
+        "201":
+          description: Joined the event successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventAttendee"
+        "400":
+          description: Invalid invitation code.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: No active event matches the invitation code.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: The user already joined the event.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "200":
+          description: OK
+  /api/events/{eventId}/attendees:
+    get:
+      tags:
+      - Events
+      summary: List event attendees
+      description: List attendees for the specified event.
+      operationId: listEventAttendees
+      parameters:
+      - name: eventId
+        in: path
+        description: Identifier of the event.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventAttendee"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Event not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/events/{eventId}/live:
+    get:
+      tags:
+      - Events
+      summary: Subscribe to event live updates
+      description: Stream attendee updates for the specified event using Server-Sent
+        Events.
+      operationId: streamEventLive
+      parameters:
+      - name: eventId
+        in: path
+        description: Identifier of the event.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/EventLiveEvent"
+              examples:
+                attendeeJoined:
+                  summary: Attendee joined event
+                  value:
+                    eventType: ATTENDEE_JOINED
+                    eventId: 123
+                    attendeeUserId: 456
+                    timestamp: 2025-01-01T10:15:30Z
+                    data:
+                      attendeeProfile:
+                        userId: 456
+                        profileData:
+                          nickname: quiz-fan
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Event not found or access denied.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/events/{eventId}/users/{userId}:
+    get:
+      tags:
+      - Events
+      summary: Get user data in event
+      description: Retrieve the current user data for a specific user in an event.
+        Requires authentication and the requester must be an attendee of the same
+        event.
+      operationId: getEventUserData
+      parameters:
+      - name: eventId
+        in: path
+        description: Identifier of the event.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - name: userId
+        in: path
+        description: Identifier of the user whose data is requested.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventUserData"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Access denied. Requester is not an attendee of the event.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: "Event, user, or user data not found."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+      - Events
+      summary: Update user data in event
+      description: Update the user's event-specific data. Creates a new revision.
+        Requires authentication and the user can only update their own data.
+      operationId: updateEventUserData
+      parameters:
+      - name: eventId
+        in: path
+        description: Identifier of the event.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - name: userId
+        in: path
+        description: Identifier of the user whose data is being updated.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUserDataUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventUserData"
+        "400":
+          description: Invalid data supplied.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Access denied. User can only update their own data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Event or user not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api:
+    get:
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+      summary: Get User By Id
+      tags:
+      - Users Api Impl
+components:
+  schemas:
+    User:
+      description: Full representation of an authenticated user account.
+      required:
+      - accountLifecycle
+      - createdAt
+      - id
+      type: object
+      properties:
+        id:
+          format: int64
+          description: Unique identifier of the user.
+          type: integer
+          example: 42
+        accountLifecycle:
+          description: Lifecycle state of the user account.
+          enum:
+          - created
+          - provisioned
+          - active
+          - paused
+          - deleted
+          type: string
+          example: active
+        meta:
+          description: Flexible metadata associated with the user.
+          type: object
+          additionalProperties: true
+          example:
+            locale: ja-JP
+        createdAt:
+          $ref: "#/components/schemas/LocalDateTime"
+        updatedAt:
+          $ref: "#/components/schemas/LocalDateTime"
+    UserPublic:
+      description: Public information available for any user lookup.
+      required:
+      - accountLifecycle
+      - createdAt
+      - id
+      type: object
+      properties:
+        id:
+          format: int64
+          description: Unique identifier of the user.
+          type: integer
+          example: 42
+        accountLifecycle:
+          description: Lifecycle state of the user account.
+          enum:
+          - created
+          - provisioned
+          - active
+          - paused
+          - deleted
+          type: string
+          example: active
+        createdAt:
+          $ref: "#/components/schemas/LocalDateTime"
+        profileSummary:
+          description: Optional summary of the most recent profile.
+          type: object
+          additionalProperties: true
+          example:
+            displayName: Quiz Master
+    UserProfile:
+      description: Current profile card data for a user.
+      required:
+      - createdAt
+      - id
+      - profileData
+      - userId
+      type: object
+      properties:
+        id:
+          format: int64
+          description: Identifier of the profile revision.
+          type: integer
+          example: 305
+        userId:
+          format: int64
+          description: Identifier of the user who owns this profile.
+          type: integer
+          example: 42
+        profileData:
+          description: Immutable profile card data.
+          type: object
+          additionalProperties: true
+          example:
+            displayName: Yuki
+            tagline: quiz lover
+        revisionMeta:
+          description: Metadata recorded for this profile revision.
+          type: object
+          additionalProperties: true
+          example:
+            source: api
+          nullable: true
+        createdAt:
+          $ref: "#/components/schemas/LocalDateTime"
+        updatedAt:
+          $ref: "#/components/schemas/LocalDateTime"
+    UserProfileUpdateRequest:
+      description: Payload used to create a new profile revision for the authenticated
+        user.
+      required:
+      - profileData
+      type: object
+      properties:
+        profileData:
+          description: Profile card data that will become the new revision.
+          type: object
+          additionalProperties: true
+          example:
+            displayName: Yuki
+            tagline: Ready for quiz night
+        revisionMeta:
+          description: Optional metadata about this profile revision.
+          type: object
+          additionalProperties: true
+          example:
+            source: mobile-app
+          nullable: true
+    Friendship:
+      description: Record of a one-way profile card exchange between two users.
+      required:
+      - createdAt
+      - id
+      - recipientUserId
+      - senderUserId
+      type: object
+      properties:
+        id:
+          format: int64
+          description: Unique identifier of the friendship record.
+          type: integer
+          example: 512
+        senderUserId:
+          format: int64
+          description: User who sent their profile card.
+          type: integer
+          example: 7
+        recipientUserId:
+          format: int64
+          description: User who received the profile card.
+          type: integer
+          example: 42
+        createdAt:
+          $ref: "#/components/schemas/LocalDateTime"
+        updatedAt:
+          $ref: "#/components/schemas/LocalDateTime"
+        senderProfile:
+          $ref: "#/components/schemas/UserProfile"
+    Event:
+      description: Event lifecycle information for quiz sessions.
+      required:
+      - createdAt
+      - id
+      - initiatorId
+      - status
+      type: object
+      properties:
+        id:
+          format: int64
+          description: Unique identifier of the event.
+          type: integer
+          example: 9001
+        initiatorId:
+          format: int64
+          description: User who created the event.
+          type: integer
+          example: 42
+        status:
+          description: Current lifecycle state of the event.
+          enum:
+          - created
+          - active
+          - ended
+          - expired
+          - deleted
+          type: string
+          example: active
+        meta:
+          description: Flexible metadata associated with the event.
+          type: object
+          additionalProperties: true
+          example:
+            name: Weekly quiz night
+        invitationCode:
+          description: Invitation code that can be shared with participants.
+          type: string
+          example: QUIZ-2025-01
+        expiresAt:
+          $ref: "#/components/schemas/LocalDateTime"
+        createdAt:
+          $ref: "#/components/schemas/LocalDateTime"
+        updatedAt:
+          $ref: "#/components/schemas/LocalDateTime"
+    EventCreateRequest:
+      description: Payload for creating a new event.
+      type: object
+      properties:
+        meta:
+          description: Metadata describing the event.
+          type: object
+          additionalProperties: true
+          example:
+            name: Friday quiz
+            venue: Online
+        expiresAt:
+          $ref: "#/components/schemas/OffsetDateTime"
+        invitationCode:
+          description: Optional invitation code to reserve when creating the event.
+          type: string
+          example: FRIDAY-QUIZ
+    EventJoinByCodeRequest:
+      description: Request body for joining an event by invitation code.
+      required:
+      - invitationCode
+      type: object
+      properties:
+        invitationCode:
+          description: Case-insensitive code identifying the event to join.
+          type: string
+          example: QUIZ-2025-01
+    EventLiveEvent:
+      description: Server-Sent Event payload describing attendee changes.
+      required:
+      - attendeeUserId
+      - eventId
+      - eventType
+      - timestamp
+      type: object
+      properties:
+        eventType:
+          description: Type of attendee event.
+          enum:
+          - ATTENDEE_JOINED
+          - ATTENDEE_LEFT
+          type: string
+          example: ATTENDEE_JOINED
+        eventId:
+          format: int64
+          description: Identifier of the event emitting the update.
+          type: integer
+          example: 123
+        attendeeUserId:
+          format: int64
+          description: Identifier of the attendee affected.
+          type: integer
+          example: 456
+        timestamp:
+          $ref: "#/components/schemas/LocalDateTime"
+        data:
+          description: Optional additional payload delivered with the event.
+          type: object
+          additionalProperties: true
+          example:
+            attendeeProfile:
+              displayName: Quiz Fan
+    EventAttendee:
+      description: Representation of a user's participation in an event.
+      required:
+      - attendeeUserId
+      - createdAt
+      - eventId
+      - id
+      type: object
+      properties:
+        id:
+          format: int64
+          description: Unique identifier of the attendee record.
+          type: integer
+          example: 812
+        eventId:
+          format: int64
+          description: Event the attendee belongs to.
+          type: integer
+          example: 123
+        attendeeUserId:
+          format: int64
+          description: User attending the event.
+          type: integer
+          example: 456
+        meta:
+          description: Flexible attendee metadata.
+          type: object
+          additionalProperties: true
+          example:
+            team: alpha
+        createdAt:
+          $ref: "#/components/schemas/LocalDateTime"
+        updatedAt:
+          $ref: "#/components/schemas/LocalDateTime"
+    EventUserData:
+      description: User-specific data stored for an event. Similar to profile but
+        scoped to an event.
+      required:
+      - createdAt
+      - eventId
+      - id
+      - userData
+      - userId
+      type: object
+      properties:
+        id:
+          format: int64
+          description: Identifier of this user data revision.
+          type: integer
+          example: 501
+        eventId:
+          format: int64
+          description: Event this data belongs to.
+          type: integer
+          example: 123
+        userId:
+          format: int64
+          description: User this data belongs to.
+          type: integer
+          example: 456
+        userData:
+          description: User's event-specific data.
+          type: object
+          additionalProperties: true
+          example:
+            score: 100
+            team: alpha
+        revisionMeta:
+          description: Metadata recorded for this data revision.
+          type: object
+          additionalProperties: true
+          example:
+            source: api
+          nullable: true
+        createdAt:
+          $ref: "#/components/schemas/LocalDateTime"
+        updatedAt:
+          $ref: "#/components/schemas/LocalDateTime"
+    EventUserDataUpdateRequest:
+      description: Payload used to create a new user data revision for an event.
+      required:
+      - userData
+      type: object
+      properties:
+        userData:
+          description: User data that will become the new revision.
+          type: object
+          additionalProperties: true
+          example:
+            score: 150
+            team: beta
+        revisionMeta:
+          description: Optional metadata about this data revision.
+          type: object
+          additionalProperties: true
+          example:
+            source: mobile-app
+          nullable: true
+    ErrorResponse:
+      description: Error payload returned by the API.
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          description: Human-readable description of the error.
+          type: string
+          example: Authentication required
+        details:
+          description: Optional structured details about the error.
+          type: object
+          additionalProperties: true
+    LocalDateTime:
+      format: date-time
+      description: ISO-8601 timestamp with timezone information.
+      type: string
+      example: 2025-01-01T10:15:30Z
+    OffsetDateTime:
+      format: date-time
+      type: string
+      example: 2022-03-10T12:15:50-04:00
+    ReceiveFriendshipRequest:
+      type: object
+      properties:
+        meta:
+          type: object
+          additionalProperties: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    SecurityScheme:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Authentication

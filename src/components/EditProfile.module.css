@@ -1,0 +1,108 @@
+.wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fffaf1, #f5fbff);
+  font-family: ui-sans-serif, system-ui, "Noto Sans JP", sans-serif;
+}
+
+.card {
+  width: 100%;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(6px);
+  border-radius: 22px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  padding: 32px 28px;
+  animation: fadeIn 0.4s ease;
+}
+
+.title {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0 0 22px;
+  color: #090d17;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formLabel {
+  font-weight: 600;
+  color: #065f46;
+  font-size: 14px;
+}
+
+.formInput {
+  padding: 10px 12px;
+  border: 1px solid #ccfbf1;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #f0fdfa;
+  transition: border 0.2s ease;
+}
+
+.formInput:focus {
+  outline: none;
+  border: 2px solid #a7f3d0;
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.2);
+}
+
+.actions {
+  margin-top: 24px;
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+}
+
+.btn {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #b7f3e5, #99e2ff);
+  color: #0b1220;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 6px 14px rgba(14, 165, 233, 0.18);
+  transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  background: linear-gradient(135deg, #aef0e1, #8ed9fb);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(14, 165, 233, 0.25);
+}
+
+.btnGhost {
+  background: transparent;
+  color: #0b1220;
+  border: 1px solid #99e2ff;
+}
+
+.btnGhost:hover {
+  background: rgba(153, 226, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

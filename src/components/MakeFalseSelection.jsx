@@ -1,20 +1,21 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from "react-router-dom";
 import { falseNames, falseHobbies, falseArtists } from './Array';
+import "./MakeFalseSelection.css"
 
 const MakeFalseSelection = () => {
-    const [ falseName1, setFalseName1] = useState('');
-    const [ falseName2, setFalseName2] = useState('');
-    const [ falseName3, setFalseName3] = useState('');
-    const [ falseHobby1, setFalseHobby1] = useState('');
-    const [ falseHobby2, setFalseHobby2] = useState('');
-    const [ falseHobby3, setFalseHobby3] = useState('');
-    const [ falseArtist1, setFalseArtist1] = useState('');
-    const [ falseArtist2, setFalseArtist2] = useState('');
-    const [ falseArtist3, setFalseArtist3] = useState('');
+    const falseAnswers = JSON.parse(localStorage.getItem("falseAnswers"));
+    const [ falseName1, setFalseName1] = useState(falseAnswers?.username?.[0] || "");
+    const [ falseName2, setFalseName2] = useState(falseAnswers?.username?.[1] || "");
+    const [ falseName3, setFalseName3] = useState(falseAnswers?.username?.[2] || "",);
+    const [ falseHobby1, setFalseHobby1] = useState(falseAnswers?.hobby?.[0] || "");
+    const [ falseHobby2, setFalseHobby2] = useState(falseAnswers?.hobby?.[1] || "");
+    const [ falseHobby3, setFalseHobby3] = useState(falseAnswers?.hobby?.[2] || "");
+    const [ falseArtist1, setFalseArtist1] = useState(falseAnswers?.artist?.[0] || "");
+    const [ falseArtist2, setFalseArtist2] = useState(falseAnswers?.artist?.[1] || "");
+    const [ falseArtist3, setFalseArtist3] = useState(falseAnswers?.artist?.[2] || "");
     const navigate = useNavigate();
     const answers = JSON.parse(localStorage.getItem("answers"));
-    const falseAnswers = JSON.parse(localStorage.getItem("falseAnswers"));
     const handleSubmit = (e) => {
     e.preventDefault();
     const falseAnswers = {
@@ -43,21 +44,22 @@ const MakeFalseSelection = () => {
   const randomFalseHobbies = randomMakeSelection(falseHobbies, answers.hobby);
   const randomFalseArtists = randomMakeSelection(falseArtists, answers.artist);
   const onClickHandler = () => {
-    setFalseName1(randomFalseName[0]);
-    setFalseName2(randomFalseName[1]);
-    setFalseName3(randomFalseName[2]);
-    setFalseHobby1(randomFalseHobbies[0]);
-    setFalseHobby2(randomFalseHobbies[1]);
-    setFalseHobby3(randomFalseHobbies[2]);
-    setFalseArtist1(randomFalseArtists[0]);
-    setFalseArtist2(randomFalseArtists[1]);
-    setFalseArtist3(randomFalseArtists[2]);
+    falseName1?setFalseName1(falseName1):setFalseName1(randomFalseName[0]);
+    falseName2?setFalseName2(falseName2):setFalseName2(randomFalseName[1]);
+    falseName3?setFalseName3(falseName3):setFalseName3(randomFalseName[2]);
+    falseHobby1?setFalseHobby1(falseHobby1):setFalseHobby1(randomFalseHobbies[0]);
+    falseHobby2?setFalseHobby2(falseHobby2):setFalseHobby2(randomFalseHobbies[1]);
+    falseHobby3?setFalseHobby3(falseHobby3):setFalseHobby3(randomFalseHobbies[2]);
+    falseArtist1?setFalseArtist1(falseArtist1):setFalseArtist1(randomFalseArtists[0]);
+    falseArtist2?setFalseArtist2(falseArtist2):setFalseArtist2(randomFalseArtists[1]);
+    falseArtist3?setFalseArtist3(falseArtist3):setFalseArtist3(randomFalseArtists[2]);
   }
   return (
     <>
     <h1>間違えの選択肢を作ろう</h1>
     <form onSubmit={handleSubmit}>
         <label>名前</label>
+        <div id="answer">正解:{answers.username}</div>
         <input
          type="text"
         value={falseName1}
@@ -81,10 +83,12 @@ const MakeFalseSelection = () => {
         ></input>
 
         <label>趣味</label>
+        <div id="answer">正解:{answers.hobby}</div>
         <input
          type="text"
         value={falseHobby1}
         onChange={(e) => setFalseHobby1(e.target.value)}
+        placeholder="趣味"
         autoFocus
         ></input>
 
@@ -103,10 +107,12 @@ const MakeFalseSelection = () => {
         ></input>
 
         <label>好きなアーティスト</label>
+        <div id="answer">正解:{answers.artist}</div>
         <input
          type="text"
         value={falseArtist1}
         onChange={(e) => setFalseArtist1(e.target.value)}
+        placeholder="好きなアーティスト"
         autoFocus
         ></input>
 

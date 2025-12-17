@@ -49,6 +49,8 @@ function App() {
         <Route path="/make_question" element={<MakeQuestion />} />
         <Route path="/my_profile" element={<MyProfile />} />
         <Route path="/edit_profile" element={<EditProfile />} />
+        <Route path="/read_qr" element={<ReadQRCode />} />
+
       </Routes>
     </BrowserRouter>
   );

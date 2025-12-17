@@ -1,52 +1,61 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { apis } from "../api/client";
+import { faculty, grade } from "./Array";
 import styles from "./EditProfile.module.css";
+
+const defaultProfile = {
+  name: "",
+  furigana: "",
+  grade: "",
+  faculty: "",
+  hobby: "",
+  favoriteArtist: "",
+  // 詳細学部（UI上のみ）
+  facultyDetail: "",
+};
+
 
 const EditProfile = () => {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState({
-    name: "",
-    furigana: "",
-    grade: "",
-    faculty: "",
-    hobby: "",
-    favoriteArtist: "",
-  });
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(defaultProfile);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchProfile = useCallback(async () => {
-    setLoading(true);
+    setInitialLoading(true);
     setError(null);
     try {
       const response = await apis.profiles().getMyProfile();
       const profileData = response.profileData || {};
-      setProfile({
+      const apiProfile = {
         name: profileData.displayName || "",
         furigana: profileData.furigana || "",
         grade: profileData.grade || "",
         faculty: profileData.faculty || "",
         hobby: profileData.hobby || "",
         favoriteArtist: profileData.favoriteArtist || "",
+      };
+      setProfile({
+        name: apiProfile.name,
+        furigana: apiProfile.furigana,
+        grade: apiProfile.grade,
+        faculty: apiProfile.faculty,
+        hobby: apiProfile.hobby,
+        favoriteArtist: apiProfile.favoriteArtist,
+        facultyDetail: "",
       });
     } catch (err) {
-      if (err.response.status === 404) {
-        setProfile({
-          name: "",
-          furigana: "",
-          grade: "",
-          faculty: "",
-          hobby: "",
-          favoriteArtist: "",
-        });
+      if (err?.response?.status === 404) {
+        // プロフィール未作成：空のフォームから開始
+        setProfile({ ...defaultProfile });
       } else {
-        
         console.error("Failed to fetch profile:", err);
         setError("プロフィールの取得に失敗しました");
       }
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
   }, []);
 
@@ -61,8 +70,26 @@ const EditProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setError(null);
+
+    // 学生さんのバリデーション（必須: 名前/学部/学年/趣味/好きなアーティスト）
+    const requiredOk =
+      profile.name &&
+      profile.faculty &&
+      profile.grade &&
+      profile.hobby &&
+      profile.favoriteArtist;
+
+    if (!requiredOk) {
+      window.alert("入力してください");
+      return;
+    }
+
+    setSaving(true);
     try {
+      // ローカルドラフト保存は廃止（APIのみを使用）
+
+      // API更新
       await apis.profiles().updateMyProfile({
         userProfileUpdateRequest: {
           profileData: {
@@ -75,21 +102,22 @@ const EditProfile = () => {
           },
         },
       });
+
       navigate("/my_profile");
     } catch (err) {
       console.error("Failed to update profile:", err);
       setError("プロフィールの更新に失敗しました");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  if (loading) {
+  if (initialLoading || saving) {
     return (
       <div className={styles.wrap}>
         <div className={styles.card}>
           <h1 className={styles.title}>プロフィール編集</h1>
-          <p>読み込み中...</p>
+          <p>{saving ? "保存中..." : "読み込み中..."}</p>
         </div>
       </div>
     );
@@ -122,8 +150,11 @@ const EditProfile = () => {
               onChange={handleChange}
               required
               className={styles.formInput}
+              placeholder="名前"
+              autoFocus
             />
           </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="furigana">フリガナ</label>
             <input
@@ -133,30 +164,59 @@ const EditProfile = () => {
               value={profile.furigana}
               onChange={handleChange}
               className={styles.formInput}
+              placeholder="フリガナ"
             />
           </div>
-          <div className={styles.formGroup}>
-            <label htmlFor="grade">学年</label>
-            <input
-              type="text"
-              id="grade"
-              name="grade"
-              value={profile.grade}
-              onChange={handleChange}
-              className={styles.formInput}
-            />
-          </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="faculty">学部</label>
-            <input
-              type="text"
+            <select
               id="faculty"
               name="faculty"
               value={profile.faculty}
               onChange={handleChange}
               className={styles.formInput}
+            >
+              <option value="">選択してください</option>
+              {faculty.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="facultyDetail">具体的な学部</label>
+            <input
+              type="text"
+              id="facultyDetail"
+              name="facultyDetail"
+              value={profile.facultyDetail}
+              onChange={handleChange}
+              className={styles.formInput}
+              placeholder=""
             />
           </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="grade">学年</label>
+            <select
+              id="grade"
+              name="grade"
+              value={profile.grade}
+              onChange={handleChange}
+              className={styles.formInput}
+            >
+              <option value="">選択してください</option>
+              {grade.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="hobby">趣味</label>
             <input
@@ -166,8 +226,10 @@ const EditProfile = () => {
               value={profile.hobby}
               onChange={handleChange}
               className={styles.formInput}
+              placeholder="趣味"
             />
           </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="favoriteArtist">好きなアーティスト</label>
             <input
@@ -177,17 +239,19 @@ const EditProfile = () => {
               value={profile.favoriteArtist}
               onChange={handleChange}
               className={styles.formInput}
+              placeholder="好きなアーティスト"
             />
           </div>
+
           <div className={styles.actions}>
-            <button type="submit" className={styles.btn} disabled={loading}>
-              {loading ? "保存中..." : "保存"}
+            <button type="submit" className={styles.btn} disabled={saving}>
+              {saving ? "保存中..." : "保存"}
             </button>
             <button
               type="button"
               className={`${styles.btn} ${styles.btnGhost}`}
               onClick={() => navigate("/my_profile")}
-              disabled={loading}
+              disabled={saving}
             >
               キャンセル
             </button>

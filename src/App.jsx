@@ -11,6 +11,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MakeQuestion from "./components/MakeQuestion";
 import MyProfile from "./components/MyProfile";
 import EditProfile from "./components/EditProfile";
+import ReadQRCode from "./components/ReadQRCode";
 
 
 

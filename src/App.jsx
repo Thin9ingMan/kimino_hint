@@ -11,6 +11,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MakeQuestion from "./components/MakeQuestion";
 import MyProfile from "./components/MyProfile";
 import EditProfile from "./components/EditProfile";
+import ReadQRCode from "./components/ReadQRCode";
 
 
 
@@ -48,6 +49,8 @@ function App() {
         <Route path="/make_question" element={<MakeQuestion />} />
         <Route path="/my_profile" element={<MyProfile />} />
         <Route path="/edit_profile" element={<EditProfile />} />
+        <Route path="/read_qr" element={<ReadQRCode />} />
+
       </Routes>
     </BrowserRouter>
   );

@@ -1,31 +1,36 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Profile.css";
 import { ProfileCard } from "./ui/ProfileCard";
 import { useState, useEffect, useCallback } from "react";
 import { apis } from "../api/client";
 
 const MyProfile = () => {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [firstTime, setFirstTime] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apis.profiles().getMyProfileRaw();
-      if (response.raw.status === 404) {
-        setProfile(null);
-      } else {
-        const profileData = await response.value();
-        setProfile({
-          ...profileData.profileData,
-          name: profileData.profileData.displayName,
-        });
-      }
+      // 非Raw版は404等で例外を投げるため、catchで分岐して初回作成へ誘導する
+      const response = await apis.profiles().getMyProfile();
+      const profileData = response.profileData || {};
+      setProfile({
+        ...profileData,
+        name: profileData.displayName,
+      });
     } catch (err) {
-      console.error("Failed to fetch profile:", err);
-      setError("プロフィールの取得に失敗しました");
+      if (err?.response?.status === 404) {
+        // 初めてのプロフィール作成フロー
+        setProfile(null);
+        setFirstTime(true);
+      } else {
+        console.error("Failed to fetch profile:", err);
+        setError("プロフィールの取得に失敗しました");
+      }
     } finally {
       setLoading(false);
     }
@@ -34,6 +39,13 @@ const MyProfile = () => {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  // 404 の場合は初回作成として編集画面へ誘導
+  useEffect(() => {
+    if (firstTime) {
+      navigate("/edit_profile", { replace: true });
+    }
+  }, [firstTime, navigate]);
 
   if (loading) {
     return (

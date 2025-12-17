@@ -92,7 +92,6 @@ export const falseArtists = [
 ];
 
 export const faculty = [
-    "選択してください",
     "法学部",
     "経済学部",
     "経営学部",
@@ -116,7 +115,6 @@ export const faculty = [
     "看護学部",
 ];
 export const grade = [
-    "選択してください",
     "学部1年",
     "学部2年",
     "学部3年",

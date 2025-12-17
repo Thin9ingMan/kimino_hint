@@ -1,0 +1,57 @@
+/* 共通スタイル */
+
+/* レイアウト */
+.fullPageWrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fffaf1, #f5fbff);
+  font-family: ui-sans-serif, system-ui, "Noto Sans JP", sans-serif;
+}
+
+.card {
+  width: 100%;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(6px);
+  border-radius: 22px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  padding: 32px 28px;
+  animation: fadeIn 0.4s ease;
+}
+
+.title {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0 0 22px;
+  color: #090d17;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #090d17;
+}
+
+/* エラー表示 */
+.error {
+  color: #e11d48;
+  font-weight: 600;
+  margin: 8px 0;
+}
+
+/* アニメーション */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

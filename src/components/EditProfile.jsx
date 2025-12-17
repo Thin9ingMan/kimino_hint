@@ -188,11 +188,6 @@ const EditProfile = () => {
             </Button>
           </div>
         </form>
-
-        <div className={styles.previewSection}>
-          <h2 className={styles.previewTitle}>プレビュー</h2>
-          <ProfileCard profile={profile} />
-        </div>
       </div>
     </div>
   );

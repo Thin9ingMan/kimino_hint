@@ -58,12 +58,13 @@ const UserProfile = () => {
   const handleCreateFriendship = async () => {
     setCreatingFriendship(true);
     try {
-      await apis.friendships().createFriendship({
+      const friendship = await apis.friendships().createFriendship({
         friendshipCreateRequest: {
           toUserId: parseInt(userId),
         }
       });
-      setFriendshipStatus("ACCEPTED"); // Assuming auto-accept for mutual friendships
+      // Update status based on actual API response
+      setFriendshipStatus(friendship.status || "ACCEPTED");
       alert("友達になりました！");
     } catch (err) {
       console.error("Failed to create friendship:", err);

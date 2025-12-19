@@ -32,7 +32,8 @@ export default function ReadQRCode() {
       setScanned(true);
       
       // Auto-create friendships with other participants in the same event
-      await createFriendshipsWithEventParticipants(event.id);
+      // Note: Auto-friendship creation would happen here if backend API supported it
+      // await createFriendshipsWithEventParticipants(event.id);
     } catch (err) {
       console.error("Failed to join event:", err);
       setError("イベントへの参加に失敗しました。参加コードを確認してください。");
@@ -41,17 +42,15 @@ export default function ReadQRCode() {
     }
   };
 
+  // This function would auto-create friendships with event participants
+  // Currently not called because backend API for listing event participants is not yet available
+  // Uncomment the call above when the backend endpoint is ready
   const createFriendshipsWithEventParticipants = async (eventId) => {
     try {
-      // Get current user
-      const currentUser = await apis.auth().getCurrentUser();
-      
-      // Get all users in the event (this would need to be implemented on the backend)
-      // For now, we'll skip this step as the API might not support it yet
-      // In a full implementation, you would:
-      // 1. Get list of users in the event
-      // 2. For each user, create a mutual friendship
-      console.log("Auto-creating friendships for event participants...");
+      // When backend API is ready, implement:
+      // 1. Fetch event participants: const participants = await apis.events().getEventParticipants({ eventId });
+      // 2. For each participant (except self): await apis.friendships().createFriendship({ friendshipCreateRequest: { toUserId: participant.id } });
+      console.log("Auto-friendship creation ready for backend API:", eventId);
     } catch (err) {
       console.error("Failed to create friendships:", err);
       // Don't show error to user as this is a background operation

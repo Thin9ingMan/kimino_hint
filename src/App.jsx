@@ -13,7 +13,7 @@ import MyProfile from "./components/MyProfile";
 import EditProfile from "./components/EditProfile";
 import ReadQRCode from "./components/ReadQRCode";
 import MakeQRCode from "./components/MakeQRCode";
-
+import MakeFalseSelection from "./components/makeFalseSelection";
 
 
 function App() {
@@ -46,6 +46,7 @@ function App() {
         <Route path="/answer" element={<Answer />} />
         <Route path="/result" element={<Result />} />
         <Route path="/room" element={<Room />} />
+        <Route path="/make_false_selection" element={<MakeFalseSelection />} />
         <Route path="/profile_history" element={<Profile_history />} />
         <Route path="/make_question" element={<MakeQuestion />} />
         <Route path="/my_profile" element={<MyProfile />} />

@@ -10,6 +10,8 @@ const Answer = () => {
   const user_answer = location.state?.selected;
   const count = location.state?.count;
   const currentScore = location.state?.score || 0;
+  const targetUserId = location.state?.targetUserId;
+  const targetProfile = location.state?.targetProfile;
   const addtionalInformation = JSON.parse(
     localStorage.getItem("addtionalInformation")
   );
@@ -22,6 +24,8 @@ const Answer = () => {
       state: {
         count: count, // 現在の問題番号
         score: newScore, // 更新したスコアを次のページに渡す
+        targetUserId, // Pass along for multi-question quiz
+        targetProfile, // Pass along for multi-question quiz
       },
     });
   };

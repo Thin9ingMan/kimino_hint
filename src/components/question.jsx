@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback} from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { faculty, grade } from "./Array";
 import { apis } from "../api/client";
@@ -28,36 +28,36 @@ const Question = () => {
   const [profile, setProfile] = useState(defaultProfile);
   const [error, setError] = useState(null);
   const fetchProfile = useCallback(async () => {
-      setInitialLoading(true);
-      setError(null);
-      try {
-        const response = await apis.profiles().getMyProfile();
-        const profileData = response.profileData || {};
-        
-        setProfile({
-          name: profileData.displayName || "",
-          furigana: profileData.furigana || "",
-          grade: profileData.grade || "",
-          faculty: profileData.faculty || "",
-          hobby: profileData.hobby || "",
-          favoriteArtist: profileData.favoriteArtist || "",
-          facultyDetail: "",
-        });
-      } catch (err) {
-        if (err?.response?.status === 404) {
-          setProfile(defaultProfile);
-        } else {
-          console.error("Failed to fetch profile:", err);
-          setError("プロフィールの取得に失敗しました");
-        }
-      } finally {
-        setInitialLoading(false);
+    setInitialLoading(true);
+    setError(null);
+    try {
+      const response = await apis.profiles().getMyProfile();
+      const profileData = response.profileData || {};
+
+      setProfile({
+        name: profileData.displayName || "",
+        furigana: profileData.furigana || "",
+        grade: profileData.grade || "",
+        faculty: profileData.faculty || "",
+        hobby: profileData.hobby || "",
+        favoriteArtist: profileData.favoriteArtist || "",
+        facultyDetail: "",
+      });
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        setProfile(defaultProfile);
+      } else {
+        console.error("Failed to fetch profile:", err);
+        setError("プロフィールの取得に失敗しました");
       }
-    }, []);
+    } finally {
+      setInitialLoading(false);
+    }
+  }, []);
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
-  console.log(profile)
+  console.log(profile);
   const answers = profile; //ユーザが保存した回答
   function getRandomThreeExcludingElement(originalArray, elementToExclude) {
     const filteredArray = originalArray.filter(
@@ -85,12 +85,12 @@ const Question = () => {
     {
       question: "名前は何でしょう？",
       select: [
-        answers["username"],
+        answers["name"],
         falseAnswers?.username?.[0] || "田中陽介",
         falseAnswers?.username?.[1] || "鈴木信二",
         falseAnswers?.username?.[2] || "宮久保健太",
       ],
-      answer: answers["username"],
+      answer: answers["name"],
     },
     {
       question: "学部は何でしょう？",
@@ -126,11 +126,11 @@ const Question = () => {
       question: "好きなアーティストは誰でしょう？",
       select: [
         falseAnswers?.artist?.[0] || "ヨルシカ",
-        answers["artist"],
+        answers["favoriteArtist"],
         falseAnswers?.artist?.[1] || "YOASOBI",
         falseAnswers?.artist?.[2] || "吉幾三",
       ],
-      answer: answers["artist"],
+      answer: answers["favoriteArtist"],
     },
   ];
 

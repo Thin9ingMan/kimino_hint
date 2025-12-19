@@ -16,7 +16,7 @@ import MakeQRCode from "./components/MakeQRCode";
 import ListProfile from "./components/screens/profiles/ListProfile";
 import ProfileDetail from "./components/screens/profiles/ProfileDetail";
 
-import MakeFalseSelection from "./components/makeFalseSelection";
+import MakeFalseSelection from "./components/MakeFalseSelection";
 
 
 function App() {

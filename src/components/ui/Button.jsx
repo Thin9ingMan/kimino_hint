@@ -1,5 +1,14 @@
 import styles from "./Button.module.css";
 
+/**
+ * @param {{
+ *   type?: "button" | "submit" | "reset";
+ *   variant?: "primary" | "ghost";
+ *   disabled?: boolean;
+ *   onClick?: (event: import("react").MouseEvent<HTMLButtonElement>) => void;
+ *   children: import("react").ReactNode;
+ * }} props
+ */
 export default function Button({
   type = "button",
   variant = "primary",

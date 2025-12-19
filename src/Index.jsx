@@ -45,7 +45,7 @@ checkProfileExists();
       ) : (
         <button onClick={handleClickWithoutProfile}>クイズへ</button>
       )}
-      <Link to="/profile_history">
+      <Link to="/profiles">
         <button>プロフィール一覧へ</button>
       </Link>
       <Link to="/my_profile">

@@ -57,7 +57,7 @@ const Answer = () => {
       <div className={containerClass}>
         <h1>あなたの回答は{judge ? "正解" : "不正解"}です</h1>
         <div>正解は：{answer}</div>
-        {count == 2 && <div>{addtionalInformation}</div>}
+        {count == 2 && <div>{additionalInformation}</div>}
         <div>あなたの回答は {user_answer} です</div>
         <button onClick={nextquestion}>次の問題へ</button>
       </div>

@@ -1,0 +1,11 @@
+.footerActions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.linkReset {
+  text-decoration: none;
+  color: inherit;
+}

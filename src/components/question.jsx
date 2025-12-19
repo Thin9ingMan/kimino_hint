@@ -63,6 +63,8 @@ const Question = () => {
   const falseFaculty = getRandomThreeExcludingElement(faculty, answers.department);
   const falseGrade = getRandomThreeExcludingElement(grade, answers.grade);
   
+  // Note: The name question appears twice (index 0 and 4) with different options
+  // This is intentional to test recall at different points in the quiz
   const questions = [
     {
       question: "名前は何でしょう？",
@@ -90,7 +92,7 @@ const Question = () => {
       answer: answers["hobby"],
     },
     {
-      question: "名前は何でしょう？",
+      question: "名前は何でしょう？", // Second name question with different options
       select: ["佐藤花", "石川凛", "清水葵", answers["username"]],
       answer: answers["username"],
     },

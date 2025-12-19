@@ -49,7 +49,9 @@ export default function MakeQRCode() {
 
       // Generate QR code URL with join code
       // Using a free QR code API service
-      const joinUrl = `${window.location.origin}${import.meta.env.BASE_URL || '/'}read_qr?code=${event.joinCode}`;
+      const baseUrl = import.meta.env.BASE_URL || '/';
+      const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+      const joinUrl = `${window.location.origin}${normalizedBase}read_qr?code=${event.joinCode}`;
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}`;
       
       setQrCodeUrl(qrUrl);

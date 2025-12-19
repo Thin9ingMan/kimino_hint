@@ -29,8 +29,19 @@ const Question = () => {
     falseAnswers = null; // We'll use defaults for false answers
   } else {
     // Quiz about self (backward compatibility)
-    answers = JSON.parse(localStorage.getItem("answers"));
-    falseAnswers = JSON.parse(localStorage.getItem("falseAnswers"));
+    const storedAnswers = localStorage.getItem("answers");
+    const storedFalseAnswers = localStorage.getItem("falseAnswers");
+    answers = storedAnswers ? JSON.parse(storedAnswers) : null;
+    falseAnswers = storedFalseAnswers ? JSON.parse(storedFalseAnswers) : null;
+  }
+
+  // If no answers available, redirect to home
+  if (!answers) {
+    useEffect(() => {
+      alert("プロフィールデータが見つかりません");
+      navigate("/");
+    }, []);
+    return <div>データを読み込んでいます...</div>;
   }
 
   function getRandomThreeExcludingElement(originalArray, elementToExclude) {

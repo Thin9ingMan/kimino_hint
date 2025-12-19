@@ -26,7 +26,9 @@ function App() {
     return (
       <div style={{ textAlign: "center", marginTop: "30vh" }}>
         <div style={{ fontSize: 22, marginBottom: 12 }}>認証に失敗しました</div>
-        <div style={{ color: "#64748b", marginBottom: 16 }}>{String(error.message || error)}</div>
+        <div style={{ color: "#64748b", marginBottom: 16 }}>
+          {String(error.message || error)}
+        </div>
         <button onClick={retry}>再試行</button>
       </div>
     );

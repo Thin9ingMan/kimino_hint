@@ -17,7 +17,14 @@ const Question = () => {
   const location = useLocation();
   const count = location.state?.count || 0;
   const score = location.state?.score || 0;
+  const incomingFalseAns = location.state?.falseAnswers;
+  const [falseAnswers, setFalseAnswers] = useState({});
   const navigate = useNavigate();
+  useEffect(() => {
+    if (incomingFalseAns && incomingFalseAns !== 0) {
+      setFalseAnswers(incomingFalseAns);
+    }
+  }, [incomingFalseAns]);
   const [profile, setProfile] = useState(defaultProfile);
   const [error, setError] = useState(null);
   const fetchProfile = useCallback(async () => {
@@ -52,26 +59,38 @@ const Question = () => {
   }, [fetchProfile]);
   console.log(profile)
   const answers = profile; //ユーザが保存した回答
-  const falseAnswers = JSON.parse(localStorage.getItem("falseAnswers"))
-  console.log(answers)
   function getRandomThreeExcludingElement(originalArray, elementToExclude) {
-    const filteredArray = originalArray.filter(item => item !== elementToExclude);
-    const shuffledArray = [...filteredArray]; 
+    const filteredArray = originalArray.filter(
+      (item) => item !== elementToExclude
+    );
+    const shuffledArray = [...filteredArray];
     for (let i = shuffledArray.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledArray[i], shuffledArray[j]] = [
+        shuffledArray[j],
+        shuffledArray[i],
+      ];
     }
     const result = shuffledArray.slice(0, 3);
-    
+
     return result;
   }
-  const falseFaculty = getRandomThreeExcludingElement(faculty, answers.department);
-  const falseGrade = getRandomThreeExcludingElement(grade, answers.grade)
+  const falseFaculty = getRandomThreeExcludingElement(
+    faculty,
+    answers.department
+  );
+  const falseGrade = getRandomThreeExcludingElement(grade, answers.grade);
+  console.log(falseFaculty);
   const questions = [
     {
       question: "名前は何でしょう？",
-      select: [answers["name"], falseAnswers?.username?.[0] || "田中陽介", falseAnswers?.username?.[1] || "鈴木信二", falseAnswers?.username?.[2] || "宮久保健太"],
-      answer: answers["name"],
+      select: [
+        answers["username"],
+        falseAnswers?.username?.[0] || "田中陽介",
+        falseAnswers?.username?.[1] || "鈴木信二",
+        falseAnswers?.username?.[2] || "宮久保健太",
+      ],
+      answer: answers["username"],
     },
     {
       question: "学部は何でしょう？",
@@ -85,12 +104,17 @@ const Question = () => {
     },
     {
       question: "学年は何でしょう？",
-      select: [falseGrade[0], falseGrade[1] , answers["grade"], falseGrade[2]],
+      select: [falseGrade[0], falseGrade[1], answers["grade"], falseGrade[2]],
       answer: answers["grade"],
     },
     {
       question: "趣味は何でしょう？",
-      select: [answers["hobby"], falseAnswers?.hobby?.[0] || "サッカー", falseAnswers?.hobby?.[1] || "将棋", falseAnswers?.hobby?.[2] || "ゲーム"],
+      select: [
+        answers["hobby"],
+        falseAnswers?.hobby?.[0] || "サッカー",
+        falseAnswers?.hobby?.[1] || "将棋",
+        falseAnswers?.hobby?.[2] || "ゲーム",
+      ],
       answer: answers["hobby"],
     },
     {
@@ -100,8 +124,13 @@ const Question = () => {
     },
     {
       question: "好きなアーティストは誰でしょう？",
-      select: [falseAnswers?.artist?.[0] || "ヨルシカ", answers["favoriteArtist"] , falseAnswers?.artist?.[1] || "YOASOBI", falseAnswers?.artist?.[2] || "吉幾三"],
-      answer: answers["favoriteArtist"],
+      select: [
+        falseAnswers?.artist?.[0] || "ヨルシカ",
+        answers["artist"],
+        falseAnswers?.artist?.[1] || "YOASOBI",
+        falseAnswers?.artist?.[2] || "吉幾三",
+      ],
+      answer: answers["artist"],
     },
   ];
 

@@ -13,8 +13,7 @@ import MyProfile from "./components/MyProfile";
 import EditProfile from "./components/EditProfile";
 import ReadQRCode from "./components/ReadQRCode";
 import MakeQRCode from "./components/MakeQRCode";
-
-
+import MakeFalseSelection from "./components/MakeFalseSelection";
 
 function App() {
   const { ready, error, retry } = useGuestAuth();
@@ -23,7 +22,9 @@ function App() {
     return (
       <div style={{ textAlign: "center", marginTop: "30vh" }}>
         <div style={{ fontSize: 22, marginBottom: 12 }}>認証に失敗しました</div>
-        <div style={{ color: "#64748b", marginBottom: 16 }}>{String(error.message || error)}</div>
+        <div style={{ color: "#64748b", marginBottom: 16 }}>
+          {String(error.message || error)}
+        </div>
         <button onClick={retry}>再試行</button>
       </div>
     );
@@ -46,6 +47,7 @@ function App() {
         <Route path="/answer" element={<Answer />} />
         <Route path="/result" element={<Result />} />
         <Route path="/room" element={<Room />} />
+        <Route path="/make_false_selection" element={<MakeFalseSelection />} />
         <Route path="/profile_history" element={<Profile_history />} />
         <Route path="/make_question" element={<MakeQuestion />} />
         <Route path="/my_profile" element={<MyProfile />} />

@@ -24,6 +24,12 @@ const Index = () => {
       <Link to="/my_profile">
         <button>自分のプロフィール</button>
       </Link>
+      <Link to="/read_qr">
+        <button>QRコードでルーム参加</button>
+      </Link>
+      <Link to="/make_qr">
+        <button>QRコード発行</button>
+      </Link>
     </>
   );
 };

@@ -13,6 +13,7 @@ import MyProfile from "./components/MyProfile";
 import EditProfile from "./components/EditProfile";
 import ReadQRCode from "./components/ReadQRCode";
 import MakeQRCode from "./components/MakeQRCode";
+import UserProfile from "./components/UserProfile";
 
 
 
@@ -52,6 +53,7 @@ function App() {
         <Route path="/edit_profile" element={<EditProfile />} />
         <Route path="/read_qr" element={<ReadQRCode />} />
         <Route path="/make_qr" element={<MakeQRCode />} />
+        <Route path="/user_profile/:userId" element={<UserProfile />} />
       </Routes>
     </BrowserRouter>
   );

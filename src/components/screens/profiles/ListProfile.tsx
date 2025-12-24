@@ -49,7 +49,8 @@ export default function ListProfile() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [profilesByUserId, setProfilesByUserId] = useState<Record<number, UiProfile>>({});
+  // `undefined` = 未取得, `null` = 取得失敗(再試行ループ防止), UiProfile = 取得成功
+  const [profilesByUserId, setProfilesByUserId] = useState<Record<number, UiProfile | null>>({});
   const [profilesLoading, setProfilesLoading] = useState(false);
 
   const sorted = useMemo(() => {
@@ -95,28 +96,31 @@ export default function ListProfile() {
       );
 
       // 既に取れてる分はスキップ
-      const missing = userIds.filter((id) => profilesByUserId[id] == null);
+      // `undefined` のみを「未取得」とみなす（失敗は null を入れて再試行ループを防ぐ）
+      const missing = userIds.filter((id) => profilesByUserId[id] === undefined);
 
       if (!missing.length) return;
 
       setProfilesLoading(true);
       try {
-        const results = await Promise.allSettled(
+        const results = await Promise.all(
           missing.map(async (userId) => {
-            const res = await apis.profiles().getUserProfile({ userId });
-            return { userId, profile: mapProfileDataToUiProfile(res?.profileData as any) };
+            try {
+              const res = await apis.profiles().getUserProfile({ userId });
+              return { userId, profile: mapProfileDataToUiProfile(res?.profileData as any) };
+            } catch (e) {
+              console.error(`Failed to fetch profile for userId=${userId}:`, e);
+              // 失敗も「取得済み」として null を入れて再試行ループ(ぴくぴく)を止める
+              return { userId, profile: null as UiProfile | null };
+            }
           })
         );
 
         if (cancelled) return;
 
         setProfilesByUserId((prev) => {
-          const next = { ...prev };
-          for (const r of results) {
-            if (r.status === "fulfilled") {
-              next[r.value.userId] = r.value.profile;
-            }
-          }
+          const next: Record<number, UiProfile | null> = { ...prev };
+          for (const r of results) next[r.userId] = r.profile;
           return next;
         });
       } finally {

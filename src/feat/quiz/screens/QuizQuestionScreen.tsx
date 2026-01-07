@@ -1,5 +1,10 @@
-import { Container } from "@/shared/ui/Container";
+import Question from "@/components/question";
+import { LegacySandbox } from "@/shared/ui/LegacySandbox";
 
 export function QuizQuestionScreen() {
-  return <Container title="クイズ" />;
+  return (
+    <LegacySandbox>
+      <Question />
+    </LegacySandbox>
+  );
 }

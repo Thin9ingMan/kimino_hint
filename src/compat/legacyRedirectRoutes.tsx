@@ -56,23 +56,9 @@ export const legacyRedirectRoutes: React.ReactElement[] = [
     element={<Navigate to="/events/new" replace />}
   />,
 
-  // Legacy quiz URLs:
-  // Old app relied on location.state. Route them to a dedicated legacy portal instead of /events.
-  <Route
-    key="legacy-question"
-    path="/question"
-    element={<Navigate to="/legacy" replace />}
-  />,
-  <Route
-    key="legacy-answer"
-    path="/answer"
-    element={<Navigate to="/legacy" replace />}
-  />,
-  <Route
-    key="legacy-result"
-    path="/result"
-    element={<Navigate to="/legacy" replace />}
-  />,
+  <Route key="legacy-question" path="/question" element={"replace me"} />,
+  <Route key="legacy-answer" path="/answer" element={"replace me"} />,
+  <Route key="legacy-result" path="/result" element={"replace me"} />,
 
   <Route path="/legacy" element={<LegacyPortalScreen />} />,
 

@@ -1,4 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+
+import { legacyRedirectRoutes } from '@/compat/legacyRedirectRoutes';
+
 import { HomeScreen } from '../feat/home/screens/HomeScreen';
 import { HelpScreen } from '../feat/misc/screens/HelpScreen';
 import { AuthErrorScreen } from '../feat/misc/screens/AuthErrorScreen';
@@ -60,6 +63,9 @@ export function AppRouter() {
       <Route path="/qr" element={<QrHubScreen />} />
       <Route path="/qr/profile" element={<QrProfileScreen />} />
       <Route path="/qr/scan" element={<QrScanScreen />} />
+
+      {/* Legacy URL compat (Phase 0): keep old URLs as thin redirects */}
+      {legacyRedirectRoutes}
 
       {/* 404 */}
       <Route path="*" element={<NotFoundScreen />} />

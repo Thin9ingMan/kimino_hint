@@ -1,0 +1,49 @@
+/* Load web font (mandatory): Noto Sans JP */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800&display=swap');
+
+/* Global styles: minimal but provides the “legacy” soft pastel background.
+ * Keep global CSS limited to app/styles as per project policy.
+ */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  /* Keep font fixed to the loaded web font */
+  font-family: "Noto Sans JP", sans-serif;
+  color: #0f172a;
+
+  /* Background: cream→mist + subtle highlights (inspired by legacy start_page.css) */
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.15) 36%,
+      rgba(255, 255, 255, 0) 36.1%,
+      rgba(255, 255, 255, 0) 64%,
+      rgba(255, 255, 255, 0.18) 64.1%,
+      rgba(255, 255, 255, 0.5) 100%
+    ),
+    radial-gradient(
+      1000px 600px at -10% -20%,
+      rgba(255, 221, 186, 0.55) 0%,
+      rgba(255, 221, 186, 0) 60%
+    ),
+    radial-gradient(
+      900px 560px at 110% 120%,
+      rgba(182, 235, 220, 0.55) 0%,
+      rgba(182, 235, 220, 0) 62%
+    ),
+    linear-gradient(120deg, #fffaf1 0%, #f5fbff 100%);
+
+  overflow-y: auto;
+}
+
+#root {
+  min-height: 100vh;
+}

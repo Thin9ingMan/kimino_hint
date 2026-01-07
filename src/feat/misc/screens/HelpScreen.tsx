@@ -1,5 +1,5 @@
 import { Container } from "@/shared/ui/Container";
 
 export function HelpScreen() {
-  return <Container>Help</Container>;
+  return <Container title="使い方" />;
 }

@@ -2,7 +2,7 @@ import { Container as MantineContainer } from "@mantine/core";
 import React from "react";
 
 type Props = {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   title?: string;
 };
 

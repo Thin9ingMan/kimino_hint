@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { apis } from "../../../api/client";
+import { apis } from "@/shared/api";
 import { ProfileCard } from "../../ui/ProfileCard";
 import Button from "../../ui/Button";
 import common from "../../ui/common.module.css";
@@ -32,7 +32,9 @@ type UiProfile = {
   favoriteArtist?: string;
 };
 
-function mapProfileDataToUiProfile(profileData?: Record<string, unknown>): UiProfile {
+function mapProfileDataToUiProfile(
+  profileData?: Record<string, unknown>
+): UiProfile {
   const pd = profileData ?? {};
   return {
     name: (pd.displayName as string) ?? "",
@@ -50,7 +52,9 @@ export default function ListProfile() {
   const [error, setError] = useState<string | null>(null);
 
   // `undefined` = 未取得, `null` = 取得失敗(再試行ループ防止), UiProfile = 取得成功
-  const [profilesByUserId, setProfilesByUserId] = useState<Record<number, UiProfile | null>>({});
+  const [profilesByUserId, setProfilesByUserId] = useState<
+    Record<number, UiProfile | null>
+  >({});
   const [profilesLoading, setProfilesLoading] = useState(false);
 
   const sorted = useMemo(() => {
@@ -68,7 +72,7 @@ export default function ListProfile() {
     setInitialLoading(true);
     setError(null);
     try {
-      const res = await apis.friendships().listReceivedFriendships();
+      const res = await apis.friendships.listReceivedFriendships();
       setItems((res ?? []) as unknown as Friendship[]);
       // senderProfile が null のことがあるため、プロフィールは別途 N+1 で埋める（useEffect側）
     } catch (e) {
@@ -91,13 +95,15 @@ export default function ListProfile() {
       if (!items.length) return;
 
       // senderUserId をユニーク化
-      const userIds = Array.from(new Set(items.map((f) => f.senderUserId))).filter(
-        (id) => typeof id === "number" && Number.isFinite(id)
-      );
+      const userIds = Array.from(
+        new Set(items.map((f) => f.senderUserId))
+      ).filter((id) => typeof id === "number" && Number.isFinite(id));
 
       // 既に取れてる分はスキップ
       // `undefined` のみを「未取得」とみなす（失敗は null を入れて再試行ループを防ぐ）
-      const missing = userIds.filter((id) => profilesByUserId[id] === undefined);
+      const missing = userIds.filter(
+        (id) => profilesByUserId[id] === undefined
+      );
 
       if (!missing.length) return;
 
@@ -106,8 +112,11 @@ export default function ListProfile() {
         const results = await Promise.all(
           missing.map(async (userId) => {
             try {
-              const res = await apis.profiles().getUserProfile({ userId });
-              return { userId, profile: mapProfileDataToUiProfile(res?.profileData as any) };
+              const res = await apis.profiles.getUserProfile({ userId });
+              return {
+                userId,
+                profile: mapProfileDataToUiProfile(res?.profileData as any),
+              };
             } catch (e) {
               console.error(`Failed to fetch profile for userId=${userId}:`, e);
               // 失敗も「取得済み」として null を入れて再試行ループ(ぴくぴく)を止める
@@ -149,12 +158,12 @@ export default function ListProfile() {
       <div className={common.card}>
         <h1 className={common.title}>プロフィール一覧</h1>
         <p className={common.error}>{error}</p>
-      <div className={styles.footerActions}>
-        <Button onClick={fetchFriendships}>再試行</Button>
-        <Link to="/" className={styles.linkReset}>
-          <Button variant="ghost">戻る</Button>
-        </Link>
-      </div>
+        <div className={styles.footerActions}>
+          <Button onClick={fetchFriendships}>再試行</Button>
+          <Link to="/" className={styles.linkReset}>
+            <Button variant="ghost">戻る</Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -184,7 +193,9 @@ export default function ListProfile() {
         <h1 className={common.title}>プロフィール一覧</h1>
 
         {profilesLoading && (
-          <p style={{ margin: "0 0 10px", color: "#64748b" }}>プロフィール詳細を取得中...</p>
+          <p style={{ margin: "0 0 10px", color: "#64748b" }}>
+            プロフィール詳細を取得中...
+          </p>
         )}
 
         <div className={styles.container}>
@@ -193,7 +204,8 @@ export default function ListProfile() {
 
             // senderProfile が常に null の不具合がある前提で、N+1 で埋めた値を優先する
             const uiProfile =
-              profilesByUserId[userId] ?? mapProfileDataToUiProfile(f.senderProfile?.profileData);
+              profilesByUserId[userId] ??
+              mapProfileDataToUiProfile(f.senderProfile?.profileData);
 
             return (
               <div key={f.id} className={styles.item}>

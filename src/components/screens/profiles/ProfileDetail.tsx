@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { apis } from "../../../api/client";
+import { apis } from "@/shared/api";
 import { ProfileCard } from "../../ui/ProfileCard";
 import Button from "../../ui/Button";
 import common from "../../ui/common.module.css";
@@ -15,7 +15,9 @@ type UiProfile = {
   favoriteArtist?: string;
 };
 
-function mapProfileDataToUiProfile(profileData?: Record<string, unknown>): UiProfile {
+function mapProfileDataToUiProfile(
+  profileData?: Record<string, unknown>
+): UiProfile {
   const pd = profileData ?? {};
   return {
     name: (pd.displayName as string) ?? "",
@@ -54,14 +56,19 @@ export default function ProfileDetail() {
     setError(null);
 
     try {
-      const res = await apis.profiles().getUserProfile({ userId });
-      setProfile(mapProfileDataToUiProfile(res?.profileData as unknown as Record<string, unknown>));
+      const res = await apis.profiles.getUserProfile({ userId });
+      setProfile(
+        mapProfileDataToUiProfile(
+          res?.profileData as unknown as Record<string, unknown>
+        )
+      );
     } catch (e: any) {
       console.error("Failed to fetch user profile:", e);
       const status = e?.status ?? e?.response?.status;
 
       if (status === 404) setError("プロフィールが見つかりませんでした");
-      else if (status === 401) setError("認証が必要です（トークンが無効か期限切れの可能性）");
+      else if (status === 401)
+        setError("認証が必要です（トークンが無効か期限切れの可能性）");
       else setError("プロフィールの取得に失敗しました");
     } finally {
       setInitialLoading(false);
@@ -78,7 +85,7 @@ export default function ProfileDetail() {
     try {
       // POST /api/users/{userId}/friendship (operationId: receiveFriendship)
       // generated client requires { userId, receiveFriendshipRequest }
-      await apis.friendships().receiveFriendship({
+      await apis.friendships.receiveFriendship({
         userId,
         receiveFriendshipRequest: {
           meta: {
@@ -93,8 +100,10 @@ export default function ProfileDetail() {
       console.error("Failed to create friendship:", e);
       const status = e?.status ?? e?.response?.status;
       if (status === 409) setExchangeError("すでに交換済みです");
-      else if (status === 404) setExchangeError("ユーザーが見つかりませんでした");
-      else if (status === 401) setExchangeError("認証が必要です（トークンが無効か期限切れの可能性）");
+      else if (status === 404)
+        setExchangeError("ユーザーが見つかりませんでした");
+      else if (status === 401)
+        setExchangeError("認証が必要です（トークンが無効か期限切れの可能性）");
       else setExchangeError("交換に失敗しました");
     } finally {
       setExchanging(false);
@@ -140,8 +149,15 @@ export default function ProfileDetail() {
         <ProfileCard profile={profile ?? {}} />
 
         <div className={styles.footerActions}>
-          <Button onClick={handleExchange} disabled={exchanging || exchangeDone}>
-            {exchangeDone ? "交換済み" : exchanging ? "交換中..." : "この人と交換する"}
+          <Button
+            onClick={handleExchange}
+            disabled={exchanging || exchangeDone}
+          >
+            {exchangeDone
+              ? "交換済み"
+              : exchanging
+              ? "交換中..."
+              : "この人と交換する"}
           </Button>
 
           <Link to="/profiles" className={styles.linkReset}>

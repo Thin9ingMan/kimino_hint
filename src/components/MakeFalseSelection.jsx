@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { apis } from "../api/client";
+import { apis } from "@/shared/api";
 import { falseNames, falseHobbies, falseArtists } from "./Array";
 import "./MakeFalseSelection.css";
 

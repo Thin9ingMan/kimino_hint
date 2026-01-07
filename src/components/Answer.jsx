@@ -1,7 +1,7 @@
 // import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { apis } from "../api/client"; // APIクライアント
+import { apis } from "@/shared/api"; // APIクライアント
 import "./Answer.css";
 
 const Answer = () => {

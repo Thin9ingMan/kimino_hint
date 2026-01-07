@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./Profile.css";
 import { ProfileCard } from "./ui/ProfileCard";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { apis } from "../api/client";
+import { apis } from "@/shared/api";
 import Button from "./ui/Button";
 
 const MyProfile = () => {

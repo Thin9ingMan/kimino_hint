@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { apis } from "../api/client";
+import { apis } from "@/shared/api";
 import { faculty, grade } from "./Array";
 import styles from "./EditProfile.module.css";
 import { ProfileCard } from "./ui/ProfileCard";

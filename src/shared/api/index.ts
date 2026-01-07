@@ -1,4 +1,4 @@
-export { apis as api, createApiConfig, getApiBaseUrl } from "./client";
+export { apis, createApiConfig, getApiBaseUrl } from "./client";
 
 export { ApiError, toApiError, isUnauthorized } from "./errors";
 

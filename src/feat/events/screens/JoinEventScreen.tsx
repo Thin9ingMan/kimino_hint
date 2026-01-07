@@ -1,10 +1,18 @@
-import { Container } from "@/shared/ui/Container";
-import { LegacyPlaceholderBanner } from "@/shared/ui/LegacyPlaceholderBanner";
+import Room from '@/components/Room';
+import { LegacySandbox } from '@/shared/ui/LegacySandbox';
 
+/**
+ * New Spec route element.
+ *
+ * compat.md strict alignment: this screen is an alias wrapper that mounts the legacy
+ * screen implementation so legacy devs can keep editing `src/components/*`.
+ *
+ * NOTE: Wrapped in `.legacy` sandbox to allow scoping legacy CSS.
+ */
 export function JoinEventScreen() {
   return (
-    <Container title="ルームIDを入力してください">
-      <LegacyPlaceholderBanner legacyPath="/room" />
-    </Container>
+    <LegacySandbox>
+      <Room />
+    </LegacySandbox>
   );
 }

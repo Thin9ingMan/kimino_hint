@@ -85,12 +85,10 @@ src/
     styles/
       theme.ts
       global.css
-
   feat/
     home/
       screens/
         HomeScreen.tsx
-
     me/
       screens/
         MeHubScreen.tsx
@@ -100,7 +98,6 @@ src/
       components/
         MyProfileCard.tsx
       index.ts
-
     profiles/
       screens/
         ProfileListScreen.tsx
@@ -108,7 +105,6 @@ src/
       components/
         ProfileCard.tsx
       index.ts
-
     events/
       screens/
         EventsHubScreen.tsx
@@ -119,7 +115,6 @@ src/
       components/
         EventCard.tsx
       index.ts
-
     quiz/
       screens/
         QuizIntroScreen.tsx
@@ -137,7 +132,6 @@ src/
         QrScanScreen.tsx
       components/
         QrCard.tsx
-
     misc/
       screens/
         HelpScreen.tsx
@@ -146,13 +140,7 @@ src/
 
   shared/
     api/
-      http.ts
-      client.ts
-      errors.ts
-      me.ts
-      profiles.ts
-      events.ts
-      quiz.ts
+      index.ts
     auth/
       useGuestAuth.ts
       tokenStorage.ts
@@ -162,10 +150,8 @@ src/
     ui/
       AppShell.tsx
       Page.tsx
-    hooks/
-      useQueryParams.ts
     utils/
-      assert.ts
+      index.ts
 
   assets/
 ```
@@ -222,6 +208,6 @@ src/
 ## 6. rewrite の姿勢を明確にするために「やらないこと」
 
 - `oldsrc/` からコンポーネント/スタイル/ルータ定義をコピーしない
-- `components/` という万能ディレクトリを作らない
+- `components/` という万能ディレクトリを作らない(ただしレガシーエンジニア用のcompatレイヤーを作る場合は別)
 - `pages/` という “file-based routing っぽい置き場” を作らない
 - CSS を積み上げて UI を作らない（Mantine で作る）

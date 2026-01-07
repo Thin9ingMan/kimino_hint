@@ -2,7 +2,7 @@ import { Container, Title } from '@mantine/core';
 
 export function QrHubScreen() {
   return (
-    <Container title="QRコード">
+    <Container>
       <Title order={1}>QRコード</Title>
     </Container>
   );

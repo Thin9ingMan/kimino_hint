@@ -2,7 +2,7 @@ import { Container, Title } from '@mantine/core';
 
 export function QrScanScreen() {
   return (
-    <Container title="ルームに参加">
+    <Container>
       <Title order={1}>ルームに参加</Title>
     </Container>
   );

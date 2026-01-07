@@ -14,6 +14,7 @@
   "dependencies": {
     "@mantine/core": "^7.15.2",
     "@mantine/hooks": "^7.15.2",
+    "@yuki-js/quarkus-crud-js-fetch-client": "https://quarkus-crud.ouchiserver.aokiapp.com/clients/yuki-js-quarkus-crud-js-fetch-client-0.0.1.tgz",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.1"

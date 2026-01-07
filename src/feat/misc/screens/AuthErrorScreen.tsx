@@ -1,5 +1,9 @@
-import { Container } from '@mantine/core';
+import { Container, Title } from '@mantine/core';
 
 export function AuthErrorScreen() {
-  return <Container>Auth Error</Container>;
+  return (
+    <Container title="認証エラー">
+      <Title order={1}>認証エラー</Title>
+    </Container>
+  );
 }

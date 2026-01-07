@@ -1,5 +1,9 @@
-import { Container } from '@mantine/core';
+import { Container, Title } from '@mantine/core';
 
 export function HomeScreen() {
-  return <Container>Home</Container>;
+  return (
+    <Container title="キミのヒント">
+      <Title order={1}>キミのヒント</Title>
+    </Container>
+  );
 }

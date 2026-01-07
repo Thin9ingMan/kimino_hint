@@ -1,5 +1,9 @@
-import { Container } from '@mantine/core';
+import { Container, Title } from '@mantine/core';
 
 export function EventsHubScreen() {
-  return <Container>Events Hub</Container>;
+  return (
+    <Container title="イベント">
+      <Title order={1}>イベント</Title>
+    </Container>
+  );
 }

@@ -1,5 +1,9 @@
-import { Container } from '@mantine/core';
+import { Container, Title } from '@mantine/core';
 
 export function QuizQuestionScreen() {
-  return <Container>Quiz Question</Container>;
+  return (
+    <Container title="クイズ">
+      <Title order={1}>クイズ</Title>
+    </Container>
+  );
 }

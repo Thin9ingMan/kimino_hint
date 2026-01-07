@@ -1,5 +1,9 @@
-import { Container } from '@mantine/core';
+import { Container, Title } from '@mantine/core';
 
 export function ProfileListScreen() {
-  return <Container>Profile List</Container>;
+  return (
+    <Container title="プロフィール一覧">
+      <Title order={1}>プロフィール一覧</Title>
+    </Container>
+  );
 }

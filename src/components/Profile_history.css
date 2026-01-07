@@ -1,0 +1,14 @@
+.container {
+  display: flex;
+  flex-wrap: wrap; /* 折り返しを許可 */
+  gap: 20px;
+}
+
+/* 子要素（この場合はプロフィールカードのdiv） */
+.container > div {
+  flex-basis: 300px; /* アイテムの基本幅を300pxに */
+  flex-grow: 1;      /* 余ったスペースがあれば均等に伸びる */
+  border: 1px solid #ccc; /* 見た目の調整 */
+  padding: 1rem;
+  border-radius: 8px;
+}

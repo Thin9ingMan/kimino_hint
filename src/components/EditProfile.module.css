@@ -1,0 +1,37 @@
+@import './ui/common.module.css';
+
+.wrap {
+  composes: fullPageWrap from './ui/common.module.css';
+}
+
+.card {
+  composes: card from './ui/common.module.css';
+}
+
+.title {
+  composes: title from './ui/common.module.css';
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actions {
+  margin-top: 24px;
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+}
+.error {
+  composes: error from './ui/common.module.css';
+}
+
+.previewSection {
+  margin-top: 24px;
+}
+
+.previewTitle {
+  composes: subtitle from './ui/common.module.css';
+}

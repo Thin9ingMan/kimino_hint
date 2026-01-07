@@ -1,4 +1,4 @@
-import { Container as MantineContainer } from "@mantine/core";
+import { Container as MantineContainer, Title } from "@mantine/core";
 import React from "react";
 
 type Props = {
@@ -7,5 +7,10 @@ type Props = {
 };
 
 export function Container({ children, title }: Props) {
-  return <MantineContainer title={title}>{children}</MantineContainer>;
+  return (
+    <MantineContainer title={title}>
+      {title && <Title order={1}>{title}</Title>}
+      {children}
+    </MantineContainer>
+  );
 }

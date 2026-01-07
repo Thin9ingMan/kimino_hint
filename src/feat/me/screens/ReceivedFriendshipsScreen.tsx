@@ -1,10 +1,13 @@
-import { Container } from "@/shared/ui/Container";
-import { LegacyPlaceholderBanner } from "@/shared/ui/LegacyPlaceholderBanner";
+import ProfileHistory from '@/components/Profile_history';
+import { LegacySandbox } from '@/shared/ui/LegacySandbox';
 
+/**
+ * compat.md strict alignment: alias wrapper mounting legacy screen.
+ */
 export function ReceivedFriendshipsScreen() {
   return (
-    <Container title="受け取ったプロフィールカード">
-      <LegacyPlaceholderBanner legacyPath="/profile_history" />
-    </Container>
+    <LegacySandbox>
+      <ProfileHistory />
+    </LegacySandbox>
   );
 }

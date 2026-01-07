@@ -1,29 +1,29 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from "react-router-dom";
 
-import { legacyRedirectRoutes } from '@/compat/legacyRedirectRoutes';
+import { legacyRedirectRoutes } from "@/compat/legacyRedirectRoutes";
 
-import { HomeScreen } from '../feat/home/screens/HomeScreen';
-import { HelpScreen } from '../feat/misc/screens/HelpScreen';
-import { AuthErrorScreen } from '../feat/misc/screens/AuthErrorScreen';
-import { NotFoundScreen } from '../feat/misc/screens/NotFoundScreen';
-import { MeHubScreen } from '../feat/me/screens/MeHubScreen';
-import { MyProfileScreen } from '../feat/me/screens/MyProfileScreen';
-import { EditMyProfileScreen } from '../feat/me/screens/EditMyProfileScreen';
-import { ReceivedFriendshipsScreen } from '../feat/me/screens/ReceivedFriendshipsScreen';
-import { ProfileListScreen } from '../feat/profiles/screens/ProfileListScreen';
-import { ProfileDetailScreen } from '../feat/profiles/screens/ProfileDetailScreen';
-import { EventsHubScreen } from '../feat/events/screens/EventsHubScreen';
-import { CreateEventScreen } from '../feat/events/screens/CreateEventScreen';
-import { JoinEventScreen } from '../feat/events/screens/JoinEventScreen';
-import { EventLobbyScreen } from '../feat/events/screens/EventLobbyScreen';
-import { EventLiveScreen } from '../feat/events/screens/EventLiveScreen';
-import { QuizIntroScreen } from '../feat/quiz/screens/QuizIntroScreen';
-import { QuizQuestionScreen } from '../feat/quiz/screens/QuizQuestionScreen';
-import { QuizAnswerScreen } from '../feat/quiz/screens/QuizAnswerScreen';
-import { QuizResultScreen } from '../feat/quiz/screens/QuizResultScreen';
-import { QrHubScreen } from '../feat/qr/screens/QrHubScreen';
-import { QrProfileScreen } from '../feat/qr/screens/QrProfileScreen';
-import { QrScanScreen } from '../feat/qr/screens/QrScanScreen';
+import { HomeScreen } from "../feat/home/screens/HomeScreen";
+import { HelpScreen } from "../feat/misc/screens/HelpScreen";
+import { AuthErrorScreen } from "../feat/misc/screens/AuthErrorScreen";
+import { NotFoundScreen } from "../feat/misc/screens/NotFoundScreen";
+import { MeHubScreen } from "../feat/me/screens/MeHubScreen";
+import { MyProfileScreen } from "../feat/me/screens/MyProfileScreen";
+import { EditMyProfileScreen } from "../feat/me/screens/EditMyProfileScreen";
+import { ReceivedFriendshipsScreen } from "../feat/me/screens/ReceivedFriendshipsScreen";
+import { ProfileListScreen } from "../feat/profiles/screens/ProfileListScreen";
+import { ProfileDetailScreen } from "../feat/profiles/screens/ProfileDetailScreen";
+import { EventsHubScreen } from "../feat/events/screens/EventsHubScreen";
+import { CreateEventScreen } from "../feat/events/screens/CreateEventScreen";
+import { JoinEventScreen } from "../feat/events/screens/JoinEventScreen";
+import { EventLobbyScreen } from "../feat/events/screens/EventLobbyScreen";
+import { EventLiveScreen } from "../feat/events/screens/EventLiveScreen";
+import { QuizIntroScreen } from "../feat/quiz/screens/QuizIntroScreen";
+import { QuizQuestionScreen } from "../feat/quiz/screens/QuizQuestionScreen";
+import { QuizAnswerScreen } from "../feat/quiz/screens/QuizAnswerScreen";
+import { QuizResultScreen } from "../feat/quiz/screens/QuizResultScreen";
+import { QrHubScreen } from "../feat/qr/screens/QrHubScreen";
+import { QrProfileScreen } from "../feat/qr/screens/QrProfileScreen";
+import { QrScanScreen } from "../feat/qr/screens/QrScanScreen";
 
 export function AppRouter() {
   return (
@@ -40,7 +40,10 @@ export function AppRouter() {
       <Route path="/me" element={<MeHubScreen />} />
       <Route path="/me/profile" element={<MyProfileScreen />} />
       <Route path="/me/profile/edit" element={<EditMyProfileScreen />} />
-      <Route path="/me/friendships/received" element={<ReceivedFriendshipsScreen />} />
+      <Route
+        path="/me/friendships/received"
+        element={<ReceivedFriendshipsScreen />}
+      />
 
       {/* Profiles */}
       <Route path="/profiles" element={<ProfileListScreen />} />
@@ -55,8 +58,14 @@ export function AppRouter() {
 
       {/* Quiz (under events) */}
       <Route path="/events/:eventId/quiz" element={<QuizIntroScreen />} />
-      <Route path="/events/:eventId/quiz/:questionNo" element={<QuizQuestionScreen />} />
-      <Route path="/events/:eventId/quiz/:questionNo/answer" element={<QuizAnswerScreen />} />
+      <Route
+        path="/events/:eventId/quiz/:questionNo"
+        element={<QuizQuestionScreen />}
+      />
+      <Route
+        path="/events/:eventId/quiz/:questionNo/answer"
+        element={<QuizAnswerScreen />}
+      />
       <Route path="/events/:eventId/result" element={<QuizResultScreen />} />
 
       {/* QR */}

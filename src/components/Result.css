@@ -1,110 +1,112 @@
-/* KPI全体を横並びに変更 */
-.res-kpi {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 32px;
-  margin-top: 10px;
-  margin-bottom: 16px;
-  flex-wrap: wrap; /* 画面幅狭いとき縦並び */
-}
-/* ===== ご褒美バブル（吹き出し） ===== */
-.res-bubble {
-  margin: 8px auto 18px;
-  max-width: 600px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  font-weight: 700;
-  text-align: center;
-  color: #0f172a;
+.legacy {
+  /* KPI全体を横並びに変更 */
+  .res-kpi {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+    margin-top: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap; /* 画面幅狭いとき縦並び */
+  }
 
-  /* 柔らかいスカイブルー半透明 */
-  background: rgba(186, 230, 253, 0.38);
-  border: 1px solid rgba(186, 230, 253, 0.65);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 10px 20px rgba(14, 165, 233, 0.10);
+  /* ===== ご褒美バブル（吹き出し） ===== */
+  .res-bubble {
+    margin: 8px auto 18px;
+    max-width: 600px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-weight: 700;
+    text-align: center;
+    color: #0f172a;
 
-  position: relative;
-}
+    /* 柔らかいスカイブルー半透明 */
+    background: rgba(186, 230, 253, 0.38);
+    border: 1px solid rgba(186, 230, 253, 0.65);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 10px 20px rgba(14, 165, 233, 0.1);
 
-/* しっぽ（三角部分） */
-.res-bubble::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -7px;
-  width: 14px;
-  height: 14px;
-  transform: translateX(-50%) rotate(45deg);
-  background: rgba(186, 230, 253, 0.38);
-  border: 1px solid rgba(186, 230, 253, 0.65);
-  border-top: none;
-  border-left: none;
-  border-radius: 3px;
-}
+    position: relative;
 
-/* 左側のカード（問題数と正解数） */
-.res-stats {
-  display: grid;
-  gap: 10px;
-  min-width: 180px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(203, 213, 225, 0.6);
-  border-radius: 16px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.04);
-}
+    /* しっぽ（三角部分） */
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -7px;
+      width: 14px;
+      height: 14px;
+      transform: translateX(-50%) rotate(45deg);
+      background: rgba(186, 230, 253, 0.38);
+      border: 1px solid rgba(186, 230, 253, 0.65);
+      border-top: none;
+      border-left: none;
+      border-radius: 3px;
+    }
+  }
 
-.res-stat {
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px;
-}
-.res-stat-label {
-  font-weight: 600;
-  color: #0369a1;
-}
-.res-stat-value {
-  font-weight: 700;
-  color: #0f172a;
-}
+  /* 左側のカード（問題数と正解数） */
+  .res-stats {
+    display: grid;
+    gap: 10px;
+    min-width: 180px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(203, 213, 225, 0.6);
+    border-radius: 16px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+  }
 
-/* 右側：円グラフ中央に正解率＋ラベル */
-.res-progress {
-  --p: 0%;
-  position: relative;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background:
-    conic-gradient(#8ed9fb var(--p), #e6f7ff 0),
-    radial-gradient(closest-side, #ffffff 80%, transparent 81% 100%),
-    linear-gradient(135deg, #b7f3e5, #99e2ff);
-  display: grid;
-  place-items: center;
-  box-shadow: 0 8px 18px rgba(14, 165, 233, 0.18);
-}
+  .res-stat {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+  }
+  .res-stat-label {
+    font-weight: 600;
+    color: #0369a1;
+  }
+  .res-stat-value {
+    font-weight: 700;
+    color: #0f172a;
+  }
 
-.res-progress-inner {
-  display: flex;
-  flex-direction: column; /* ← 上下排列 */
-  align-items: center;
-  gap: 4px; /* 数字和“正解率”间距 */
-}
+  /* 右側：円グラフ中央に正解率＋ラベル */
+  .res-progress {
+    --p: 0%;
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: conic-gradient(#8ed9fb var(--p), #e6f7ff 0),
+      radial-gradient(closest-side, #ffffff 80%, transparent 81% 100%),
+      linear-gradient(135deg, #b7f3e5, #99e2ff);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 8px 18px rgba(14, 165, 233, 0.18);
+  }
 
-.res-caption {
-  font-size: 13px;
-  color: #475569;
-  margin: 0;
-  letter-spacing: .03em;
-  order: -1; /* ← 让它显示在数字上面 */
-}
+  .res-progress-inner {
+    display: flex;
+    flex-direction: column; /* ← 上下排列 */
+    align-items: center;
+    gap: 4px; /* 数字和“正解率”间距 */
+  }
 
-.res-percent {
-  font-size: 34px;
-  font-weight: 800;
-  color: #0b1220;
-  line-height: 1.1;
-  margin: 0;
+  .res-caption {
+    font-size: 13px;
+    color: #475569;
+    margin: 0;
+    letter-spacing: 0.03em;
+    order: -1; /* ← 让它显示在数字上面 */
+  }
+
+  .res-percent {
+    font-size: 34px;
+    font-weight: 800;
+    color: #0b1220;
+    line-height: 1.1;
+    margin: 0;
+  }
 }

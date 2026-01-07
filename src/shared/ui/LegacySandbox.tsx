@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+import "@/components/legacyStartPage.css";
 
 type Props = {
   children: React.ReactNode;
@@ -13,6 +14,6 @@ type Props = {
  * Wrap legacy screens with a `.legacy` root so legacy CSS can be sandboxed by scoping selectors.
  */
 export function LegacySandbox(props: Props) {
-  const cls = ['legacy', props.className].filter(Boolean).join(' ');
+  const cls = ["legacy", props.className].filter(Boolean).join(" ");
   return <div className={cls}>{props.children}</div>;
 }

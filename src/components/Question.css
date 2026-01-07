@@ -1,8 +1,10 @@
-.score {
-  position: absolute;
-  top: 12px;
-  right: 20px;
-  font-size: 40px;
-  font-weight: 600;
-  color: #0f172a;
+.legacy {
+  .score {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    font-size: 40px;
+    font-weight: 600;
+    color: #0f172a;
+  }
 }

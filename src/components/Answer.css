@@ -1,72 +1,71 @@
-.answer-container {
-  position: relative;
-  z-index: 1;
-  background-color: white;
-  display: flex;
-  flex-direction: column; /* 要素を縦に並べる */
-  align-items: center; /* 水平方向の中央揃え */
-  justify-content: center; /* 垂直方向の中央揃え */
-  height: 100vh; /* 画面全体の高さ */
-  width: 100vw; /* ← 横幅を画面いっぱいに広げる！ */
-  text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  color: #333;
-}
+.legacy {
+  .answer-container {
+    position: relative;
+    z-index: 1;
+    background-color: white;
+    display: flex;
+    flex-direction: column; /* 要素を縦に並べる */
+    align-items: center; /* 水平方向の中央揃え */
+    justify-content: center; /* 垂直方向の中央揃え */
+    height: 100vh; /* 画面全体の高さ */
+    width: 100vw; /* ← 横幅を画面いっぱいに広げる！ */
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+    color: #333;
 
-/* 「正解/不正解」のメイン見出し */
-.answer-container h1 {
-  font-size: 2.5rem; /* 文字を大きく */
-  margin-bottom: 24px;
-}
+    /* 「正解/不正解」のメイン見出し */
+    h1 {
+      font-size: 2.5rem; /* 文字を大きく */
+      margin-bottom: 24px;
+    }
 
-/* 「正解は：」「あなたの回答は」のテキストスタイル */
-.answer-container div {
-  font-size: 1.2rem;
-  margin-bottom: 16px; /* 各行の間隔 */
-  background-color: transparent; 
-  padding: 10px 20px;
-  border-radius: 8px; /* 角を丸くする */
-  min-width: 300px; /* 最小幅を指定して揃える */
-}
+    /* 「正解は：」「あなたの回答は」のテキストスタイル */
+    div {
+      font-size: 1.2rem;
+      margin-bottom: 16px; /* 各行の間隔 */
+      background-color: transparent;
+      padding: 10px 20px;
+      border-radius: 8px; /* 角を丸くする */
+      min-width: 300px; /* 最小幅を指定して揃える */
+    }
 
-/* 不正解時 */
-.answer-container.incorrect {
-  background-color: #ffe6e6 !important; /* 薄い赤背景 */
-  color: #c62828 !important; /* 濃い赤文字 */
-}
+    /* 「次の問題へ」ボタンのスタイル */
+    button {
+      background-color: #007bff;
+      color: rgb(39, 39, 39);
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px; /* 上の要素との間隔 */
+      transition: background-color 0.3s ease; /* ホバー時のアニメーション */
+      text-decoration: none; /* Linkタグによる下線を消す */
 
-/* 正解時 */
-.answer-container.correct {
-  background-color: #e6f0ff !important; /* 薄い青背景 */
-  color: #1565c0 !important; /* 濃い青文字 */
-}
+      &:hover {
+        background-color: #0056b3;
+      }
+    }
 
-/* 「次の問題へ」ボタンのスタイル */
-.answer-container button {
-  background-color: #007bff;
-  color: rgb(39, 39, 39);
-  border: none;
-  padding: 12px 24px;
-  font-size: 1rem;
-  font-weight: bold;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 20px; /* 上の要素との間隔 */
-  transition: background-color 0.3s ease; /* ホバー時のアニメーション */
-  text-decoration: none; /* Linkタグによる下線を消す */
-}
+    &.incorrect {
+      background-color: #ffe6e6 !important; /* 薄い赤背景 */
+      color: #c62828 !important; /* 濃い赤文字 */
+    }
 
-/* ボタンにカーソルを合わせた時のスタイル */
-.answer-container button:hover {
-  background-color: #0056b3;
-}
+    &.correct {
+      background-color: #e6f0ff !important; /* 薄い青背景 */
+      color: #1565c0 !important; /* 濃い青文字 */
+    }
 
-.score {
-  position: absolute;
-  top: 12px;
-  right: 20px;
-  font-size: 40px;
-  font-weight: 600;
-  color: #0f172a;
+    .score {
+      position: absolute;
+      top: 12px;
+      right: 20px;
+      font-size: 40px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+  }
 }

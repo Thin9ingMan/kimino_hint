@@ -1,9 +1,5 @@
-import { Container, Title } from '@mantine/core';
+import { Container } from "@/shared/ui/Container";
 
 export function ReceivedFriendshipsScreen() {
-  return (
-    <Container>
-      <Title order={1}>受け取ったプロフィールカード</Title>
-    </Container>
-  );
+  return <Container>Received Friendships</Container>;
 }

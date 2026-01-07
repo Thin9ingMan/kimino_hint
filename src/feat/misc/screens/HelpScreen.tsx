@@ -1,9 +1,5 @@
-import { Container, Title } from '@mantine/core';
+import { Container } from "@/shared/ui/Container";
 
 export function HelpScreen() {
-  return (
-    <Container>
-      <Title order={1}>使い方</Title>
-    </Container>
-  );
+  return <Container>Help</Container>;
 }

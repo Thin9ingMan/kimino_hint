@@ -1,9 +1,5 @@
-import { Container, Title } from '@mantine/core';
+import { Container } from "@/shared/ui/Container";
 
 export function QrHubScreen() {
-  return (
-    <Container>
-      <Title order={1}>QRコード</Title>
-    </Container>
-  );
+  return <Container>QR Hub</Container>;
 }

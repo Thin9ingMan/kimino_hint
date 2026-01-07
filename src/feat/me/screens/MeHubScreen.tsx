@@ -1,9 +1,5 @@
-import { Container, Title } from '@mantine/core';
+import { Container } from "@/shared/ui/Container";
 
 export function MeHubScreen() {
-  return (
-    <Container>
-      <Title order={1}>マイページ</Title>
-    </Container>
-  );
+  return <Container>Me Hub</Container>;
 }

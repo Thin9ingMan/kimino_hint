@@ -1,9 +1,5 @@
-import { Container, Title } from '@mantine/core';
+import { Container } from "@/shared/ui/Container";
 
 export function QrProfileScreen() {
-  return (
-    <Container>
-      <Title order={1}>プロフィール共有QR</Title>
-    </Container>
-  );
+  return <Container>QR Profile</Container>;
 }

@@ -1,9 +1,5 @@
-import { Container, Title } from '@mantine/core';
+import { Container } from "@/shared/ui/Container";
 
 export function QuizResultScreen() {
-  return (
-    <Container>
-      <Title order={1}>結果</Title>
-    </Container>
-  );
+  return <Container>Quiz Result</Container>;
 }

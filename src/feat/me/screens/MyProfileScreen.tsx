@@ -1,9 +1,5 @@
-import { Container, Title } from '@mantine/core';
+import { Container } from "@/shared/ui/Container";
 
 export function MyProfileScreen() {
-  return (
-    <Container>
-      <Title order={1}>プロフィール</Title>
-    </Container>
-  );
+  return <Container>My Profile</Container>;
 }

@@ -1,9 +1,5 @@
-import { Container, Title } from '@mantine/core';
+import { Container } from "@/shared/ui/Container";
 
 export function CreateEventScreen() {
-  return (
-    <Container>
-      <Title order={1}>イベント作成</Title>
-    </Container>
-  );
+  return <Container>Create Event</Container>;
 }

@@ -1,9 +1,5 @@
-import { Container, Title } from '@mantine/core';
+import { Container } from "@/shared/ui/Container";
 
 export function NotFoundScreen() {
-  return (
-    <Container>
-      <Title order={1}>404 Not Found</Title>
-    </Container>
-  );
+  return <Container>404 - Not Found</Container>;
 }

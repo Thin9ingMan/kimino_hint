@@ -1,5 +1,9 @@
 import { Container } from "@/shared/ui/Container";
 
 export function QuizQuestionScreen() {
-  return <Container>Quiz Question</Container>;
+  return (
+    <Container title="クイズ">
+      <h1>クイズ</h1>
+    </Container>
+  );
 }

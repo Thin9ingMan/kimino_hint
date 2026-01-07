@@ -1,10 +1,10 @@
-import styles from "./LabeledField.module.css";
+import { Select, TextInput } from '@mantine/core';
 
 export default function LabeledField({
   id,
   name,
   label,
-  type = "text",
+  type = 'text',
   value,
   onChange,
   onValueChange,
@@ -13,52 +13,55 @@ export default function LabeledField({
   autoFocus,
   options = [],
 }) {
-  const handleChange = (e) => {
-    if (onChange) onChange(e);
-    if (onValueChange) onValueChange(e.target.value);
+  const handleChange = (nextValue) => {
+    // Keep legacy behavior: support both onChange(event) and onValueChange(value).
+    // For Mantine we don't get the DOM event in all cases; we emulate the minimum surface.
+    if (onChange) {
+      onChange({
+        target: { value: nextValue, name, id },
+        currentTarget: { value: nextValue, name, id },
+      });
+    }
+    if (onValueChange) onValueChange(nextValue);
   };
 
-  const renderControl = () => {
-    if (type === "select") {
-      return (
-        <select
-          id={id}
-          name={name}
-          value={value}
-          onChange={handleChange}
-          className={styles.control}
-        >
-          <option value="">選択してください</option>
-          {options.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-      );
-    }
-
+  if (type === 'select') {
     return (
-      <input
-        type={type}
+      <Select
         id={id}
         name={name}
-        value={value}
-        onChange={handleChange}
-        placeholder={placeholder}
+        label={label}
+        placeholder={placeholder ?? '選択してください'}
+        value={value ?? ''}
+        onChange={(v) => handleChange(v ?? '')}
+        data={options.map((opt) => ({ value: opt, label: opt }))}
         required={required}
+        withAsterisk={required}
         autoFocus={autoFocus}
-        className={styles.control}
+        radius="md"
+        styles={{
+          label: { fontWeight: 600, color: '#065f46' },
+        }}
       />
     );
-  };
+  }
 
   return (
-    <div className={styles.group}>
-      <label htmlFor={id} className={styles.label}>
-        {label}
-      </label>
-      {renderControl()}
-    </div>
+    <TextInput
+      id={id}
+      name={name}
+      label={label}
+      type={type}
+      value={value ?? ''}
+      onChange={(e) => handleChange(e.currentTarget.value)}
+      placeholder={placeholder}
+      required={required}
+      withAsterisk={required}
+      autoFocus={autoFocus}
+      radius="md"
+      styles={{
+        label: { fontWeight: 600, color: '#065f46' },
+      }}
+    />
   );
 }

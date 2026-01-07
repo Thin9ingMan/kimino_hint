@@ -1,6 +1,11 @@
-import styles from "./Button.module.css";
+import { Button as MantineButton } from '@mantine/core';
 
 /**
+ * Legacy-compatible Button wrapper.
+ *
+ * API is intentionally kept close to the old implementation so legacy engineers
+ * can keep using it without learning Mantine immediately.
+ *
  * @param {{
  *   type?: "button" | "submit" | "reset";
  *   variant?: "primary" | "ghost";
@@ -10,19 +15,30 @@ import styles from "./Button.module.css";
  * }} props
  */
 export default function Button({
-  type = "button",
-  variant = "primary",
+  type = 'button',
+  variant = 'primary',
   disabled = false,
   onClick,
   children,
 }) {
-  const className =
-    variant === "ghost"
-      ? `${styles.btn} ${styles.ghost}`
-      : `${styles.btn} ${styles.primary}`;
+  const isGhost = variant === 'ghost';
+
   return (
-    <button type={type} disabled={disabled} onClick={onClick} className={className}>
+    <MantineButton
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      radius="md"
+      size="md"
+      variant={isGhost ? 'outline' : 'gradient'}
+      gradient={isGhost ? undefined : { from: 'teal', to: 'cyan', deg: 135 }}
+      styles={{
+        root: {
+          fontWeight: 700,
+        },
+      }}
+    >
       {children}
-    </button>
+    </MantineButton>
   );
 }

@@ -1,13 +1,5 @@
-import ProfileDetail from '@/components/screens/profiles/ProfileDetail';
-import { LegacySandbox } from '@/shared/ui/LegacySandbox';
+import { Container } from "@/shared/ui/Container";
 
-/**
- * compat.md strict alignment: alias wrapper mounting legacy screen.
- */
 export function ProfileDetailScreen() {
-  return (
-    <LegacySandbox>
-      <ProfileDetail />
-    </LegacySandbox>
-  );
+  return <Container title="プロフィール詳細" />;
 }

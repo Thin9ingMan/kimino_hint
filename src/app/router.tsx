@@ -9,7 +9,6 @@ import { NotFoundScreen } from "../feat/misc/screens/NotFoundScreen";
 import { MeHubScreen } from "../feat/me/screens/MeHubScreen";
 import { MyProfileScreen } from "../feat/me/screens/MyProfileScreen";
 import { EditMyProfileScreen } from "../feat/me/screens/EditMyProfileScreen";
-import { ReceivedFriendshipsScreen } from "../feat/me/screens/ReceivedFriendshipsScreen";
 import { ProfileListScreen } from "../feat/profiles/screens/ProfileListScreen";
 import { ProfileDetailScreen } from "../feat/profiles/screens/ProfileDetailScreen";
 import { EventsHubScreen } from "../feat/events/screens/EventsHubScreen";
@@ -40,10 +39,6 @@ export function AppRouter() {
       <Route path="/me" element={<MeHubScreen />} />
       <Route path="/me/profile" element={<MyProfileScreen />} />
       <Route path="/me/profile/edit" element={<EditMyProfileScreen />} />
-      <Route
-        path="/me/friendships/received"
-        element={<ReceivedFriendshipsScreen />}
-      />
 
       {/* Profiles */}
       <Route path="/profiles" element={<ProfileListScreen />} />

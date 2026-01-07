@@ -1,13 +1,5 @@
-import ListProfile from '@/components/screens/profiles/ListProfile';
-import { LegacySandbox } from '@/shared/ui/LegacySandbox';
+import { Container } from "@/shared/ui/Container";
 
-/**
- * compat.md strict alignment: alias wrapper mounting legacy screen.
- */
 export function ProfileListScreen() {
-  return (
-    <LegacySandbox>
-      <ListProfile />
-    </LegacySandbox>
-  );
+  return <Container title="受け取ったプロフィール一覧" />;
 }

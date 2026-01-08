@@ -23,7 +23,7 @@ const MakeFalseSelection = () => {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const response = await apis.profiles().getMyProfile();
+      const response = await apis.profiles.getMyProfile();
       const profileData = response.profileData || {};
 
       setAnswers({

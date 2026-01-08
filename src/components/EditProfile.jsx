@@ -82,7 +82,7 @@ const EditProfile = () => {
     setInitialLoading(true);
     setError(null);
     try {
-      const response = await apis.profiles().getMyProfile();
+      const response = await apis.profiles.getMyProfile();
       const profileData = response.profileData || {};
       
       setProfile({
@@ -122,7 +122,7 @@ const EditProfile = () => {
 
     setSaving(true);
     try {
-      await apis.profiles().updateMyProfile({
+      await apis.profiles.updateMyProfile({
         userProfileUpdateRequest: {
           profileData: {
             displayName: profile.name,

@@ -31,7 +31,7 @@ const Question = () => {
     setInitialLoading(true);
     setError(null);
     try {
-      const response = await apis.profiles().getMyProfile();
+      const response = await apis.profiles.getMyProfile();
       const profileData = response.profileData || {};
 
       setProfile({

@@ -11,7 +11,7 @@ const Index = () => {
   useEffect(() => {
     const checkProfileExists = async () => {
       try {
-        await apis.profiles().getMyProfile();
+        await apis.profiles.getMyProfile();
         setCanStartQuiz(true); // プロフィールあり
       } catch (err) {
         if (err?.response?.status === 404) {

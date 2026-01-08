@@ -30,7 +30,7 @@ const Answer = () => {
   useEffect(() => {
     const fetchAdditionalInfo = async () => {
       try {
-        const response = await apis.profiles().getMyProfile();
+        const response = await apis.profiles.getMyProfile();
         const profileData = response.profileData || {}; // プロフィールデータを取得
         setAdditionalInformation(profileData.facultyDetail || ""); // APIから取得した学部情報を表示
       } catch (err) {

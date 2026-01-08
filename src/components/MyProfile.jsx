@@ -43,7 +43,7 @@ const MyProfile = () => {
       const myId = me?.id;
 
       // プロフィール本文は /api/me/profile
-      const response = await apis.profiles().getMyProfile();
+      const response = await apis.profiles.getMyProfile();
       const profileData = response.profileData || {};
 
       setProfile({

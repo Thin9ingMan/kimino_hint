@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import { legacyRedirectRoutes } from "@/compat/legacyRedirectRoutes";
+import { legacyRedirectRoutes } from "../src/App";
 
 import { HomeScreen } from "./feat/home/screens/HomeScreen";
 import { HelpScreen } from "./feat/misc/screens/HelpScreen";

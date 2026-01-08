@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import { legacyRedirectRoutes } from "@/compat/legacyRedirectRoutes";
@@ -26,53 +27,55 @@ import { QrScanScreen } from "../feat/qr/screens/QrScanScreen";
 
 export function AppRouter() {
   return (
-    <Routes>
-      {/* Root redirect to home */}
-      <Route path="/" element={<Navigate to="/home" replace />} />
+    <Suspense fallback={<div>Loading...</div>}>
+      <Routes>
+        {/* Root redirect to home */}
+        <Route path="/" element={<Navigate to="/home" replace />} />
 
-      {/* Top/Common */}
-      <Route path="/home" element={<HomeScreen />} />
-      <Route path="/help" element={<HelpScreen />} />
-      <Route path="/error/auth" element={<AuthErrorScreen />} />
+        {/* Top/Common */}
+        <Route path="/home" element={<HomeScreen />} />
+        <Route path="/help" element={<HelpScreen />} />
+        <Route path="/error/auth" element={<AuthErrorScreen />} />
 
-      {/* Me */}
-      <Route path="/me" element={<MeHubScreen />} />
-      <Route path="/me/profile" element={<MyProfileScreen />} />
-      <Route path="/me/profile/edit" element={<EditMyProfileScreen />} />
+        {/* Me */}
+        <Route path="/me" element={<MeHubScreen />} />
+        <Route path="/me/profile" element={<MyProfileScreen />} />
+        <Route path="/me/profile/edit" element={<EditMyProfileScreen />} />
 
-      {/* Profiles */}
-      <Route path="/profiles" element={<ProfileListScreen />} />
-      <Route path="/profiles/:userId" element={<ProfileDetailScreen />} />
+        {/* Profiles */}
+        <Route path="/profiles" element={<ProfileListScreen />} />
+        <Route path="/profiles/:userId" element={<ProfileDetailScreen />} />
 
-      {/* Events */}
-      <Route path="/events" element={<EventsHubScreen />} />
-      <Route path="/events/new" element={<CreateEventScreen />} />
-      <Route path="/events/join" element={<JoinEventScreen />} />
-      <Route path="/events/:eventId" element={<EventLobbyScreen />} />
-      <Route path="/events/:eventId/live" element={<EventLiveScreen />} />
+        {/* Events */}
+        <Route path="/events" element={<EventsHubScreen />} />
+        <Route path="/events/new" element={<CreateEventScreen />} />
+        <Route path="/events/join" element={<JoinEventScreen />} />
+        <Route path="/events/:eventId" element={<EventLobbyScreen />} />
+        <Route path="/events/:eventId/live" element={<EventLiveScreen />} />
 
-      {/* Quiz (under events) */}
-      <Route path="/events/:eventId/quiz" element={<QuizIntroScreen />} />
-      <Route
-        path="/events/:eventId/quiz/:questionNo"
-        element={<QuizQuestionScreen />}
-      />
-      <Route
-        path="/events/:eventId/quiz/:questionNo/answer"
-        element={<QuizAnswerScreen />}
-      />
-      <Route path="/events/:eventId/result" element={<QuizResultScreen />} />
+        {/* Quiz (under events) */}
+        <Route path="/events/:eventId/quiz" element={<QuizIntroScreen />} />
+        <Route
+          path="/events/:eventId/quiz/:questionNo"
+          element={<QuizQuestionScreen />}
+        />
+        <Route
+          path="/events/:eventId/quiz/:questionNo/answer"
+          element={<QuizAnswerScreen />}
+        />
+        <Route path="/events/:eventId/result" element={<QuizResultScreen />} />
 
-      {/* QR */}
-      <Route path="/qr" element={<QrHubScreen />} />
-      <Route path="/qr/profile" element={<QrProfileScreen />} />
-      <Route path="/qr/scan" element={<QrScanScreen />} />
+        {/* QR */}
+        <Route path="/qr" element={<QrHubScreen />} />
+        <Route path="/qr/profile" element={<QrProfileScreen />} />
+        <Route path="/qr/scan" element={<QrScanScreen />} />
 
-      {/* Legacy URL compat (Phase 0): keep old URLs as thin redirects */}
-      {legacyRedirectRoutes}
+        {/* Legacy URL compat (Phase 0): keep old URLs as thin redirects */}
+        {legacyRedirectRoutes}
 
-      {/* 404 */}
-      <Route path="*" element={<NotFoundScreen />} />
-    </Routes>
+        {/* 404 */}
+        <Route path="*" element={<NotFoundScreen />} />
+      </Routes>
+    </Suspense>
   );
 }

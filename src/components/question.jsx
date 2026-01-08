@@ -26,6 +26,7 @@ const Question = () => {
     }
   }, [incomingFalseAns]);
   const [profile, setProfile] = useState(defaultProfile);
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   const fetchProfile = useCallback(async () => {
     setInitialLoading(true);
@@ -171,6 +172,10 @@ const Question = () => {
   if (count >= questions.length) {
     // 結果ページに遷移するまでの間、何も表示しないかローディング画面などを表示
     return <div>結果を計算中...</div>;
+  }
+
+  if (initialLoading) {
+    return <div>読み込み中...</div>;
   }
 
   // 現在の問題の選択肢

@@ -7,7 +7,6 @@
   align-items: center; /* 水平方向の中央揃え */
   justify-content: center; /* 垂直方向の中央揃え */
   height: 100vh; /* 画面全体の高さ */
-  width: 100vw; /* ← 横幅を画面いっぱいに広げる！ */
   text-align: center;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
@@ -24,7 +23,7 @@
 .answer-container div {
   font-size: 1.2rem;
   margin-bottom: 16px; /* 各行の間隔 */
-  background-color: transparent; 
+  background-color: transparent;
   padding: 10px 20px;
   border-radius: 8px; /* 角を丸くする */
   min-width: 300px; /* 最小幅を指定して揃える */

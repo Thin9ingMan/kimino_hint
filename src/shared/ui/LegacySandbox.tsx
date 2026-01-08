@@ -1,5 +1,6 @@
 import React from "react";
 import "@/components/legacyStartPage.css";
+import { Container } from "@mantine/core";
 
 type Props = {
   children: React.ReactNode;
@@ -15,5 +16,6 @@ type Props = {
  */
 export function LegacySandbox(props: Props) {
   const cls = ["legacy", props.className].filter(Boolean).join(" ");
-  return <div className={cls}>{props.children}</div>;
+  const inner = <div className={cls}>{props.children}</div>;
+  return <Container>{inner}</Container>;
 }

@@ -1,12 +1,12 @@
-import React from 'react';
-import { MantineProvider } from '@mantine/core';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from "react";
+import { MantineProvider } from "@mantine/core";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { theme } from './styles/theme';
-import { AuthProvider } from '@/shared/auth/AuthProvider';
+import { theme } from "./styles/theme";
+import { AuthProvider } from "@/shared/auth/AuthProvider";
 
-import '@mantine/core/styles.css';
-import './styles/global.css';
+import "@mantine/core/styles.css";
+import "./styles/global.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -23,9 +23,39 @@ export function ProfileDetailContent() {
     apis.profiles.getUserProfile({ userId })
   );
 
+  let alreadyExchanged = true;
+  try {
+    useSuspenseQuery(["friendships", "getFriendshipByOtherUser", userId], () =>
+      apis.friendships.getFriendshipByOtherUser({
+        otherUserId: userId,
+      })
+    );
+  } catch (eOrP) {
+    if (eOrP instanceof Promise) {
+      throw eOrP;
+    }
+    // 404 の場合は交換されていないので無視
+    const s = eOrP?.status ?? eOrP?.response?.status;
+    if (s !== 404) {
+      throw eOrP;
+    } else {
+      alreadyExchanged = false;
+    }
+  }
+  if (exchangeStatus === "done") {
+    alreadyExchanged = true;
+  }
+
   const profile = mapProfileDataToUiProfile(profileData?.profileData as any);
 
+  const isExchanged = exchangeStatus === "done" || alreadyExchanged;
   const shareBack = async () => {
+    if (alreadyExchanged) {
+      setExchangeStatus("done");
+      setExchangeMessage("すでに交換済みです");
+      return;
+    }
+
     setExchangeStatus("saving");
     setExchangeMessage(null);
 
@@ -78,9 +108,9 @@ export function ProfileDetailContent() {
           onClick={shareBack}
           fullWidth
           loading={exchangeStatus === "saving"}
-          disabled={exchangeStatus === "done"}
+          disabled={isExchanged}
         >
-          {exchangeStatus === "done" ? "交換済み" : "プロフィールを交換する"}
+          {isExchanged ? "交換済み" : "プロフィールを交換する"}
         </Button>
 
         <Button component={Link} to="/profiles" variant="default" fullWidth>

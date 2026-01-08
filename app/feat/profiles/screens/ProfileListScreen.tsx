@@ -94,7 +94,7 @@ function ProfileListContent() {
           <Text size="sm">
             QRコードを読み取るとプロフィールが交換され、ここに表示されます。
           </Text>
-          <Button component={Link} to="/qr" variant="light">
+          <Button component={Link} to="/me/profile" variant="light">
             QRコードへ
           </Button>
         </Stack>

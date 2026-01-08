@@ -26,6 +26,8 @@ tags:
   description: Profile card exchanges between users
 - name: Events
   description: "Event management, attendees, and live updates"
+- name: LLM
+  description: LLM-powered features and endpoints
 paths:
   /api/auth/guest:
     post:
@@ -229,13 +231,60 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /api/friendships/{friendshipId}:
+    get:
+      tags:
+      - Friendships
+      summary: Get friendship by ID
+      description: Retrieve a specific friendship record by its unique identifier.
+      operationId: getFriendship
+      parameters:
+      - name: friendshipId
+        in: path
+        description: Identifier of the friendship to fetch.
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Friendship"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Access denied. User is not part of this friendship.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: The friendship was not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/users/{userId}/friendship:
     post:
       tags:
       - Friendships
       summary: Share my profile card with another user
-      description: Record that the authenticated user has shared their profile card
-        with the specified user.
+      description: "Record that the authenticated user has shared their profile card\
+        \ with the specified user. This operation creates a mutual (bidirectional)\
+        \ friendship, establishing both A→B and B→A relationships automatically."
       operationId: receiveFriendship
       parameters:
       - name: userId
@@ -279,7 +328,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "409":
-          description: Friendship already exists.
+          description: Friendship already exists (checked in both directions).
           content:
             application/json:
               schema:
@@ -712,6 +761,50 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /api/llm/fake-names:
+    post:
+      tags:
+      - LLM
+      summary: Generate fake names
+      description: Generate fake names similar to the input name using LLM.
+      operationId: generateFakeNames
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FakeNamesRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FakeNamesResponse"
+        "400":
+          description: Invalid request parameters.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Unexpected error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api:
     get:
       parameters:
@@ -852,7 +945,9 @@ components:
             source: mobile-app
           nullable: true
     Friendship:
-      description: Record of a one-way profile card exchange between two users.
+      description: "Record of a profile card exchange between two users. When a friendship\
+        \ is created, both directions (sender→recipient and recipient→sender) are\
+        \ established automatically, creating a mutual relationship."
       required:
       - createdAt
       - id
@@ -878,9 +973,15 @@ components:
         createdAt:
           $ref: "#/components/schemas/LocalDateTime"
         updatedAt:
-          $ref: "#/components/schemas/LocalDateTime"
+          description: Timestamp when the friendship was last updated.
+          oneOf:
+          - $ref: "#/components/schemas/LocalDateTime"
+          - {}
         senderProfile:
-          $ref: "#/components/schemas/UserProfile"
+          description: Optional snapshot of the sender's profile at the time of exchange.
+          oneOf:
+          - $ref: "#/components/schemas/UserProfile"
+          - {}
     Event:
       description: Event lifecycle information for quiz sessions.
       required:
@@ -1086,6 +1187,64 @@ components:
           example:
             source: mobile-app
           nullable: true
+    FakeNamesRequest:
+      description: Request payload for generating fake names similar to the input
+        name.
+      required:
+      - inputName
+      - variance
+      type: object
+      properties:
+        inputName:
+          description: The name to base fake name generation on.
+          maxLength: 100
+          minLength: 1
+          type: string
+          example: 青木 勇樹
+        variance:
+          description: Similarity level for name generation.
+          enum:
+          - ほぼ違いがない名前
+          - とても良く似ている名前
+          - 結構似ている名前
+          - 多少似ているといえるくらいの名前
+          - かすかに類似性を感じられる名前
+          - 互いにまったく似ていない名前
+          type: string
+          allOf:
+          - $ref: "#/components/schemas/VarianceEnum"
+          example: とても良く似ている名前
+          x-enum-varnames:
+          - ALMOST_SAME
+          - VERY_SIMILAR
+          - MODERATELY_SIMILAR
+          - SOMEWHAT_SIMILAR
+          - FAINTLY_SIMILAR
+          - COMPLETELY_DIFFERENT
+        customPrompt:
+          description: "Optional custom instructions for name generation (e.g., \"\
+            古風な名前にして\")."
+          maxLength: 500
+          type: string
+    FakeNamesResponse:
+      description: Response containing generated fake names.
+      required:
+      - output
+      type: object
+      properties:
+        output:
+          description: List of generated fake names.
+          minItems: 5
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+          example:
+          - 青木 優香
+          - 青木 優空
+          - 青山 裕子
+          - 青木 雄
+          - 青木 悠斗
     ErrorResponse:
       description: Error payload returned by the API.
       required:
@@ -1115,6 +1274,15 @@ components:
         meta:
           type: object
           additionalProperties: {}
+    VarianceEnum:
+      enum:
+      - ほぼ違いがない名前
+      - とても良く似ている名前
+      - 結構似ている名前
+      - 多少似ているといえるくらいの名前
+      - かすかに類似性を感じられる名前
+      - 互いにまったく似ていない名前
+      type: string
   securitySchemes:
     bearerAuth:
       type: http

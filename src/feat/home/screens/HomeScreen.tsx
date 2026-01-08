@@ -1,112 +1,89 @@
-import { Alert, Button, Group, Loader, Stack, Text } from "@mantine/core";
+import { Alert, Button, Stack, Text } from "@mantine/core";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { Suspense } from "react";
 
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
+import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
+import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 
-type Status = "loading" | "ready" | "error";
-
-/**
- * Home screen (legacy Index.jsx equivalent).
- * - If profile exists: enable "クイズへ".
- * - If not: disable and ask user to create profile first.
- */
-export function HomeScreen() {
-  const [status, setStatus] = useState<Status>("loading");
-  const [canStartQuiz, setCanStartQuiz] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function run() {
-      setStatus("loading");
-      setError(null);
-
-      try {
-        await apis.profiles.getMyProfile();
-        if (cancelled) return;
-        setCanStartQuiz(true);
-        setStatus("ready");
-      } catch (e: any) {
-        if (cancelled) return;
-
-        const s = e?.status ?? e?.response?.status;
-        if (s === 404) {
-          setCanStartQuiz(false);
-          setStatus("ready");
-          return;
-        }
-
-        setError(String(e?.message ?? "プロフィール確認に失敗しました"));
-        setStatus("error");
-      }
+function HomeContent() {
+  // プロフィールの存在確認
+  let canStartQuiz = false;
+  try {
+    useSuspenseQuery(() => apis.profiles.getMyProfile());
+    canStartQuiz = true;
+  } catch (e: any) {
+    // 404の場合はプロフィール未作成 -> canStartQuiz = false
+    const status = e?.status ?? e?.response?.status;
+    if (status === 404) {
+      canStartQuiz = false;
+    } else {
+      // その他のエラーは再throw（ErrorBoundaryでキャッチ）
+      throw e;
     }
-
-    void run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  }
 
   return (
-    <Container title="キミのヒント">
-      <Stack gap="md">
-        {status === "loading" && (
-          <Group justify="center" gap="sm">
-            <Loader size="sm" />
-            <Text>読み込み中...</Text>
-          </Group>
-        )}
+    <Stack gap="sm">
+      <Button
+        component={Link}
+        to={canStartQuiz ? "/room" : "#"}
+        disabled={!canStartQuiz}
+        fullWidth
+        size="md"
+      >
+        クイズへ
+      </Button>
 
-        {status === "error" && (
+      {!canStartQuiz && (
+        <Text c="dimmed" size="sm" ta="center">
+          プロフィールを作成してからクイズに進んでください
+        </Text>
+      )}
+
+      <Button
+        component={Link}
+        to="/profiles"
+        variant="light"
+        fullWidth
+        size="md"
+      >
+        プロフィール一覧へ
+      </Button>
+
+      <Button
+        component={Link}
+        to="/me"
+        variant="light"
+        fullWidth
+        size="md"
+      >
+        マイページへ
+      </Button>
+    </Stack>
+  );
+}
+
+export function HomeScreen() {
+  return (
+    <Container title="キミのヒント">
+      <ErrorBoundary
+        fallback={(error, retry) => (
           <Alert color="red" title="データ取得エラー">
-            {error}
+            <Stack gap="sm">
+              <Text size="sm">{error.message}</Text>
+              <Button variant="light" onClick={retry}>
+                再試行
+              </Button>
+            </Stack>
           </Alert>
         )}
-
-        {status !== "loading" && (
-          <Stack gap="sm">
-            <Button
-              component={Link}
-              to={canStartQuiz ? "/room" : "#"}
-              disabled={!canStartQuiz}
-              fullWidth
-              size="md"
-            >
-              クイズへ
-            </Button>
-
-            {!canStartQuiz && (
-              <Text c="dimmed" size="sm" ta="center">
-                プロフィールを作成してからクイズに進んでください
-              </Text>
-            )}
-
-            <Button
-              component={Link}
-              to="/profiles"
-              variant="light"
-              fullWidth
-              size="md"
-            >
-              プロフィール一覧へ
-            </Button>
-
-            <Button
-              component={Link}
-              to="/me"
-              variant="light"
-              fullWidth
-              size="md"
-            >
-              自分のプロフィール
-            </Button>
-          </Stack>
-        )}
-      </Stack>
+      >
+        <Suspense fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}>
+          <HomeContent />
+        </Suspense>
+      </ErrorBoundary>
     </Container>
   );
 }

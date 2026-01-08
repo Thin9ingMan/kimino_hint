@@ -1,16 +1,11 @@
 import { Alert, Button, Stack, Text } from "@mantine/core";
-import { useMemo } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
+import { useQueryParam } from "@/shared/hooks/useQueryParam";
 
 export function AuthErrorScreen() {
-  const location = useLocation();
-
-  const message = useMemo(() => {
-    const q = new URLSearchParams(location.search);
-    return q.get("message") ?? "認証に失敗しました。";
-  }, [location.search]);
+  const message = useQueryParam("message", "認証に失敗しました。");
 
   return (
     <Container title="認証エラー">

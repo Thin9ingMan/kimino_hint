@@ -2,36 +2,34 @@ import {
   Alert,
   Button,
   Card,
-  Center,
   Divider,
   Group,
-  Loader,
   Select,
   Stack,
   Text,
   TextInput,
 } from "@mantine/core";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
+import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
+import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { FACULTY_OPTIONS, GRADE_OPTIONS } from "@/shared/profile/options";
 
 // New Spec rule: do NOT import legacy UI from `src/components/*`.
 // We only reuse the *idea* from old EditProfile: field definitions, validation, preview.
 
-const defaultProfile = {
-  name: "",
-  furigana: "",
-  grade: "",
-  faculty: "",
-  hobby: "",
-  favoriteArtist: "",
-  facultyDetail: "",
+type ProfileFormState = {
+  name: string;
+  furigana: string;
+  grade: string;
+  faculty: string;
+  hobby: string;
+  favoriteArtist: string;
+  facultyDetail: string;
 };
-
-type ProfileFormState = typeof defaultProfile;
 
 type FormField = {
   id: keyof ProfileFormState;
@@ -70,13 +68,40 @@ function getString(v: unknown): string {
   return typeof v === "string" ? v : "";
 }
 
-export function EditMyProfileScreen() {
+function EditProfileForm() {
   const navigate = useNavigate();
+  
+  // 初期データ取得（Suspense化）
+  const initialData = useSuspenseQuery(async () => {
+    try {
+      const res = await apis.profiles.getMyProfile();
+      return res?.profileData as Record<string, unknown> | null;
+    } catch (e: any) {
+      const status = e?.status ?? e?.response?.status;
+      // 404 = 未作成なので、null を返して空フォームで続行
+      if (status === 404) {
+        return null;
+      }
+      throw e;
+    }
+  });
 
-  const [profile, setProfile] = useState<ProfileFormState>(defaultProfile);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const initialProfile: ProfileFormState = useMemo(() => {
+    const pd = initialData ?? {};
+    return {
+      name: getString(pd.displayName),
+      furigana: getString(pd.furigana),
+      grade: getString(pd.grade),
+      faculty: getString(pd.faculty),
+      hobby: getString(pd.hobby),
+      favoriteArtist: getString(pd.favoriteArtist),
+      facultyDetail: getString(pd.facultyDetail),
+    };
+  }, [initialData]);
+
+  const [profile, setProfile] = useState<ProfileFormState>(initialProfile);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const formFields = useMemo(() => FORM_FIELDS, []);
 
@@ -99,44 +124,10 @@ export function EditMyProfileScreen() {
         };
   }, [profile]);
 
-  const fetchProfile = useCallback(async () => {
-    setInitialLoading(true);
-    setError(null);
-
-    try {
-      const res = await apis.profiles.getMyProfile();
-      const pd = (res?.profileData ?? {}) as Record<string, unknown>;
-
-      setProfile({
-        name: getString(pd.displayName),
-        furigana: getString(pd.furigana),
-        grade: getString(pd.grade),
-        faculty: getString(pd.faculty),
-        hobby: getString(pd.hobby),
-        favoriteArtist: getString(pd.favoriteArtist),
-        facultyDetail: getString(pd.facultyDetail),
-      });
-    } catch (e: any) {
-      // 404 = 未作成なので、空フォームで続行。
-      const s = e?.status ?? e?.response?.status;
-      if (s === 404) {
-        setProfile(defaultProfile);
-      } else {
-        setError("プロフィールの取得に失敗しました");
-      }
-    } finally {
-      setInitialLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchProfile();
-  }, [fetchProfile]);
-
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      setError(null);
+      setFormError(null);
 
       const validation = validateProfile();
       if (!validation.valid) {
@@ -167,7 +158,7 @@ export function EditMyProfileScreen() {
 
         navigate("/me/profile", { replace: true });
       } catch {
-        setError("プロフィールの更新に失敗しました");
+        setFormError("プロフィールの更新に失敗しました");
       } finally {
         setSaving(false);
       }
@@ -186,111 +177,108 @@ export function EditMyProfileScreen() {
     [profile]
   );
 
-  if (initialLoading || saving) {
-    return (
-      <Container title="プロフィール編集">
-        <Center py="xl">
-          <Group gap="sm">
-            <Loader size="sm" />
-            <Text size="sm" c="dimmed">
-              {saving ? "保存中..." : "読み込み中..."}
-            </Text>
-          </Group>
-        </Center>
-      </Container>
-    );
-  }
-
-  if (error && error !== "プロフィールが存在しません") {
-    return (
-      <Container title="プロフィール編集">
-        <Alert color="red" title="読み込みエラー">
-          <Stack gap="sm">
-            <Text size="sm">{error}</Text>
-            <Button variant="light" onClick={fetchProfile}>
-              再試行
-            </Button>
-          </Stack>
-        </Alert>
-      </Container>
-    );
-  }
-
   return (
-    <Container title="プロフィール編集">
-      <Stack gap="md">
-        <form onSubmit={handleSubmit}>
-          <Stack gap="md">
-            {formFields.map((field) => {
-              if (field.type === "select") {
-                return (
-                  <Select
-                    key={String(field.id)}
-                    label={field.label}
-                    placeholder={field.placeholder ?? "選択してください"}
-                    data={(field.options ?? []).map((opt) => ({ value: opt, label: opt }))}
-                    value={profile[field.id]}
-                    onChange={(v) => setField(field.id)(v ?? "")}
-                    required={field.required}
-                    withAsterisk={field.required}
-                    searchable
-                    clearable
-                  />
-                );
-              }
+    <Stack gap="md">
+      {formError && (
+        <Alert color="red" title="エラー">
+          <Text size="sm">{formError}</Text>
+        </Alert>
+      )}
 
+      <form onSubmit={handleSubmit}>
+        <Stack gap="md">
+          {formFields.map((field) => {
+            if (field.type === "select") {
               return (
-                <TextInput
+                <Select
                   key={String(field.id)}
                   label={field.label}
-                  placeholder={field.placeholder}
+                  placeholder={field.placeholder ?? "選択してください"}
+                  data={(field.options ?? []).map((opt) => ({ value: opt, label: opt }))}
                   value={profile[field.id]}
-                  onChange={(e) => setField(field.id)(e.currentTarget.value)}
+                  onChange={(v) => setField(field.id)(v ?? "")}
                   required={field.required}
                   withAsterisk={field.required}
-                  autoFocus={field.autoFocus}
+                  searchable
+                  clearable
                 />
               );
-            })}
+            }
 
-            <Stack gap="sm">
-              <Button type="submit" disabled={saving} fullWidth>
-                {saving ? "保存中..." : "保存"}
-              </Button>
-              <Button
-                type="button"
-                variant="default"
-                onClick={() => navigate("/me/profile")}
-                disabled={saving}
-                fullWidth
-              >
-                キャンセル
-              </Button>
-            </Stack>
+            return (
+              <TextInput
+                key={String(field.id)}
+                label={field.label}
+                placeholder={field.placeholder}
+                value={profile[field.id]}
+                onChange={(e) => setField(field.id)(e.currentTarget.value)}
+                required={field.required}
+                withAsterisk={field.required}
+                autoFocus={field.autoFocus}
+              />
+            );
+          })}
+
+          <Stack gap="sm">
+            <Button type="submit" disabled={saving} fullWidth loading={saving}>
+              保存
+            </Button>
+            <Button
+              type="button"
+              variant="default"
+              onClick={() => navigate("/me/profile")}
+              disabled={saving}
+              fullWidth
+            >
+              キャンセル
+            </Button>
           </Stack>
-        </form>
-
-        <Stack gap="xs">
-          <Text size="sm" c="dimmed">
-            プレビュー
-          </Text>
-          <Card withBorder radius="lg" padding="md">
-            <Stack gap="xs">
-              {previewRows.map((r, idx) => (
-                <Stack key={r.label} gap={6}>
-                  <Group justify="space-between" align="flex-start" wrap="nowrap">
-                    <Text fw={700} c="#065f46" style={{ minWidth: 120 }}>
-                      {r.label}
-                    </Text>
-                    <Text style={{ flex: 1 }}>{r.value}</Text>
-                  </Group>
-                  {idx !== previewRows.length - 1 ? <Divider /> : null}
-                </Stack>
-              ))}
-            </Stack>
-          </Card>
         </Stack>
+      </form>
+
+      <Stack gap="xs">
+        <Text size="sm" c="dimmed">
+          プレビュー
+        </Text>
+        <Card withBorder radius="lg" padding="md">
+          <Stack gap="xs">
+            {previewRows.map((r, idx) => (
+              <Stack key={r.label} gap={6}>
+                <Group justify="space-between" align="flex-start" wrap="nowrap">
+                  <Text fw={700} c="#065f46" style={{ minWidth: 120 }}>
+                    {r.label}
+                  </Text>
+                  <Text style={{ flex: 1 }}>{r.value}</Text>
+                </Group>
+                {idx !== previewRows.length - 1 ? <Divider /> : null}
+              </Stack>
+            ))}
+          </Stack>
+        </Card>
       </Stack>
+    </Stack>
+  );
+}
+
+export function EditMyProfileScreen() {
+  return (
+    <Container title="プロフィール編集">
+      <ErrorBoundary
+        fallback={(error, retry) => (
+          <Alert color="red" title="読み込みエラー">
+            <Stack gap="sm">
+              <Text size="sm">{error.message}</Text>
+              <Button variant="light" onClick={retry}>
+                再試行
+              </Button>
+            </Stack>
+          </Alert>
+        )}
+      >
+        <Suspense fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}>
+          <EditProfileForm />
+        </Suspense>
+      </ErrorBoundary>
     </Container>
   );
 }

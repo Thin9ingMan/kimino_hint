@@ -1,79 +1,34 @@
-import {
-  Alert,
-  Button,
-  Center,
-  Group,
-  Loader,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Alert, Button, Stack, Text } from "@mantine/core";
+import { Suspense, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
+import { ProfileCard } from "@/shared/ui/ProfileCard";
+import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
+import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { mapProfileDataToUiProfile } from "@/shared/profile/profileUi";
-
-type Status = "loading" | "ready" | "not_found" | "error";
 
 type ExchangeStatus = "idle" | "saving" | "done" | "error";
 
-export function ProfileDetailScreen() {
-  const params = useParams();
-  const userId = useMemo(() => {
-    const raw = params.userId ?? "";
-    const n = Number(raw);
-    return Number.isFinite(n) ? n : null;
-  }, [params.userId]);
-
-  const [status, setStatus] = useState<Status>("loading");
-  const [error, setError] = useState<string | null>(null);
-
-  const [profileData, setProfileData] = useState<Record<string, unknown> | null>(
-    null
-  );
-
+function ProfileDetailContent() {
+  const userId = useNumericParam("userId");
   const [exchangeStatus, setExchangeStatus] = useState<ExchangeStatus>("idle");
   const [exchangeMessage, setExchangeMessage] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    if (!userId) {
-      setStatus("error");
-      setError("userId が不正です");
-      return;
-    }
+  if (!userId) {
+    throw new Error("userId が不正です");
+  }
 
-    setStatus("loading");
-    setError(null);
+  const profileData = useSuspenseQuery(
+    () => apis.profiles.getUserProfile({ userId }),
+    [userId]
+  );
 
-    try {
-      const res = await apis.profiles.getUserProfile({ userId });
-      setProfileData((res?.profileData ?? null) as any);
-      setStatus("ready");
-    } catch (e: any) {
-      const s = e?.status ?? e?.response?.status;
+  const profile = mapProfileDataToUiProfile(profileData?.profileData as any);
 
-      if (s === 404) {
-        setProfileData(null);
-        setStatus("not_found");
-        return;
-      }
-
-      setError(String(e?.message ?? "プロフィールの取得に失敗しました"));
-      setStatus("error");
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const ui = useMemo(() => mapProfileDataToUiProfile(profileData as any), [profileData]);
-
-  const shareBack = useCallback(async () => {
-    if (!userId) return;
-
+  const shareBack = async () => {
     setExchangeStatus("saving");
     setExchangeMessage(null);
 
@@ -102,103 +57,79 @@ export function ProfileDetailScreen() {
       setExchangeStatus("error");
       setExchangeMessage(String(e?.message ?? "交換に失敗しました"));
     }
-  }, [userId]);
+  };
 
   return (
+    <Stack gap="md">
+      {exchangeMessage && (
+        <Alert
+          color={exchangeStatus === "error" ? "red" : "green"}
+          title={exchangeStatus === "error" ? "交換エラー" : "成功"}
+        >
+          <Text size="sm">{exchangeMessage}</Text>
+        </Alert>
+      )}
+
+      <ProfileCard
+        profile={profile}
+        title={profile.displayName || `ユーザー ${userId}`}
+        subtitle={`userId: ${userId}`}
+      />
+
+      <Stack gap="sm">
+        <Button
+          onClick={shareBack}
+          fullWidth
+          loading={exchangeStatus === "saving"}
+          disabled={exchangeStatus === "done"}
+        >
+          {exchangeStatus === "done" ? "交換済み" : "プロフィールを交換する"}
+        </Button>
+
+        <Button component={Link} to="/profiles" variant="default" fullWidth>
+          プロフィール一覧へ
+        </Button>
+      </Stack>
+    </Stack>
+  );
+}
+
+export function ProfileDetailScreen() {
+  return (
     <Container title="プロフィール詳細">
-      {status === "loading" && (
-        <Center py="xl">
-          <Group gap="sm">
-            <Loader size="sm" />
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          </Group>
-        </Center>
-      )}
+      <ErrorBoundary
+        fallback={(error, retry) => {
+          const is404 = error.message.includes("404") || error.message.includes("見つかり");
+          
+          if (is404) {
+            return (
+              <Alert color="blue" title="ユーザーが見つかりませんでした">
+                <Stack gap="sm">
+                  <Text size="sm">このプロフィールは存在しないか削除されています。</Text>
+                  <Button component={Link} to="/profiles" variant="light">
+                    プロフィール一覧へ戻る
+                  </Button>
+                </Stack>
+              </Alert>
+            );
+          }
 
-      {status === "error" && (
-        <Alert color="red" title="取得エラー">
-          <Stack gap="sm">
-            <Text size="sm">{error}</Text>
-            <Button variant="light" onClick={load}>
-              再試行
-            </Button>
-          </Stack>
-        </Alert>
-      )}
-
-      {status === "not_found" && (
-        <Alert color="blue" title="プロフィールが見つかりませんでした">
-          <Text size="sm">URL が間違っている可能性があります。</Text>
-          <Button component={Link} to="/profiles" mt="sm" variant="light">
-            一覧へ戻る
-          </Button>
-        </Alert>
-      )}
-
-      {status === "ready" && (
-        <Stack gap="md">
-          <Title order={3}>{ui.displayName || `User #${userId}`}</Title>
-
-          <Stack gap={6}>
-            <Group justify="space-between" wrap="nowrap">
-              <Text c="dimmed" size="sm">
-                学部
-              </Text>
-              <Text fw={600} size="sm" style={{ textAlign: "right" }}>
-                {ui.faculty || "-"}
-              </Text>
-            </Group>
-            <Group justify="space-between" wrap="nowrap">
-              <Text c="dimmed" size="sm">
-                学年
-              </Text>
-              <Text fw={600} size="sm" style={{ textAlign: "right" }}>
-                {ui.grade || "-"}
-              </Text>
-            </Group>
-            <Group justify="space-between" wrap="nowrap">
-              <Text c="dimmed" size="sm">
-                趣味
-              </Text>
-              <Text fw={600} size="sm" style={{ textAlign: "right" }}>
-                {ui.hobby || "-"}
-              </Text>
-            </Group>
-            <Group justify="space-between" wrap="nowrap">
-              <Text c="dimmed" size="sm">
-                好きなアーティスト
-              </Text>
-              <Text fw={600} size="sm" style={{ textAlign: "right" }}>
-                {ui.favoriteArtist || "-"}
-              </Text>
-            </Group>
-          </Stack>
-
-          {exchangeMessage && (
-            <Alert
-              color={exchangeStatus === "error" ? "red" : "blue"}
-              title={exchangeStatus === "error" ? "交換エラー" : "プロフィール交換"}
-            >
-              <Text size="sm">{exchangeMessage}</Text>
+          return (
+            <Alert color="red" title="プロフィールの取得に失敗しました">
+              <Stack gap="sm">
+                <Text size="sm">{error.message}</Text>
+                <Button variant="light" onClick={retry}>
+                  再試行
+                </Button>
+              </Stack>
             </Alert>
-          )}
-
-          <Button
-            onClick={shareBack}
-            loading={exchangeStatus === "saving"}
-            disabled={exchangeStatus === "saving"}
-            fullWidth
-          >
-            自分のプロフィールを相手に渡す
-          </Button>
-
-          <Button component={Link} to="/profiles" variant="default" fullWidth>
-            一覧へ戻る
-          </Button>
-        </Stack>
-      )}
+          );
+        }}
+      >
+        <Suspense fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}>
+          <ProfileDetailContent />
+        </Suspense>
+      </ErrorBoundary>
     </Container>
   );
 }

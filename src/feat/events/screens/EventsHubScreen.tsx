@@ -1,53 +1,46 @@
-import { Alert, Button, Stack, Text, TextInput } from "@mantine/core";
-import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Stack } from "@mantine/core";
+import { Link } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
+import { InfoAlert } from "@/shared/ui/InfoAlert";
+import { NavigationButtonList } from "@/shared/ui/NavigationButtonList";
+import { InvitationCodeInput } from "@/feat/events/components/InvitationCodeInput";
 
 export function EventsHubScreen() {
-  const navigate = useNavigate();
-  const [code, setCode] = useState("");
-
-  const trimmed = useMemo(() => code.trim(), [code]);
+  const buttons = [
+    {
+      label: "イベントを作成",
+      to: "/events/new",
+      variant: "filled" as const,
+    },
+    {
+      label: "イベントに参加（招待コード）",
+      to: "/events/join",
+      variant: "light" as const,
+    },
+    {
+      label: "ホームへ",
+      to: "/home",
+      variant: "default" as const,
+    },
+  ];
 
   return (
     <Container title="イベント">
       <Stack gap="md">
-        <Alert color="blue" title="イベントって？">
-          <Text size="sm">
-            イベント = クイズセッション（ルーム）です。参加者が集まってクイズを進めます。
-          </Text>
-        </Alert>
+        <InfoAlert title="イベントって？">
+          イベント = クイズセッション（ルーム）です。参加者が集まってクイズを進めます。
+        </InfoAlert>
 
-        <Button component={Link} to="/events/new" fullWidth size="md">
-          イベントを作成
-        </Button>
+        <NavigationButtonList buttons={buttons} />
 
-        <Button component={Link} to="/events/join" variant="light" fullWidth size="md">
-          イベントに参加（招待コード）
-        </Button>
-
-        <TextInput
+        <InvitationCodeInput
           label="招待コード（ショートカット）"
           placeholder="例: QUIZ-2025-01"
-          value={code}
-          onChange={(e) => setCode(e.currentTarget.value)}
+          buttonText="このコードで参加する"
+          navigateTo="/events/join"
+          includeStateData
         />
-        <Button
-          onClick={() => {
-            if (!trimmed) return;
-            // join screen will be the source of truth; keep UX simple.
-            navigate("/events/join", { state: { invitationCode: trimmed } });
-          }}
-          disabled={!trimmed}
-          fullWidth
-        >
-          このコードで参加する
-        </Button>
-
-        <Button component={Link} to="/home" variant="default" fullWidth>
-          ホームへ
-        </Button>
       </Stack>
     </Container>
   );

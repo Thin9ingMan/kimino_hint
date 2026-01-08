@@ -212,7 +212,7 @@ function MyProfileContent() {
             </Button>
           </Group>
           <Group grow>
-            <Button component={Link} variant="outline" onClick={doShare}>
+            <Button variant="outline" onClick={doShare}>
               共有する
             </Button>
             <Button onClick={() => setShowQr(false)} variant="subtle">

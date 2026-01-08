@@ -1,98 +1,11 @@
 import { Alert, Button, Stack, Text } from "@mantine/core";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { Link } from "react-router-dom";
 
-import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
-import { ProfileCard } from "@/shared/ui/ProfileCard";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
-import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { mapProfileDataToUiProfile } from "@/shared/profile/profileUi";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
-
-type ExchangeStatus = "idle" | "saving" | "done" | "error";
-
-function ProfileDetailContent() {
-  const userId = useNumericParam("userId");
-  const [exchangeStatus, setExchangeStatus] = useState<ExchangeStatus>("idle");
-  const [exchangeMessage, setExchangeMessage] = useState<string | null>(null);
-
-  if (!userId) {
-    throw new Error("userId が不正です");
-  }
-
-  const profileData = useSuspenseQuery(["profiles", "user", userId], () =>
-    apis.profiles.getUserProfile({ userId })
-  );
-
-  const profile = mapProfileDataToUiProfile(profileData?.profileData as any);
-
-  const shareBack = async () => {
-    setExchangeStatus("saving");
-    setExchangeMessage(null);
-
-    try {
-      await apis.friendships.receiveFriendship({
-        userId,
-        receiveFriendshipRequest: {
-          meta: { source: "profiles_detail", at: new Date().toISOString() },
-        },
-      });
-      setExchangeStatus("done");
-      setExchangeMessage("プロフィールを交換しました");
-    } catch (e: any) {
-      const s = e?.status ?? e?.response?.status;
-      if (s === 409) {
-        setExchangeStatus("done");
-        setExchangeMessage("すでに交換済みです");
-        return;
-      }
-      if (s === 404) {
-        setExchangeStatus("error");
-        setExchangeMessage("ユーザーが見つかりませんでした");
-        return;
-      }
-
-      setExchangeStatus("error");
-      setExchangeMessage(String(e?.message ?? "交換に失敗しました"));
-    }
-  };
-
-  return (
-    <Stack gap="md">
-      {exchangeMessage && (
-        <Alert
-          color={exchangeStatus === "error" ? "red" : "green"}
-          title={exchangeStatus === "error" ? "交換エラー" : "成功"}
-        >
-          <Text size="sm">{exchangeMessage}</Text>
-        </Alert>
-      )}
-
-      <ProfileCard
-        profile={profile}
-        title={profile.displayName || `ユーザー ${userId}`}
-        subtitle={`userId: ${userId}`}
-      />
-
-      <Stack gap="sm">
-        <Button
-          onClick={shareBack}
-          fullWidth
-          loading={exchangeStatus === "saving"}
-          disabled={exchangeStatus === "done"}
-        >
-          {exchangeStatus === "done" ? "交換済み" : "プロフィールを交換する"}
-        </Button>
-
-        <Button component={Link} to="/profiles" variant="default" fullWidth>
-          プロフィール一覧へ
-        </Button>
-      </Stack>
-    </Stack>
-  );
-}
+import { ProfileDetailContent } from "../components/ProfileDetailContent";
 
 export function ProfileDetailScreen() {
   return (

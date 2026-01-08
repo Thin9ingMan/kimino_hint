@@ -3,6 +3,7 @@ import {
   Configuration,
   EventsApi,
   FriendshipsApi,
+  LLMApi,
   ProfilesApi,
   UsersApi,
 } from "@yuki-js/quarkus-crud-js-fetch-client";
@@ -36,4 +37,5 @@ export const apis = {
   users: new UsersApi(config),
   events: new EventsApi(config),
   friendships: new FriendshipsApi(config),
+  llm: new LLMApi(config),
 } as const;

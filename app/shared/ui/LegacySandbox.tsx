@@ -1,5 +1,5 @@
 import React from "react";
-import "@/components/legacyStartPage.css";
+import "@components/legacyStartPage.css";
 import { Container } from "@mantine/core";
 
 type Props = {

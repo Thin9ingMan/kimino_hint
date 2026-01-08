@@ -1,5 +1,5 @@
-import MakeFalseSelection from '@/components/MakeFalseSelection';
-import { LegacySandbox } from '@/shared/ui/LegacySandbox';
+import MakeFalseSelection from "@components/MakeFalseSelection";
+import { LegacySandbox } from "@/shared/ui/LegacySandbox";
 
 /**
  * Compat route element for legacy `/make_false_selection`.

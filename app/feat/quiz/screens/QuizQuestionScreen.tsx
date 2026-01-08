@@ -1,4 +1,4 @@
-import Question from "@/components/question";
+import Question from "@components/question";
 import { LegacySandbox } from "@/shared/ui/LegacySandbox";
 
 export function QuizQuestionScreen() {

@@ -1,5 +1,5 @@
-import Room from '@/components/Room';
-import { LegacySandbox } from '@/shared/ui/LegacySandbox';
+import Room from "@components/Room";
+import { LegacySandbox } from "@/shared/ui/LegacySandbox";
 
 /**
  * New Spec route element.

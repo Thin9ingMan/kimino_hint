@@ -1,5 +1,5 @@
-import MakeQRCode from '@/components/MakeQRCode';
-import { LegacySandbox } from '@/shared/ui/LegacySandbox';
+import MakeQRCode from "@components/MakeQRCode";
+import { LegacySandbox } from "@/shared/ui/LegacySandbox";
 
 /**
  * New Spec route element.

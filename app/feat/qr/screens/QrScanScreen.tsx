@@ -1,5 +1,5 @@
-import ReadQRCode from '@/components/ReadQRCode';
-import { LegacySandbox } from '@/shared/ui/LegacySandbox';
+import ReadQRCode from "@components/ReadQRCode";
+import { LegacySandbox } from "@/shared/ui/LegacySandbox";
 
 /**
  * New Spec route element.

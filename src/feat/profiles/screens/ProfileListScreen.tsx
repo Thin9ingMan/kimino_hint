@@ -1,5 +1,6 @@
 import {
   Alert,
+  Avatar,
   Button,
   Group,
   Paper,
@@ -22,16 +23,17 @@ type Item = {
   senderProfileData?: Record<string, unknown> | null;
 };
 
-function pickDisplayName(profileData: Record<string, unknown> | null | undefined): string {
+function pickDisplayName(
+  profileData: Record<string, unknown> | null | undefined
+): string {
   const pd = profileData ?? {};
   const v = pd.displayName;
   return typeof v === "string" && v.trim() ? v.trim() : "";
 }
 
 function ProfileListContent() {
-  const data = useSuspenseQuery(
-    ["friendships", "received"],
-    () => apis.friendships.listReceivedFriendships()
+  const data = useSuspenseQuery(["friendships", "received"], () =>
+    apis.friendships.listReceivedFriendships()
   );
 
   const items: Item[] = (data ?? []).map((f: any) => ({
@@ -53,10 +55,14 @@ function ProfileListContent() {
       if (!items.length) return;
 
       const userIds = Array.from(
-        new Set(items.map((i) => i.senderUserId).filter((v) => Number.isFinite(v)))
+        new Set(
+          items.map((i) => i.senderUserId).filter((v) => Number.isFinite(v))
+        )
       ) as number[];
 
-      const missing = userIds.filter((id) => profilesByUserId[id] === undefined);
+      const missing = userIds.filter(
+        (id) => profilesByUserId[id] === undefined
+      );
       if (!missing.length) return;
 
       for (const userId of missing) {
@@ -99,34 +105,36 @@ function ProfileListContent() {
   return (
     <Stack gap="sm">
       {items.map((item) => {
-        const profileData = item.senderProfileData ?? profilesByUserId[item.senderUserId];
-        const displayName = pickDisplayName(profileData) || `ユーザー ${item.senderUserId}`;
+        const profileData =
+          item.senderProfileData ?? profilesByUserId[item.senderUserId];
+        const displayName =
+          pickDisplayName(profileData) || `ユーザー ${item.senderUserId}`;
 
         return (
-          <Paper key={item.id} withBorder p="md" radius="md">
-            <Stack gap="xs">
-              <Group justify="space-between" wrap="nowrap">
-                <Title order={5} style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {displayName}
-                </Title>
-                {item.createdAt && (
-                  <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-                    {new Date(item.createdAt).toLocaleDateString("ja-JP")}
-                  </Text>
-                )}
-              </Group>
-
-              <Button
-                component={Link}
-                to={`/profiles/${item.senderUserId}`}
-                variant="light"
-                size="sm"
-                fullWidth
-              >
-                プロフィール詳細を見る
-              </Button>
-            </Stack>
-          </Paper>
+          <Link
+            key={item.id}
+            to={`/profiles/${item.senderUserId}`}
+            style={{ textDecoration: "none" }}
+          >
+            <Paper key={item.id} withBorder p="md" radius="md">
+              <Stack gap="xs">
+                <Group justify="left" wrap="nowrap">
+                  <Avatar radius="xl" name={displayName} size={48} />
+                  <Title
+                    order={5}
+                    style={{ overflow: "hidden", textOverflow: "ellipsis" }}
+                  >
+                    {displayName}
+                  </Title>
+                  {item.createdAt && (
+                    <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+                      {new Date(item.createdAt).toLocaleDateString("ja-JP")}
+                    </Text>
+                  )}
+                </Group>
+              </Stack>
+            </Paper>
+          </Link>
         );
       })}
 
@@ -152,7 +160,13 @@ export function ProfileListScreen() {
           </Alert>
         )}
       >
-        <Suspense fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}>
+        <Suspense
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
+        >
           <ProfileListContent />
         </Suspense>
       </ErrorBoundary>

@@ -7,11 +7,11 @@ import {
   Modal,
   TextInput,
   Accordion,
-  Chip,
+  Pill,
 } from "@mantine/core";
 import { Container } from "@/shared/ui/Container";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const normalPages = [
   { path: "/home", label: "ホーム" },
@@ -184,20 +184,21 @@ export function HelpScreen() {
                         }
                       >
                         {page.label}
-                        <Chip size="xs" variant="outline">
+                        <Pill size="xs" variant="outline">
                           {page.path}
-                        </Chip>
+                        </Pill>
                       </Button>
                     ) : (
                       <Button
                         key={page.path}
                         variant="light"
-                        onClick={() => navigate(page.path)}
+                        component={Link}
+                        to={page.path}
                       >
                         {page.label}
-                        <Chip size="xs" variant="outline">
+                        <Pill size="xs" variant="outline">
                           {page.path}
-                        </Chip>
+                        </Pill>
                       </Button>
                     )
                   )}

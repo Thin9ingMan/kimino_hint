@@ -10,7 +10,8 @@ export default defineConfig({
   resolve: {
     alias: {
       // eslint-disable-next-line no-undef
-      "@": resolve(__dirname, "src"),
+      "@": resolve(__dirname, "app"),
+      "@components": resolve(__dirname, "src/components"),
     },
   },
 });

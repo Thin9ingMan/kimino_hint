@@ -18,5 +18,6 @@
       "@components/*": ["src/components/*"]
     }
   },
-  "include": ["app", "src/components"]
+  "include": ["app", "src"],
+  "exclude": ["node_modules", "dist"]
 }

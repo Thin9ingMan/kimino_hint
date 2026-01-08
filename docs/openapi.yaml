@@ -145,11 +145,18 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserProfile"
         "404":
-          description: The user or profile does not exist.
+          description: "The user exists but has not created a profile yet, or the\
+            \ user does not exist."
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/ProfileMissing"
+              example:
+                type: about:blank
+                title: Profile Not Created
+                status: 404
+                code: PROFILE_MISSING
+                detail: The user has not created a profile yet.
         "401":
           description: Authentication required.
           content:
@@ -183,11 +190,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
-          description: Profile not found.
+          description: The authenticated user has not created a profile yet.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/ProfileMissing"
+              example:
+                type: about:blank
+                title: Profile Not Created
+                status: 404
+                code: PROFILE_MISSING
+                detail: The user has not created a profile yet.
         "500":
           description: Unexpected error.
           content:
@@ -1264,6 +1277,39 @@ components:
       description: ISO-8601 timestamp with timezone information.
       type: string
       example: 2025-01-01T10:15:30Z
+    ProfileMissing:
+      description: |
+        Semi-normal response indicating that a profile has not been created yet. This is not an error condition - the account exists but the profile is simply missing. Clients should treat this as a normal "profile not created" state (e.g., return null).
+      required:
+      - code
+      - status
+      - title
+      - type
+      type: object
+      properties:
+        type:
+          description: URI reference identifying the problem type.
+          type: string
+          example: about:blank
+        title:
+          description: "Short, human-readable summary of the problem."
+          type: string
+          example: Profile Not Created
+        status:
+          description: HTTP status code.
+          type: integer
+          example: 404
+        code:
+          description: Machine-readable code to distinguish semi-normal from error
+            cases.
+          enum:
+          - PROFILE_MISSING
+          type: string
+          example: PROFILE_MISSING
+        detail:
+          description: Human-readable explanation specific to this occurrence.
+          type: string
+          example: The user has not created a profile yet.
     OffsetDateTime:
       format: date-time
       type: string

@@ -219,14 +219,21 @@ export function HelpScreen() {
                         }
                       >
                         {page.label}
+                        <Pill size="xs" variant="outline">
+                          {page.path}
+                        </Pill>
                       </Button>
                     ) : (
                       <Button
                         key={page.path}
                         variant="light"
-                        onClick={() => navigate(page.path)}
+                        component={Link}
+                        to={page.path}
                       >
                         {page.label}
+                        <Pill size="xs" variant="outline">
+                          {page.path}
+                        </Pill>
                       </Button>
                     )
                   )}

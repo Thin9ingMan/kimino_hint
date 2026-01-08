@@ -43,50 +43,6 @@ function ProfileListContent() {
     senderProfileData: (f.senderProfile?.profileData ?? null) as any,
   }));
 
-  // N+1 fill for missing sender profiles
-  const [profilesByUserId, setProfilesByUserId] = useState<
-    Record<number, Record<string, unknown> | null | undefined>
-  >({});
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fillMissing() {
-      if (!items.length) return;
-
-      const userIds = Array.from(
-        new Set(
-          items.map((i) => i.senderUserId).filter((v) => Number.isFinite(v))
-        )
-      ) as number[];
-
-      const missing = userIds.filter(
-        (id) => profilesByUserId[id] === undefined
-      );
-      if (!missing.length) return;
-
-      for (const userId of missing) {
-        try {
-          const p = await apis.profiles.getUserProfile({ userId });
-          if (cancelled) return;
-          setProfilesByUserId((prev) => ({
-            ...prev,
-            [userId]: (p?.profileData ?? null) as any,
-          }));
-        } catch {
-          if (cancelled) return;
-          setProfilesByUserId((prev) => ({ ...prev, [userId]: null }));
-        }
-      }
-    }
-
-    void fillMissing();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [items, profilesByUserId]);
-
   if (items.length === 0) {
     return (
       <Alert color="blue" title="受け取ったプロフィールがありません">
@@ -105,8 +61,7 @@ function ProfileListContent() {
   return (
     <Stack gap="sm">
       {items.map((item) => {
-        const profileData =
-          item.senderProfileData ?? profilesByUserId[item.senderUserId];
+        const profileData = item.senderProfileData;
         const displayName =
           pickDisplayName(profileData) || `ユーザー ${item.senderUserId}`;
 

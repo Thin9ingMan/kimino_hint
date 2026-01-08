@@ -78,7 +78,7 @@ const Question = () => {
   }
   const falseFaculty = getRandomThreeExcludingElement(
     faculty,
-    answers.department
+    answers.faculty
   );
   const falseGrade = getRandomThreeExcludingElement(grade, answers.grade);
   console.log(falseFaculty);

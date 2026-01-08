@@ -24,11 +24,12 @@ function EventLobbyContent() {
   }
 
   const [eventData, attendees] = useSuspenseQuery(
-    () => Promise.all([
-      apis.events.getEventById({ eventId }),
-      apis.events.listEventAttendees({ eventId }),
-    ]),
-    [eventId]
+    ["events", "lobby", eventId],
+    () =>
+      Promise.all([
+        apis.events.getEventById({ eventId }),
+        apis.events.listEventAttendees({ eventId }),
+      ])
   );
 
   if (!eventData) {

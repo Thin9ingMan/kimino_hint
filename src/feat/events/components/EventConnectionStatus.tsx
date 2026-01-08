@@ -32,6 +32,8 @@ export function EventConnectionStatus({
   maxEvents = 50,
   showControls = true,
 }: EventConnectionStatusProps) {
+  // kept for API compatibility (events limiting is handled by EventLiveEventsList)
+  void maxEvents;
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const [error, setError] = useState<string | null>(null);
   const esRef = useRef<EventSource | null>(null);

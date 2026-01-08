@@ -17,6 +17,7 @@ import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { FACULTY_OPTIONS, GRADE_OPTIONS } from "@/shared/profile/options";
+import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 // New Spec rule: do NOT import legacy UI from `src/components/*`.
 // We only reuse the *idea* from old EditProfile: field definitions, validation, preview.
@@ -42,7 +43,13 @@ type FormField = {
 };
 
 const FORM_FIELDS: FormField[] = [
-  { id: "name", label: "名前", placeholder: "名前", required: true, autoFocus: true },
+  {
+    id: "name",
+    label: "名前",
+    placeholder: "名前",
+    required: true,
+    autoFocus: true,
+  },
   { id: "furigana", label: "フリガナ", placeholder: "フリガナ" },
   { id: "faculty", label: "学部", type: "select", options: FACULTY_OPTIONS },
   { id: "facultyDetail", label: "具体的な学部" },
@@ -70,19 +77,20 @@ function getString(v: unknown): string {
 
 function EditProfileForm() {
   const navigate = useNavigate();
-  
+
   // 初期データ取得（Suspense化）
-  const initialData = useSuspenseQuery(async () => {
+  const initialData = useSuspenseQuery(["profiles", "myProfile"], async () => {
     try {
       const res = await apis.profiles.getMyProfile();
       return res?.profileData as Record<string, unknown> | null;
-    } catch (e: any) {
-      const status = e?.status ?? e?.response?.status;
+    } catch (error) {
+      const is404 =
+        error instanceof ResponseError && error.response.status === 404;
       // 404 = 未作成なので、null を返して空フォームで続行
-      if (status === 404) {
+      if (is404) {
         return null;
       }
-      throw e;
+      throw error;
     }
   });
 
@@ -112,9 +120,9 @@ function EditProfileForm() {
   );
 
   const validateProfile = useCallback(() => {
-    const emptyFields = REQUIRED_FIELDS.filter(({ key }) => !profile[key]?.trim()).map(
-      ({ label }) => label
-    );
+    const emptyFields = REQUIRED_FIELDS.filter(
+      ({ key }) => !profile[key]?.trim()
+    ).map(({ label }) => label);
 
     return emptyFields.length === 0
       ? { valid: true as const }
@@ -168,7 +176,12 @@ function EditProfileForm() {
 
   const previewRows = useMemo(
     () => [
-      { label: "名前", value: profile.name ? `${profile.name}（${profile.furigana || "フリガナ"}）` : "—" },
+      {
+        label: "名前",
+        value: profile.name
+          ? `${profile.name}（${profile.furigana || "フリガナ"}）`
+          : "—",
+      },
       { label: "学年", value: profile.grade || "—" },
       { label: "学部", value: profile.faculty || "—" },
       { label: "趣味", value: profile.hobby || "—" },
@@ -194,7 +207,10 @@ function EditProfileForm() {
                   key={String(field.id)}
                   label={field.label}
                   placeholder={field.placeholder ?? "選択してください"}
-                  data={(field.options ?? []).map((opt) => ({ value: opt, label: opt }))}
+                  data={(field.options ?? []).map((opt) => ({
+                    value: opt,
+                    label: opt,
+                  }))}
                   value={profile[field.id]}
                   onChange={(v) => setField(field.id)(v ?? "")}
                   required={field.required}
@@ -275,7 +291,13 @@ export function EditMyProfileScreen() {
           </Alert>
         )}
       >
-        <Suspense fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}>
+        <Suspense
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
+        >
           <EditProfileForm />
         </Suspense>
       </ErrorBoundary>

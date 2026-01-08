@@ -9,6 +9,7 @@ import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { mapProfileDataToUiProfile } from "@/shared/profile/profileUi";
+import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 type ExchangeStatus = "idle" | "saving" | "done" | "error";
 
@@ -21,9 +22,8 @@ function ProfileDetailContent() {
     throw new Error("userId が不正です");
   }
 
-  const profileData = useSuspenseQuery(
-    () => apis.profiles.getUserProfile({ userId }),
-    [userId]
+  const profileData = useSuspenseQuery(["profiles", "user", userId], () =>
+    apis.profiles.getUserProfile({ userId })
   );
 
   const profile = mapProfileDataToUiProfile(profileData?.profileData as any);
@@ -99,13 +99,16 @@ export function ProfileDetailScreen() {
     <Container title="プロフィール詳細">
       <ErrorBoundary
         fallback={(error, retry) => {
-          const is404 = error.message.includes("404") || error.message.includes("見つかり");
-          
+          const is404 =
+            error instanceof ResponseError && error.response.status === 404;
+
           if (is404) {
             return (
-              <Alert color="blue" title="ユーザーが見つかりませんでした">
+              <Alert color="blue" title="プロフィールが見つかりません">
                 <Stack gap="sm">
-                  <Text size="sm">このプロフィールは存在しないか削除されています。</Text>
+                  <Text size="sm">
+                    このユーザーはプロフィールを作成していないようです。作ってもらいましょう。
+                  </Text>
                   <Button component={Link} to="/profiles" variant="light">
                     プロフィール一覧へ戻る
                   </Button>
@@ -126,7 +129,13 @@ export function ProfileDetailScreen() {
           );
         }}
       >
-        <Suspense fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}>
+        <Suspense
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
+        >
           <ProfileDetailContent />
         </Suspense>
       </ErrorBoundary>

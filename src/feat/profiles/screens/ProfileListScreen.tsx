@@ -29,7 +29,10 @@ function pickDisplayName(profileData: Record<string, unknown> | null | undefined
 }
 
 function ProfileListContent() {
-  const data = useSuspenseQuery(() => apis.friendships.listReceivedFriendships());
+  const data = useSuspenseQuery(
+    ["friendships", "received"],
+    () => apis.friendships.listReceivedFriendships()
+  );
 
   const items: Item[] = (data ?? []).map((f: any) => ({
     id: f.id,

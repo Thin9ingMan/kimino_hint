@@ -1,58 +1,32 @@
-import { useRef } from "react";
+import {
+  useSuspenseQuery as useTanstackSuspenseQuery,
+  type QueryKey,
+  type UseSuspenseQueryOptions as TanstackUseSuspenseQueryOptions,
+} from "@tanstack/react-query";
 
-type AsyncState<T> = {
-  status: "pending" | "fulfilled" | "rejected";
-  value?: T;
-  error?: Error;
-};
+export type UseSuspenseQueryOptions<TQueryFnData, TData = TQueryFnData> = Omit<
+  TanstackUseSuspenseQueryOptions<TQueryFnData, Error, TData, QueryKey>,
+  "queryKey" | "queryFn"
+>;
 
 /**
- * Suspense-compatible hook for async operations.
- * Throws promise on first call (causing Suspense to show fallback),
- * throws error on rejection, returns data on success.
+ * Suspense wrapper for TanStack Query.
+ *
+ * - Uses TanStack's built-in suspense query hook
+ * - Throws a promise while loading (so `Suspense` shows fallback)
+ * - Throws the error (so `ErrorBoundary` catches it)
+ * - Returns resolved `data`
  */
-export function useSuspenseQuery<T>(
-  queryFn: () => Promise<T>,
-  deps: ReadonlyArray<unknown> = []
-): T {
-  const stateRef = useRef<AsyncState<T> | null>(null);
-  const depsRef = useRef<ReadonlyArray<unknown> | undefined>(undefined);
+export function useSuspenseQuery<TQueryFnData, TData = TQueryFnData>(
+  queryKey: QueryKey,
+  queryFn: () => Promise<TQueryFnData>,
+  options?: UseSuspenseQueryOptions<TQueryFnData, TData>
+): TData {
+  const { data } = useTanstackSuspenseQuery({
+    queryKey,
+    queryFn,
+    ...(options ?? {}),
+  });
 
-  // Check if dependencies changed
-  const depsChanged = 
-    !depsRef.current || 
-    depsRef.current.length !== deps.length ||
-    depsRef.current.some((dep, i) => dep !== deps[i]);
-
-  if (depsChanged || !stateRef.current) {
-    depsRef.current = deps;
-    stateRef.current = { status: "pending" };
-
-    const promise = queryFn()
-      .then((value) => {
-        if (stateRef.current?.status === "pending") {
-          stateRef.current = { status: "fulfilled", value };
-        }
-      })
-      .catch((error) => {
-        if (stateRef.current?.status === "pending") {
-          stateRef.current = { status: "rejected", error };
-        }
-      });
-
-    // Throw promise to trigger Suspense
-    throw promise;
-  }
-
-  const state = stateRef.current;
-
-  if (state.status === "rejected") {
-    throw state.error;
-  }
-
-  if (state.status === "pending") {
-    throw new Promise(() => {}); // This shouldn't happen, but just in case
-  }
-
-  return state.value as T;
+  return data;
 }

@@ -40,10 +40,45 @@ const MakeFalseSelection = () => {
     }
   }, []);
 
+    const fetchFakeNames = useCallback(async () => {
+    if (!answers.name) return;
+    console.log("偽名生成を開始します:", answers.name);
+    try{
+      const response = await apis.llm.generateFakeNames({fakeNamesRequest: {
+        inputName: answers.name,
+        variance: "とても良く似ている名前",
+      }});
+      console.log(response);
+      const receivedNames = Array.from(response.output || []);
+      console.log(receivedNames)
+      if (receivedNames.length > 0) setFalseName1(receivedNames[0] || "");
+      if (receivedNames.length > 1) setFalseName2(receivedNames[1] || "");
+      if (receivedNames.length > 2) setFalseName3(receivedNames[2] || "");
+      console.log("falseName",falseName1);
+      
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        console.err(err);
+      } else {
+        console.error("Failed to fetch profile:", err);
+      }
+    } finally {
+      setInitialLoading(false);
+    }
+  },[answers.name])
+
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
 
+    useEffect(() => {
+    if (answers.name) {
+        fetchFakeNames();
+    }
+  }, [answers.name, fetchFakeNames]);
+
+  
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     const falseAnswers = {

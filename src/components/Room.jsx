@@ -19,8 +19,11 @@ const Room = () => {
         <Link to="/">
           <button>ホームへ戻る</button>
         </Link>
-        
-        <Link to={roomId ? "/make_false_selection" : "#"} style={{ pointerEvents: roomId ? "auto" : "none" }}>
+
+        <Link
+          to={roomId ? "/make_false_selection" : "#"}
+          style={{ pointerEvents: roomId ? "auto" : "none" }}
+        >
           <button disabled={!roomId}>確認</button>
         </Link>
       </div>

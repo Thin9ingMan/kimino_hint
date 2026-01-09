@@ -1,25 +1,29 @@
-import { useState } from "react";
-
-// QRコード画像は src/assets に置く想定
-import sampleQRCode from "../assets/sample-qr.png";
+import { useMemo, useState } from "react";
 
 export default function MakeQRCode() {
   const [showQRCode, setShowQRCode] = useState(false);
 
+  // Minimal replacement: generate a QR image via public API from a payload.
+  // Payload is a shareable profile URL when possible.
+  const qrPayload = useMemo(() => {
+    const basePath = String(import.meta.env.BASE_URL || "/");
+    const normalizedBase = basePath.endsWith("/") ? basePath : `${basePath}/`;
+
+    // If we can infer userId from localStorage/token etc in the future, plug it here.
+    // For now keep it deterministic and still valid as a page URL.
+    return `${window.location.origin}${normalizedBase}me/profile`;
+  }, []);
+
+  const qrImageUrl = useMemo(() => {
+    const data = encodeURIComponent(qrPayload);
+    return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${data}`;
+  }, [qrPayload]);
+
   const handleGenerate = () => {
-    // ボタン押したらQR表示
     setShowQRCode(true);
   };
 
-  const handleDownload = () => {
-    // 画像をダウンロード
-    const link = document.createElement("a");
-    link.href = sampleQRCode;
-    link.download = "qr_code.png"; // ダウンロード時のファイル名
-    link.click();
-  };
-
-return (
+  return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       <h1>QRコード発行</h1>
 
@@ -33,13 +37,11 @@ return (
       {showQRCode && (
         <div>
           <p>QRコードが発行されました</p>
-          {/* QRコード画像を中央表示 */}
           <img
-            src={sampleQRCode}
+            src={qrImageUrl}
             alt="QRコード"
             style={{ display: "block", margin: "0 auto", width: "200px", height: "200px" }}
           />
-         
         </div>
       )}
     </div>

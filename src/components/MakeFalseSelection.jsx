@@ -19,9 +19,13 @@ const MakeFalseSelection = () => {
     hobby: "",
     favoriteArtist: "",
   });
+  const [error, setError] = useState(null);
+  const [initialLoading, setInitialLoading] = useState(false);
   const navigate = useNavigate();
 
   const fetchProfile = useCallback(async () => {
+    setInitialLoading(true);
+    setError(null);
     try {
       const response = await apis.profiles().getMyProfile();
       const profileData = response.profileData || {};
@@ -31,6 +35,7 @@ const MakeFalseSelection = () => {
         hobby: profileData.hobby || "",
         favoriteArtist: profileData.favoriteArtist || "",
       });
+     
     } catch (err) {
       if (err?.response?.status === 404) {
         setAnswers({ name: "", hobby: "", favoriteArtist: "" });
@@ -40,10 +45,42 @@ const MakeFalseSelection = () => {
     }
   }, []);
 
+  const fetchFakeNames = useCallback(async () => {
+    if (!answers.name) return;
+    console.log("偽名生成を開始します:", answers.name);
+    try{
+      const response = await apis.llms().generateFakeNames({fakeNamesRequest: {
+        inputName: answers.name,
+        variance: "とても良く似ている名前",
+      }});
+      console.log(response);
+      const receivedNames = Array.from(response.output || []);
+      console.log(receivedNames)
+      if (receivedNames.length > 0) setFalseName1(receivedNames[0] || "");
+      if (receivedNames.length > 1) setFalseName2(receivedNames[1] || "");
+      if (receivedNames.length > 2) setFalseName3(receivedNames[2] || "");
+      console.log("falseName",falseName1);
+      
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        console.err(err);
+      } else {
+        console.error("Failed to fetch profile:", err);
+      }
+    } finally {
+      setInitialLoading(false);
+    }
+  },[answers.name])
+
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
 
+  useEffect(() => {
+    if (answers.name) {
+        fetchFakeNames();
+    }
+  }, [answers.name, fetchFakeNames]);
   const handleSubmit = (e) => {
     e.preventDefault();
     const falseAnswers = {
@@ -51,7 +88,6 @@ const MakeFalseSelection = () => {
       hobby: [falseHobby1, falseHobby2, falseHobby3],
       artist: [falseArtist1, falseArtist2, falseArtist3],
     };
-    console.log(falseAnswers);
     // 直で渡す
     window.localStorage.setItem("falseAnswers", JSON.stringify(falseAnswers));
     // 直で渡す
@@ -180,7 +216,7 @@ const MakeFalseSelection = () => {
           onChange={(e) => setFalseArtist3(e.target.value)}
           autoFocus
         ></input>
-        <button type="submit" onClick={() => handleSubmit()}>
+        <button type="submit">
           次へ
         </button>
         <button type="button" onClick={() => onClickHandler()}>

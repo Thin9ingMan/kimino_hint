@@ -118,7 +118,7 @@ const Question = () => {
       answer: answers["hobby"],
     },
     {
-      question: "名前は何でしょう？",
+      question: "改めて名前は何でしょう？",
       select: ["佐藤花", "石川凛", "清水葵", answers["name"]],
       answer: answers["name"],
     },

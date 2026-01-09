@@ -1,5 +1,5 @@
 // Centralized OpenAPI client factory. Reads base URL from Vite env VITE_API_BASE_URL and attaches JWT via localStorage.
-import { Configuration, AuthenticationApi, ProfilesApi, UsersApi, EventsApi, FriendshipsApi } from "@yuki-js/quarkus-crud-js-fetch-client";
+import { Configuration, AuthenticationApi, ProfilesApi, UsersApi, EventsApi, FriendshipsApi, LLMApi } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 const BASE_PATH = import.meta.env.VITE_API_BASE_URL || "https://quarkus-crud.ouchiserver.aokiapp.com";
 
@@ -15,4 +15,5 @@ export const apis = {
   users: () => new UsersApi(createConfig()),
   events: () => new EventsApi(createConfig()),
   friendships: () => new FriendshipsApi(createConfig()),
+  llms: () => new LLMApi(createConfig())
 };

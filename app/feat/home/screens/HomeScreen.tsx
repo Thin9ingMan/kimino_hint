@@ -67,7 +67,7 @@ function HomeContent() {
 
 export function HomeScreen() {
   return (
-    <Container title="キミのヒント">
+    <Container title="キミのヒント" isHome>
       <ErrorBoundary
         fallback={(error, retry) => (
           <Alert color="red" title="データ取得エラー">

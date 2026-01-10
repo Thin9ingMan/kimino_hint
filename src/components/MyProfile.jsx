@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./Profile.css";
 import { ProfileCard } from "./ui/ProfileCard";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { apis } from "../api/client";
+import { apis } from "@/shared/api";
 import Button from "./ui/Button";
 
 const MyProfile = () => {
@@ -39,11 +39,11 @@ const MyProfile = () => {
     setError(null);
     try {
       // userId は /api/me から取るのが適切（プロフィールの有無に依存しない）
-      const me = await apis.auth().getCurrentUser();
+      const me = await apis.auth.getCurrentUser();
       const myId = me?.id;
 
       // プロフィール本文は /api/me/profile
-      const response = await apis.profiles().getMyProfile();
+      const response = await apis.profiles.getMyProfile();
       const profileData = response.profileData || {};
 
       setProfile({

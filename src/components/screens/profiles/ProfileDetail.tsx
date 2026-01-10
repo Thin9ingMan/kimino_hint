@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { apis } from "../../../api/client";
+import { apis } from "@/shared/api";
 import { ProfileCard } from "../../ui/ProfileCard";
 import Button from "../../ui/Button";
 import common from "../../ui/common.module.css";
@@ -54,7 +54,7 @@ export default function ProfileDetail() {
     setError(null);
 
     try {
-      const res = await apis.profiles().getUserProfile({ userId });
+      const res = await apis.profiles.getUserProfile({ userId });
       setProfile(mapProfileDataToUiProfile(res?.profileData as unknown as Record<string, unknown>));
     } catch (e: any) {
       console.error("Failed to fetch user profile:", e);
@@ -78,7 +78,7 @@ export default function ProfileDetail() {
     try {
       // POST /api/users/{userId}/friendship (operationId: receiveFriendship)
       // generated client requires { userId, receiveFriendshipRequest }
-      await apis.friendships().receiveFriendship({
+      await apis.friendships.receiveFriendship({
         userId,
         receiveFriendshipRequest: {
           meta: {

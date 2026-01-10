@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { apis } from "../api/client";
+import { apis } from "@/shared/api";
 import { falseNames, falseHobbies, falseArtists } from "./Array";
 import "./MakeFalseSelection.css";
 
@@ -27,7 +27,7 @@ const MakeFalseSelection = () => {
     setInitialLoading(true);
     setError(null);
     try {
-      const response = await apis.profiles().getMyProfile();
+      const response = await apis.profiles.getMyProfile();
       const profileData = response.profileData || {};
 
       setAnswers({
@@ -49,7 +49,7 @@ const MakeFalseSelection = () => {
     if (!answers.name) return;
     console.log("偽名生成を開始します:", answers.name);
     try{
-      const response = await apis.llms().generateFakeNames({fakeNamesRequest: {
+      const response = await apis.llm.generateFakeNames({fakeNamesRequest: {
         inputName: answers.name,
         variance: "とても良く似ている名前",
       }});

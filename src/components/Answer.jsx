@@ -1,7 +1,7 @@
 // import { Link } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { apis } from "../api/client"; // APIクライアント
+import { apis } from "@/shared/api"; // APIクライアント
 import "./Answer.css";
 
 const Answer = () => {
@@ -30,7 +30,7 @@ const Answer = () => {
   useEffect(() => {
     const fetchAdditionalInfo = async () => {
       try {
-        const response = await apis.profiles().getMyProfile();
+        const response = await apis.profiles.getMyProfile();
         const profileData = response.profileData || {}; // プロフィールデータを取得
         setAdditionalInformation(profileData.facultyDetail || ""); // APIから取得した学部情報を表示
       } catch (err) {

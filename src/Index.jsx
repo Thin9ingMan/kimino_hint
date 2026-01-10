@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./start_page.css";
-import { apis } from "./api/client"; // APIクライアント
+import { apis } from "@/shared/api"; // APIクライアント
 
 const Index = () => {
   const [canStartQuiz, setCanStartQuiz] = useState(false);
@@ -11,7 +11,7 @@ const Index = () => {
   useEffect(() => {
     const checkProfileExists = async () => {
       try {
-        await apis.profiles().getMyProfile();
+        await apis.profiles.getMyProfile();
         setCanStartQuiz(true); // プロフィールあり
       } catch (err) {
         if (err?.response?.status === 404) {

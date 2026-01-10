@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { apis } from "../../../api/client";
+import { apis } from "@/shared/api";
 import { ProfileCard } from "../../ui/ProfileCard";
 import Button from "../../ui/Button";
 import common from "../../ui/common.module.css";
@@ -68,7 +68,7 @@ export default function ListProfile() {
     setInitialLoading(true);
     setError(null);
     try {
-      const res = await apis.friendships().listReceivedFriendships();
+      const res = await apis.friendships.listReceivedFriendships();
       setItems((res ?? []) as unknown as Friendship[]);
       // senderProfile が null のことがあるため、プロフィールは別途 N+1 で埋める（useEffect側）
     } catch (e) {
@@ -106,7 +106,7 @@ export default function ListProfile() {
         const results = await Promise.all(
           missing.map(async (userId) => {
             try {
-              const res = await apis.profiles().getUserProfile({ userId });
+              const res = await apis.profiles.getUserProfile({ userId });
               return { userId, profile: mapProfileDataToUiProfile(res?.profileData as any) };
             } catch (e) {
               console.error(`Failed to fetch profile for userId=${userId}:`, e);

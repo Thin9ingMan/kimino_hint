@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apis } from "../api/client";
+import { apis } from "@/shared/api";
 
 // Authenticate on first mount. Does not expose the app until a valid token is present.
 export function useGuestAuth() {
@@ -27,7 +27,7 @@ export function useGuestAuth() {
     };
 
     const obtainAnonymousToken = async () => {
-      const raw = await apis.auth().createGuestUserRaw();
+      const raw = await apis.auth.createGuestUserRaw();
       const authHeader = raw.raw.headers.get("Authorization") || "";
       const bearer = authHeader.startsWith("Bearer ")
         ? authHeader.slice(7)
@@ -37,7 +37,7 @@ export function useGuestAuth() {
     };
 
     const validateCurrentUser = async () => {
-      await apis.auth().getCurrentUser();
+      await apis.auth.getCurrentUser();
     };
 
     const ensureAuth = async () => {

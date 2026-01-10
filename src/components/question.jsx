@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { faculty, grade } from "./Array";
-import { apis } from "../api/client";
+import { apis } from "@/shared/api";
 import "./Question.css";
 const defaultProfile = {
   name: "",
@@ -31,7 +31,7 @@ const Question = () => {
     setInitialLoading(true);
     setError(null);
     try {
-      const response = await apis.profiles().getMyProfile();
+      const response = await apis.profiles.getMyProfile();
       const profileData = response.profileData || {};
 
       setProfile({

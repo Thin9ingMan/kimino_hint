@@ -1,0 +1,7 @@
+# One extension ID per line.
+# Example: ms-vscode.vscode-typescript-next
+
+dbaeumer.vscode-eslint
+esbenp.prettier-vscode
+GitHub.copilot
+GitHub.copilot-chat

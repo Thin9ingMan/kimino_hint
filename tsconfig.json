@@ -10,7 +10,14 @@
     "strict": false,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    // aliasing "@" to "src" folder
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["app/*"],
+      "@components/*": ["src/components/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["app", "src"],
+  "exclude": ["node_modules", "dist"]
 }

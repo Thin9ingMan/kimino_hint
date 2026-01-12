@@ -45,7 +45,11 @@ const MakeFalseSelection = () => {
     }
   }, []);
 
+<<<<<<< HEAD
   const fetchFakeNames = useCallback(async () => {
+=======
+    const fetchFakeNames = useCallback(async () => {
+>>>>>>> master
     if (!answers.name) return;
     console.log("偽名生成を開始します:", answers.name);
     try{
@@ -76,11 +80,21 @@ const MakeFalseSelection = () => {
     fetchProfile();
   }, [fetchProfile]);
 
+<<<<<<< HEAD
   useEffect(() => {
+=======
+    useEffect(() => {
+>>>>>>> master
     if (answers.name) {
         fetchFakeNames();
     }
   }, [answers.name, fetchFakeNames]);
+<<<<<<< HEAD
+=======
+
+  
+  
+>>>>>>> master
   const handleSubmit = (e) => {
     e.preventDefault();
     const falseAnswers = {

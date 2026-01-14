@@ -18,6 +18,7 @@ import { JoinEventScreen } from "./feat/events/screens/JoinEventScreen";
 import { EventLobbyScreen } from "./feat/events/screens/EventLobbyScreen";
 import { EventLiveScreen } from "./feat/events/screens/EventLiveScreen";
 import { QuizIntroScreen } from "./feat/quiz/screens/QuizIntroScreen";
+import { QuizEditScreen } from "./feat/quiz/screens/QuizEditScreen";
 import { QuizChallengeListScreen } from "./feat/quiz/screens/QuizChallengeListScreen";
 import { QuizQuestionScreen } from "./feat/quiz/screens/QuizQuestionScreen";
 import { QuizResultScreen } from "./feat/quiz/screens/QuizResultScreen";
@@ -56,6 +57,10 @@ export function AppRouter() {
 
         {/* Quiz (under events) */}
         <Route path="/events/:eventId/quiz" element={<QuizIntroScreen />} />
+        <Route
+          path="/events/:eventId/quiz/edit"
+          element={<QuizEditScreen />}
+        />
         <Route
           path="/events/:eventId/quiz/challenges"
           element={<QuizChallengeListScreen />}

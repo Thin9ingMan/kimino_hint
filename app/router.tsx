@@ -24,6 +24,7 @@ import { QuizResultScreen } from "./feat/quiz/screens/QuizResultScreen";
 import { QrHubScreen } from "./feat/qr/screens/QrHubScreen";
 import { QrProfileScreen } from "./feat/qr/screens/QrProfileScreen";
 import { QrScanScreen } from "./feat/qr/screens/QrScanScreen";
+import { QrJoinScreen } from "./feat/qr/screens/QrJoinScreen";
 
 export function AppRouter() {
   return (
@@ -70,6 +71,7 @@ export function AppRouter() {
 
         {/* QR */}
         <Route path="/qr" element={<QrHubScreen />} />
+        <Route path="/qr/join" element={<QrJoinScreen />} />
         <Route path="/qr/profile" element={<QrProfileScreen />} />
         <Route path="/qr/scan" element={<QrScanScreen />} />
 

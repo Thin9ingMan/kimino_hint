@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { apis } from "@/shared/api";
 import { falseNames, falseHobbies, falseArtists } from "./Array";
 import "./MakeFalseSelection.css";
-
+import { useAuth } from "@/shared/auth";
 const MakeFalseSelection = () => {
   const [falseName1, setFalseName1] = useState("");
   const [falseName2, setFalseName2] = useState("");
@@ -14,13 +14,17 @@ const MakeFalseSelection = () => {
   const [falseArtist1, setFalseArtist1] = useState("");
   const [falseArtist2, setFalseArtist2] = useState("");
   const [falseArtist3, setFalseArtist3] = useState("");
+  const [verySimilarFalseName1, setVerySimilarFalseName1] = useState("");
+  const [verySimilarFalseName2, setVerySimilarFalseName2] = useState("");
+  const [verySimilarFalseName3, setVerySimilarFalseName3] = useState("");
+  const [initialLoading, setInitialLoading] = useState(true);
   const [answers, setAnswers] = useState({
     name: "",
     hobby: "",
     favoriteArtist: "",
   });
   const navigate = useNavigate();
-
+  const { state } = useAuth();
   const fetchProfile = useCallback(async () => {
     try {
       const response = await apis.profiles.getMyProfile();
@@ -41,19 +45,25 @@ const MakeFalseSelection = () => {
   }, []);
 
   const fetchFakeNames = useCallback(async () => {
-    if (!answers.name) return;
-    console.log("偽名生成を開始します:", answers.name);
-    try {
-      const response = await apis.llm.generateFakeNames({
-        fakeNamesRequest: {
-          inputName: answers.name,
-          variance: "とても良く似ている名前",
-        },
-      });
+    if (!answers.name) return
+    try{
+      const response = await apis.llm.generateFakeNames({fakeNamesRequest: {
+        inputName: answers.name,
+        variance: "互いにまったく似ていない名前",
+      }});
+      const quiz4Response = await apis.llm.generateFakeNames({fakeNamesRequest: {
+        inputName: answers.name,
+        variance: "ほぼ違いがない名前",
+      }});
       const receivedNames = Array.from(response.output || []);
+      const quiz4ReceivedNames = Array.from(quiz4Response.output || []);
       if (receivedNames.length > 0) setFalseName1(receivedNames[0] || "");
       if (receivedNames.length > 1) setFalseName2(receivedNames[1] || "");
       if (receivedNames.length > 2) setFalseName3(receivedNames[2] || "");
+      if (quiz4ReceivedNames.length > 0) setVerySimilarFalseName1(quiz4ReceivedNames[0] || "");
+      if (quiz4ReceivedNames.length > 1) setVerySimilarFalseName2(quiz4ReceivedNames[1] || "");
+      if (quiz4ReceivedNames.length > 2) setVerySimilarFalseName3(quiz4ReceivedNames[2] || "");
+      
     } catch (err) {
       if (err?.response?.status === 404) {
         console.error(err);
@@ -73,12 +83,15 @@ const MakeFalseSelection = () => {
     }
   }, [answers.name, fetchFakeNames]);
 
+
   const handleSubmit = (e) => {
+
     e.preventDefault();
     const falseAnswers = {
       username: [falseName1, falseName2, falseName3],
       hobby: [falseHobby1, falseHobby2, falseHobby3],
       artist: [falseArtist1, falseArtist2, falseArtist3],
+      verySimilarUsername: [verySimilarFalseName1, verySimilarFalseName2, verySimilarFalseName3],
     };
     window.localStorage.setItem("falseAnswers", JSON.stringify(falseAnswers));
     navigate("/question", {
@@ -136,14 +149,15 @@ const MakeFalseSelection = () => {
       <form onSubmit={handleSubmit}>
         <label>名前</label>
         <div id="answer">正解:{answers.name}</div>
-        <input
-          type="text"
-          value={falseName1}
-          onChange={(e) => setFalseName1(e.target.value)}
-          placeholder="名前"
-          autoFocus
-        ></input>
-
+          <input
+            type="text"
+            value={falseName1}
+            onChange={(e) => setFalseName1(e.target.value)}
+            placeholder="名前1"
+            autoFocus
+          />
+          
+      
         <input
           type="text"
           value={falseName2}

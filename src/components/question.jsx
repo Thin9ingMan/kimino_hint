@@ -120,7 +120,7 @@ const Question = () => {
     },
     {
       question: "改めて、名前は何でしょう？",
-      select: ["佐藤花", "石川凛", "清水葵", answers["name"]],
+      select: [falseAnswers?.verySimilarUsername?.[0] || "佐藤花",falseAnswers?.verySimilarUsername?.[1] || "石川凛",falseAnswers?.verySimilarUsername?.[2] || "清水葵", answers["name"]],
       answer: answers["name"],
     },
     {

@@ -72,11 +72,11 @@ function EventLobbyContent() {
       />
 
       <Stack gap="sm">
-        <Button component={Link} to={`/events/${eventId}/live`} fullWidth>
-          ライブ更新を見る
+        <Button component={Link} to={`/events/${eventId}/quiz`} fullWidth>
+          自分のクイズを編集
         </Button>
-        <Button component={Link} to={`/events/${eventId}/quiz`} fullWidth variant="light">
-          クイズへ
+        <Button component={Link} to={`/events/${eventId}/quiz/challenges`} fullWidth variant="light">
+          クイズに挑戦
         </Button>
         <Button component={Link} to="/events" variant="default" fullWidth>
           イベント一覧へ

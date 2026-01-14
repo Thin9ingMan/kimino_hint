@@ -18,8 +18,8 @@ import { JoinEventScreen } from "./feat/events/screens/JoinEventScreen";
 import { EventLobbyScreen } from "./feat/events/screens/EventLobbyScreen";
 import { EventLiveScreen } from "./feat/events/screens/EventLiveScreen";
 import { QuizIntroScreen } from "./feat/quiz/screens/QuizIntroScreen";
+import { QuizChallengeListScreen } from "./feat/quiz/screens/QuizChallengeListScreen";
 import { QuizQuestionScreen } from "./feat/quiz/screens/QuizQuestionScreen";
-import { QuizAnswerScreen } from "./feat/quiz/screens/QuizAnswerScreen";
 import { QuizResultScreen } from "./feat/quiz/screens/QuizResultScreen";
 import { QrHubScreen } from "./feat/qr/screens/QrHubScreen";
 import { QrProfileScreen } from "./feat/qr/screens/QrProfileScreen";
@@ -56,14 +56,17 @@ export function AppRouter() {
         {/* Quiz (under events) */}
         <Route path="/events/:eventId/quiz" element={<QuizIntroScreen />} />
         <Route
-          path="/events/:eventId/quiz/:questionNo"
+          path="/events/:eventId/quiz/challenges"
+          element={<QuizChallengeListScreen />}
+        />
+        <Route
+          path="/events/:eventId/quiz/challenge/:targetUserId/:questionNo"
           element={<QuizQuestionScreen />}
         />
         <Route
-          path="/events/:eventId/quiz/:questionNo/answer"
-          element={<QuizAnswerScreen />}
+          path="/events/:eventId/quiz/challenge/:targetUserId/result"
+          element={<QuizResultScreen />}
         />
-        <Route path="/events/:eventId/result" element={<QuizResultScreen />} />
 
         {/* QR */}
         <Route path="/qr" element={<QrHubScreen />} />

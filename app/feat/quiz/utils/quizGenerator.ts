@@ -24,9 +24,17 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
   // Question 1: Name/Display Name
   if (profileData.displayName) {
     const correctAnswer = profileData.displayName as string;
-    const fakeNames = ["田中 太郎", "鈴木 花子", "佐藤 健"];
-    const allChoices = [correctAnswer, ...fakeNames.slice(0, 3)];
-    const shuffled = shuffleArray(allChoices) as [string, string, string, string];
+    const fakeNames = ["田中 太郎", "鈴木 花子", "佐藤 健", "高橋 美咲"];
+    // Ensure we have exactly 3 fake names different from the correct answer
+    const filtered = fakeNames.filter(name => name !== correctAnswer);
+    const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
+    
+    // Ensure we have exactly 4 choices
+    while (allChoices.length < 4) {
+      allChoices.push(`ユーザー${Math.floor(Math.random() * 100)}`);
+    }
+    
+    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({
@@ -39,9 +47,15 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
   // Question 2: Hobby
   if (profileData.hobby) {
     const correctAnswer = profileData.hobby as string;
-    const fakeHobbies = ["読書", "サッカー", "料理"];
-    const allChoices = [correctAnswer, ...fakeHobbies.slice(0, 3)];
-    const shuffled = shuffleArray(allChoices) as [string, string, string, string];
+    const fakeHobbies = ["読書", "サッカー", "料理", "音楽鑑賞"];
+    const filtered = fakeHobbies.filter(hobby => hobby !== correctAnswer);
+    const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
+    
+    while (allChoices.length < 4) {
+      allChoices.push(`趣味${Math.floor(Math.random() * 100)}`);
+    }
+    
+    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({
@@ -54,9 +68,15 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
   // Question 3: Favorite Artist
   if (profileData.favoriteArtist) {
     const correctAnswer = profileData.favoriteArtist as string;
-    const fakeArtists = ["YOASOBI", "ヨルシカ", "米津玄師"];
-    const allChoices = [correctAnswer, ...fakeArtists.slice(0, 3)];
-    const shuffled = shuffleArray(allChoices) as [string, string, string, string];
+    const fakeArtists = ["YOASOBI", "ヨルシカ", "米津玄師", "あいみょん"];
+    const filtered = fakeArtists.filter(artist => artist !== correctAnswer);
+    const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
+    
+    while (allChoices.length < 4) {
+      allChoices.push(`アーティスト${Math.floor(Math.random() * 100)}`);
+    }
+    
+    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({
@@ -72,7 +92,12 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
     const fakeGrades = ["1年生", "2年生", "3年生", "4年生"];
     const filtered = fakeGrades.filter((g) => g !== correctAnswer);
     const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
-    const shuffled = shuffleArray(allChoices) as [string, string, string, string];
+    
+    while (allChoices.length < 4) {
+      allChoices.push(`${Math.floor(Math.random() * 6) + 1}年生`);
+    }
+    
+    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({
@@ -88,7 +113,12 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
     const fakeFaculties = ["工学部", "理学部", "文学部", "経済学部"];
     const filtered = fakeFaculties.filter((f) => f !== correctAnswer);
     const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
-    const shuffled = shuffleArray(allChoices) as [string, string, string, string];
+    
+    while (allChoices.length < 4) {
+      allChoices.push(`学部${Math.floor(Math.random() * 100)}`);
+    }
+    
+    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({

@@ -73,7 +73,7 @@ function QuizResultContent() {
     <Stack gap="md">
       <Alert color="blue" title="クイズ完了">
         <Text size="sm">
-          {(targetUser as any).profileSummary?.displayName || `ユーザー ${targetUserId}`}のクイズが完了しました！
+          {targetUser.profileSummary?.displayName || `ユーザー ${targetUserId}`}のクイズが完了しました！
         </Text>
       </Alert>
 

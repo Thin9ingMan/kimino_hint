@@ -69,32 +69,38 @@ function QuizChallengeListContent() {
         </Text>
       </Alert>
 
-      {otherAttendees.map((attendee) => (
-        <Paper key={attendee.id} withBorder p="md" radius="md">
-          <Group>
-            <Avatar radius="xl" />
-            <Stack gap={4} style={{ flex: 1 }}>
-              <Title order={5}>
-                {(attendee as any).displayName || `ユーザー ${attendee.attendeeUserId}`}
-              </Title>
-              <Text size="sm" c="dimmed">
-                クイズに挑戦する
-              </Text>
-            </Stack>
-            <Button
-              component={Link}
-              to={`/events/${eventId}/quiz/challenge/${attendee.attendeeUserId}/1`}
-              onClick={() => {
-                // Clear previous quiz data when starting a new quiz
-                sessionStorage.removeItem(`quiz_${eventId}_${attendee.attendeeUserId}_answers`);
-                sessionStorage.removeItem(`quiz_${eventId}_${attendee.attendeeUserId}_score`);
-              }}
-            >
-              開始
-            </Button>
-          </Group>
-        </Paper>
-      ))}
+      {otherAttendees.map((attendee) => {
+        // Safely extract display name from attendee metadata
+        const displayName = (attendee.meta as any)?.displayName || 
+                          `ユーザー ${attendee.attendeeUserId}`;
+        
+        return (
+          <Paper key={attendee.id} withBorder p="md" radius="md">
+            <Group>
+              <Avatar radius="xl" />
+              <Stack gap={4} style={{ flex: 1 }}>
+                <Title order={5}>
+                  {displayName}
+                </Title>
+                <Text size="sm" c="dimmed">
+                  クイズに挑戦する
+                </Text>
+              </Stack>
+              <Button
+                component={Link}
+                to={`/events/${eventId}/quiz/challenge/${attendee.attendeeUserId}/1`}
+                onClick={() => {
+                  // Clear previous quiz data when starting a new quiz
+                  sessionStorage.removeItem(`quiz_${eventId}_${attendee.attendeeUserId}_answers`);
+                  sessionStorage.removeItem(`quiz_${eventId}_${attendee.attendeeUserId}_score`);
+                }}
+              >
+                開始
+              </Button>
+            </Group>
+          </Paper>
+        );
+      })}
 
       <Button component={Link} to={`/events/${eventId}`} variant="default" fullWidth>
         ロビーへ戻る

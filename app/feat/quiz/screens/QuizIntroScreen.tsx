@@ -7,7 +7,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
@@ -63,12 +63,21 @@ function QuizEditorContent() {
   const existingQuiz = eventUserData?.userData?.myQuiz as Quiz | undefined;
 
   // Initialize quiz - either from existing data or generate from profile
-  const [quiz, setQuiz] = useState<Quiz>(() => {
-    if (existingQuiz?.questions?.length) {
-      return existingQuiz;
+  const [quiz, setQuiz] = useState<Quiz>(() => ({
+    questions: [],
+    updatedAt: new Date().toISOString(),
+  }));
+
+  // Generate quiz when profile is available
+  useEffect(() => {
+    if (quiz.questions.length === 0 && myProfile) {
+      if (existingQuiz?.questions?.length) {
+        setQuiz(existingQuiz);
+      } else {
+        setQuiz(generateQuizFromProfile(myProfile));
+      }
     }
-    return generateQuizFromProfile(myProfile);
-  });
+  }, [myProfile, existingQuiz, quiz.questions.length]);
 
   const [saving, setSaving] = useState(false);
 

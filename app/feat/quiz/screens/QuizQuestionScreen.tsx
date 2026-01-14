@@ -126,7 +126,7 @@ function QuizQuestionContent() {
           問題 {questionNo} / {quiz.questions.length}
         </Text>
         <Text size="sm" fw={500}>
-          {(targetUser as any).profileSummary?.displayName || `ユーザー ${targetUserId}`}のクイズ
+          {targetUser.profileSummary?.displayName || `ユーザー ${targetUserId}`}のクイズ
         </Text>
       </Group>
 

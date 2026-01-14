@@ -44,8 +44,8 @@ const MakeFalseSelection = () => {
     }
   }, []);
 
-    const fetchFakeNames = useCallback(async () => {
-    if (!answers.name) return;
+  const fetchFakeNames = useCallback(async () => {
+    if (!answers.name) return
     try{
       const response = await apis.llm.generateFakeNames({fakeNamesRequest: {
         inputName: answers.name,
@@ -66,28 +66,26 @@ const MakeFalseSelection = () => {
       
     } catch (err) {
       if (err?.response?.status === 404) {
-        console.err(err);
+        console.error(err);
       } else {
-        console.error("Failed to fetch profile:", err);
+        console.error("Failed to fetch fake names:", err);
       }
-    } finally {
-      setInitialLoading(false);
     }
-  },[answers.name])
+  }, [answers.name]);
 
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (answers.name) {
-        fetchFakeNames();
+      fetchFakeNames();
     }
   }, [answers.name, fetchFakeNames]);
 
 
-  
-  const handleSubmit = async(e) => {
+  const handleSubmit = (e) => {
+
     e.preventDefault();
     const falseAnswers = {
       username: [falseName1, falseName2, falseName3],
@@ -95,11 +93,7 @@ const MakeFalseSelection = () => {
       artist: [falseArtist1, falseArtist2, falseArtist3],
       verySimilarUsername: [verySimilarFalseName1, verySimilarFalseName2, verySimilarFalseName3],
     };
-    console.log(falseAnswers);
-    // 直で渡す
     window.localStorage.setItem("falseAnswers", JSON.stringify(falseAnswers));
-    // 直で渡す
-    // navigate("/question");
     navigate("/question", {
       state: {
         falseAnswers: falseAnswers,

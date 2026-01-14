@@ -61,6 +61,10 @@ function HomeContent() {
       >
         マイページへ
       </Button>
+
+      <Button component={Link} to="/help" variant="default" fullWidth>
+          使い方
+      </Button>
     </Stack>
   );
 }

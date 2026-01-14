@@ -29,17 +29,7 @@ export function MeHubScreen() {
           受け取ったプロフィール一覧
         </Button>
 
-        <Button component={Link} to="/events" variant="subtle" fullWidth>
-          イベント
-        </Button>
-
-        <Button component={Link} to="/qr" variant="subtle" fullWidth>
-          QRコード
-        </Button>
-
-        <Button component={Link} to="/help" variant="default" fullWidth>
-          使い方
-        </Button>
+        
       </Stack>
     </Container>
   );

@@ -40,45 +40,39 @@ const MakeFalseSelection = () => {
     }
   }, []);
 
-    const fetchFakeNames = useCallback(async () => {
+  const fetchFakeNames = useCallback(async () => {
     if (!answers.name) return;
     console.log("偽名生成を開始します:", answers.name);
-    try{
-      const response = await apis.llm.generateFakeNames({fakeNamesRequest: {
-        inputName: answers.name,
-        variance: "とても良く似ている名前",
-      }});
-      console.log(response);
+    try {
+      const response = await apis.llm.generateFakeNames({
+        fakeNamesRequest: {
+          inputName: answers.name,
+          variance: "とても良く似ている名前",
+        },
+      });
       const receivedNames = Array.from(response.output || []);
-      console.log(receivedNames)
       if (receivedNames.length > 0) setFalseName1(receivedNames[0] || "");
       if (receivedNames.length > 1) setFalseName2(receivedNames[1] || "");
       if (receivedNames.length > 2) setFalseName3(receivedNames[2] || "");
-      console.log("falseName",falseName1);
-      
     } catch (err) {
       if (err?.response?.status === 404) {
-        console.err(err);
+        console.error(err);
       } else {
-        console.error("Failed to fetch profile:", err);
+        console.error("Failed to fetch fake names:", err);
       }
-    } finally {
-      setInitialLoading(false);
     }
-  },[answers.name])
+  }, [answers.name]);
 
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (answers.name) {
-        fetchFakeNames();
+      fetchFakeNames();
     }
   }, [answers.name, fetchFakeNames]);
 
-  
-  
   const handleSubmit = (e) => {
     e.preventDefault();
     const falseAnswers = {
@@ -86,11 +80,7 @@ const MakeFalseSelection = () => {
       hobby: [falseHobby1, falseHobby2, falseHobby3],
       artist: [falseArtist1, falseArtist2, falseArtist3],
     };
-    console.log(falseAnswers);
-    // 直で渡す
     window.localStorage.setItem("falseAnswers", JSON.stringify(falseAnswers));
-    // 直で渡す
-    // navigate("/question");
     navigate("/question", {
       state: {
         falseAnswers: falseAnswers,

@@ -84,6 +84,11 @@ function QuizChallengeListContent() {
             <Button
               component={Link}
               to={`/events/${eventId}/quiz/challenge/${attendee.attendeeUserId}/1`}
+              onClick={() => {
+                // Clear previous quiz data when starting a new quiz
+                sessionStorage.removeItem(`quiz_${eventId}_${attendee.attendeeUserId}_answers`);
+                sessionStorage.removeItem(`quiz_${eventId}_${attendee.attendeeUserId}_score`);
+              }}
             >
               開始
             </Button>

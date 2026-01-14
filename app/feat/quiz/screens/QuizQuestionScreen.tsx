@@ -80,8 +80,30 @@ function QuizQuestionContent() {
     (choiceIndex: number) => {
       setSelectedIndex(choiceIndex);
       setShowResult(true);
+
+      // Store the answer in session storage
+      const storageKey = `quiz_${eventId}_${targetUserId}_answers`;
+      const stored = sessionStorage.getItem(storageKey);
+      const answers = stored ? JSON.parse(stored) : [];
+      
+      const isCorrect = choiceIndex === question.correctIndex;
+      answers[questionIndex] = {
+        questionIndex,
+        selectedIndex: choiceIndex,
+        isCorrect,
+        answeredAt: new Date().toISOString(),
+      };
+
+      sessionStorage.setItem(storageKey, JSON.stringify(answers));
+
+      // Update score
+      const scoreKey = `quiz_${eventId}_${targetUserId}_score`;
+      const currentScore = parseInt(sessionStorage.getItem(scoreKey) || "0", 10);
+      if (isCorrect) {
+        sessionStorage.setItem(scoreKey, String(currentScore + 1));
+      }
     },
-    []
+    [eventId, targetUserId, questionIndex, question.correctIndex]
   );
 
   const handleNext = useCallback(() => {

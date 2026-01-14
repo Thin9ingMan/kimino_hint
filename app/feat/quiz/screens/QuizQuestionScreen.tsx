@@ -8,7 +8,7 @@ import {
   Group,
   Progress,
 } from "@mantine/core";
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
@@ -17,6 +17,7 @@ import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import type { Quiz, QuizAnswer } from "../types";
+import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
 
 function QuizQuestionContent() {
   const eventId = useNumericParam("eventId");
@@ -28,12 +29,20 @@ function QuizQuestionContent() {
     throw new Error("パラメータが不正です");
   }
 
-  // Fetch target user's quiz
+  // Fetch target user's profile and quiz data
   const targetUser = useSuspenseQuery(
     ["quiz", "challenge", "user", eventId, targetUserId],
     async () => {
       const user = await apis.users.getUserById({ userId: targetUserId });
       return user;
+    }
+  );
+
+  const targetProfile = useSuspenseQuery(
+    ["quiz", "challenge", "profile", eventId, targetUserId],
+    async () => {
+      const profile = await apis.profiles.getUserProfile({ userId: targetUserId });
+      return profile;
     }
   );
 
@@ -48,7 +57,15 @@ function QuizQuestionContent() {
     }
   );
 
-  const quiz = quizData?.userData?.myQuiz as Quiz | undefined;
+  // Generate quiz from profile + fake answers
+  const quiz = useMemo(() => {
+    const fakeAnswers = quizData?.userData?.fakeAnswers;
+    if (!fakeAnswers || !targetProfile) {
+      return null;
+    }
+    return generateQuizFromProfileAndFakes(targetProfile, fakeAnswers);
+  }, [targetProfile, quizData]);
+
   const questionIndex = questionNo - 1;
 
   if (!quiz || !quiz.questions?.length) {

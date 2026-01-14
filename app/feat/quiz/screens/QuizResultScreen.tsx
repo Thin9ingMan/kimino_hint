@@ -18,6 +18,8 @@ import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import type { Quiz } from "../types";
+import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
+import { getPerformanceRating } from "../utils/validation";
 
 function QuizResultContent() {
   const eventId = useNumericParam("eventId");
@@ -27,14 +29,20 @@ function QuizResultContent() {
     throw new Error("パラメータが不正です");
   }
 
-  // Fetch target user's quiz to show final result
-  // In a real implementation, we'd track answers in state/session storage
-  // For now, we'll show a placeholder result
+  // Fetch target user's profile and quiz to show final result
   const targetUser = useSuspenseQuery(
     ["quiz", "result", "user", eventId, targetUserId],
     async () => {
       const user = await apis.users.getUserById({ userId: targetUserId });
       return user;
+    }
+  );
+
+  const targetProfile = useSuspenseQuery(
+    ["quiz", "result", "profile", eventId, targetUserId],
+    async () => {
+      const profile = await apis.profiles.getUserProfile({ userId: targetUserId });
+      return profile;
     }
   );
 
@@ -49,7 +57,14 @@ function QuizResultContent() {
     }
   );
 
-  const quiz = quizData?.userData?.myQuiz as Quiz | undefined;
+  // Generate quiz from profile + fake answers
+  const quiz = useMemo(() => {
+    const fakeAnswers = quizData?.userData?.fakeAnswers;
+    if (!fakeAnswers || !targetProfile) {
+      return null;
+    }
+    return generateQuizFromProfileAndFakes(targetProfile, fakeAnswers);
+  }, [targetProfile, quizData]);
 
   // TODO: Get actual score from session/state
   // For now, using placeholder
@@ -60,14 +75,7 @@ function QuizResultContent() {
 
   const totalQuestions = quiz?.questions?.length ?? 0;
   const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
-
-  const getRatingText = (percent: number) => {
-    if (percent === 100) return "完璧です！";
-    if (percent >= 80) return "素晴らしい！";
-    if (percent >= 60) return "良くできました！";
-    if (percent >= 40) return "もう少し！";
-    return "次回頑張りましょう！";
-  };
+  const performanceRating = getPerformanceRating(percentage);
 
   return (
     <Stack gap="md">
@@ -85,7 +93,7 @@ function QuizResultContent() {
             <RingProgress
               size={200}
               thickness={20}
-              sections={[{ value: percentage, color: percentage >= 60 ? "green" : percentage >= 40 ? "yellow" : "red" }]}
+              sections={[{ value: percentage, color: performanceRating.color }]}
               label={
                 <Center>
                   <Stack gap={0} align="center">
@@ -102,8 +110,11 @@ function QuizResultContent() {
           </Center>
 
           <Stack gap={4} align="center">
+            <Text size="xl">
+              {performanceRating.emoji}
+            </Text>
             <Text size="lg" fw={600}>
-              {getRatingText(percentage)}
+              {performanceRating.label}
             </Text>
             <Group gap="xs">
               <Text size="md" fw={500}>

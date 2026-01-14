@@ -17,6 +17,12 @@ import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
+import {
+  handleQuizError,
+  getErrorMessage,
+  LLMGenerationError,
+  QuizSaveError,
+} from "../utils/errors";
 
 interface FakeAnswers {
   username: string[];
@@ -63,6 +69,8 @@ function QuizEditContent() {
 
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasAttemptedGeneration, setHasAttemptedGeneration] = useState(false);
 
   const displayName = (profileData.displayName as string) || "";
   const hobby = (profileData.hobby as string) || "";
@@ -73,6 +81,7 @@ function QuizEditContent() {
     if (!displayName) return;
 
     setGenerating(true);
+    setHasAttemptedGeneration(true);
     try {
       const [differentNames, similarNames] = await Promise.all([
         apis.llm.generateFakeNames({
@@ -104,6 +113,8 @@ function QuizEditContent() {
         setVerySimilarName3(similarOutput[2] || "");
     } catch (err) {
       console.error("Failed to generate fake names:", err);
+      const quizError = new LLMGenerationError(err as Error);
+      setError(getErrorMessage(quizError));
     } finally {
       setGenerating(false);
     }
@@ -111,19 +122,59 @@ function QuizEditContent() {
 
   // Auto-generate on mount
   useEffect(() => {
-    if (displayName && !falseName1) {
+    if (
+      displayName &&
+      !hasAttemptedGeneration &&
+      !falseName1 &&
+      !falseName2 &&
+      !falseName3 &&
+      !verySimilarName1 &&
+      !verySimilarName2 &&
+      !verySimilarName3
+    ) {
       fetchFakeNames();
     }
-  }, [displayName, falseName1, fetchFakeNames]);
+  }, [
+    displayName,
+    hasAttemptedGeneration,
+    falseName1,
+    falseName2,
+    falseName3,
+    verySimilarName1,
+    verySimilarName2,
+    verySimilarName3,
+    fetchFakeNames,
+  ]);
 
   const handleSave = useCallback(async () => {
+    // Validate that we have enough fake answers
+    const nameCount = [falseName1, falseName2, falseName3].filter(n => n.trim()).length;
+    const hobbyCount = [falseHobby1, falseHobby2, falseHobby3].filter(h => h.trim()).length;
+    const artistCount = [falseArtist1, falseArtist2, falseArtist3].filter(a => a.trim()).length;
+    
+    if (nameCount < 3) {
+      setError("名前の間違い選択肢を3つ入力してください");
+      return;
+    }
+    
+    if (hobby && hobbyCount < 3) {
+      setError("趣味の間違い選択肢を3つ入力してください");
+      return;
+    }
+    
+    if (favoriteArtist && artistCount < 3) {
+      setError("アーティストの間違い選択肢を3つ入力してください");
+      return;
+    }
+
     setSaving(true);
+    setError(null);
     try {
       const fakeAnswers: FakeAnswers = {
-        username: [falseName1, falseName2, falseName3],
-        hobby: [falseHobby1, falseHobby2, falseHobby3],
-        artist: [falseArtist1, falseArtist2, falseArtist3],
-        verySimilarUsername: [verySimilarName1, verySimilarName2, verySimilarName3],
+        username: [falseName1, falseName2, falseName3].filter(n => n.trim()),
+        hobby: [falseHobby1, falseHobby2, falseHobby3].filter(h => h.trim()),
+        artist: [falseArtist1, falseArtist2, falseArtist3].filter(a => a.trim()),
+        verySimilarUsername: [verySimilarName1, verySimilarName2, verySimilarName3].filter(n => n.trim()),
       };
 
       // Save fake answers to EventUserData
@@ -142,7 +193,8 @@ function QuizEditContent() {
       navigate(`/events/${eventId}`);
     } catch (err) {
       console.error("Failed to save fake answers:", err);
-      alert("クイズの保存に失敗しました");
+      const quizError = new QuizSaveError(err as Error);
+      setError(getErrorMessage(quizError));
     } finally {
       setSaving(false);
     }
@@ -161,6 +213,8 @@ function QuizEditContent() {
     verySimilarName1,
     verySimilarName2,
     verySimilarName3,
+    hobby,
+    favoriteArtist,
     navigate,
   ]);
 
@@ -192,6 +246,12 @@ function QuizEditContent() {
 
   return (
     <Stack gap="md">
+      {error && (
+        <Alert color="red" title="エラー" onClose={() => setError(null)} withCloseButton>
+          <Text size="sm">{error}</Text>
+        </Alert>
+      )}
+
       <Alert color="blue" title="間違いの選択肢を作成">
         <Text size="sm">
           他の参加者が挑戦するクイズの間違いの選択肢を作成してください。
@@ -223,18 +283,21 @@ function QuizEditContent() {
             value={falseName1}
             onChange={(e) => setFalseName1(e.currentTarget.value)}
             placeholder="例: 田中 太郎"
+            required
           />
           <TextInput
             label="選択肢 2"
             value={falseName2}
             onChange={(e) => setFalseName2(e.currentTarget.value)}
             placeholder="例: 鈴木 花子"
+            required
           />
           <TextInput
             label="選択肢 3"
             value={falseName3}
             onChange={(e) => setFalseName3(e.currentTarget.value)}
             placeholder="例: 佐藤 健"
+            required
           />
           <Text size="sm" c="dimmed" mt="xs">
             間違いの選択肢（とても似ている名前）

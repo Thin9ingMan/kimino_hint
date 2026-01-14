@@ -21,6 +21,37 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 /**
+ * Ensure we have exactly 4 unique choices
+ */
+function ensureFourChoices(
+  correctAnswer: string,
+  fakeChoices: string[],
+  fallbackPrefix: string
+): [string, string, string, string] {
+  const allChoices = [correctAnswer];
+  
+  // Add fake choices, filtering out duplicates and empty strings
+  for (const fake of fakeChoices) {
+    if (fake && fake.trim() && fake !== correctAnswer && !allChoices.includes(fake)) {
+      allChoices.push(fake);
+      if (allChoices.length >= 4) break;
+    }
+  }
+  
+  // Fill remaining slots with generated choices
+  let counter = 1;
+  while (allChoices.length < 4) {
+    const generated = `${fallbackPrefix}${counter}`;
+    if (!allChoices.includes(generated)) {
+      allChoices.push(generated);
+    }
+    counter++;
+  }
+  
+  return allChoices.slice(0, 4) as [string, string, string, string];
+}
+
+/**
  * Generate quiz questions from profile data and fake answers
  * This matches the legacy behavior where fake answers are pre-generated
  */
@@ -34,19 +65,17 @@ export function generateQuizFromProfileAndFakes(
   // Question 1: Name (with completely different fake names)
   if (profileData.displayName && fakeAnswers.username) {
     const correctAnswer = profileData.displayName as string;
-    const fakes = fakeAnswers.username.slice(0, 3);
-    const allChoices = [correctAnswer, ...fakes];
-    
-    while (allChoices.length < 4) {
-      allChoices.push(`ユーザー${Math.floor(Math.random() * 100)}`);
-    }
-    
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
+    const choices = ensureFourChoices(
+      correctAnswer,
+      fakeAnswers.username || [],
+      "ユーザー"
+    );
+    const shuffled = shuffleArray(choices);
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({
       question: "名前は何でしょう？",
-      choices: shuffled,
+      choices: shuffled as [string, string, string, string],
       correctIndex,
     });
   }
@@ -54,20 +83,18 @@ export function generateQuizFromProfileAndFakes(
   // Question 2: Faculty (if exists in profile)
   if (profileData.faculty) {
     const correctAnswer = profileData.faculty as string;
-    const fakeFaculties = ["工学部", "理学部", "文学部", "経済学部"];
-    const filtered = fakeFaculties.filter((f) => f !== correctAnswer);
-    const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
-    
-    while (allChoices.length < 4) {
-      allChoices.push(`学部${Math.floor(Math.random() * 100)}`);
-    }
-    
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
+    const fakeFaculties = ["工学部", "理学部", "文学部", "経済学部", "医学部", "法学部"];
+    const choices = ensureFourChoices(
+      correctAnswer,
+      fakeFaculties.filter(f => f !== correctAnswer),
+      "その他学部"
+    );
+    const shuffled = shuffleArray(choices);
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({
       question: "学部は何でしょう？",
-      choices: shuffled,
+      choices: shuffled as [string, string, string, string],
       correctIndex,
     });
   }
@@ -75,20 +102,18 @@ export function generateQuizFromProfileAndFakes(
   // Question 3: Grade (if exists in profile)
   if (profileData.grade) {
     const correctAnswer = profileData.grade as string;
-    const fakeGrades = ["1年生", "2年生", "3年生", "4年生"];
-    const filtered = fakeGrades.filter((g) => g !== correctAnswer);
-    const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
-    
-    while (allChoices.length < 4) {
-      allChoices.push(`${Math.floor(Math.random() * 6) + 1}年生`);
-    }
-    
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
+    const fakeGrades = ["1年生", "2年生", "3年生", "4年生", "5年生", "6年生"];
+    const choices = ensureFourChoices(
+      correctAnswer,
+      fakeGrades.filter(g => g !== correctAnswer),
+      "その他"
+    );
+    const shuffled = shuffleArray(choices);
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({
       question: "学年は何でしょう？",
-      choices: shuffled,
+      choices: shuffled as [string, string, string, string],
       correctIndex,
     });
   }
@@ -96,19 +121,17 @@ export function generateQuizFromProfileAndFakes(
   // Question 4: Hobby
   if (profileData.hobby && fakeAnswers.hobby) {
     const correctAnswer = profileData.hobby as string;
-    const fakes = fakeAnswers.hobby.slice(0, 3);
-    const allChoices = [correctAnswer, ...fakes];
-    
-    while (allChoices.length < 4) {
-      allChoices.push(`趣味${Math.floor(Math.random() * 100)}`);
-    }
-    
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
+    const choices = ensureFourChoices(
+      correctAnswer,
+      fakeAnswers.hobby || [],
+      "趣味"
+    );
+    const shuffled = shuffleArray(choices);
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({
       question: "趣味は何でしょう？",
-      choices: shuffled,
+      choices: shuffled as [string, string, string, string],
       correctIndex,
     });
   }
@@ -116,19 +139,17 @@ export function generateQuizFromProfileAndFakes(
   // Question 5: Name again (with very similar fake names)
   if (profileData.displayName && fakeAnswers.verySimilarUsername) {
     const correctAnswer = profileData.displayName as string;
-    const fakes = fakeAnswers.verySimilarUsername.slice(0, 3);
-    const allChoices = [correctAnswer, ...fakes];
-    
-    while (allChoices.length < 4) {
-      allChoices.push(`${correctAnswer.substring(0, 1)}${Math.floor(Math.random() * 10)}`);
-    }
-    
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
+    const choices = ensureFourChoices(
+      correctAnswer,
+      fakeAnswers.verySimilarUsername || [],
+      "名前"
+    );
+    const shuffled = shuffleArray(choices);
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({
       question: "改めて、名前は何でしょう？",
-      choices: shuffled,
+      choices: shuffled as [string, string, string, string],
       correctIndex,
     });
   }
@@ -136,19 +157,17 @@ export function generateQuizFromProfileAndFakes(
   // Question 6: Favorite Artist
   if (profileData.favoriteArtist && fakeAnswers.artist) {
     const correctAnswer = profileData.favoriteArtist as string;
-    const fakes = fakeAnswers.artist.slice(0, 3);
-    const allChoices = [correctAnswer, ...fakes];
-    
-    while (allChoices.length < 4) {
-      allChoices.push(`アーティスト${Math.floor(Math.random() * 100)}`);
-    }
-    
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
+    const choices = ensureFourChoices(
+      correctAnswer,
+      fakeAnswers.artist || [],
+      "アーティスト"
+    );
+    const shuffled = shuffleArray(choices);
     const correctIndex = shuffled.indexOf(correctAnswer);
 
     questions.push({
       question: "好きなアーティストは誰でしょう？",
-      choices: shuffled,
+      choices: shuffled as [string, string, string, string],
       correctIndex,
     });
   }

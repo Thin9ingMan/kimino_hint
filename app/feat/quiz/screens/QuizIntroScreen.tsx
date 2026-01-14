@@ -53,7 +53,7 @@ function QuizEditorContent() {
           userId: meData.id,
         });
         return userData;
-      } catch (err) {
+      } catch {
         // User data doesn't exist yet - that's okay
         return null;
       }

@@ -23,6 +23,9 @@ import {
   LLMGenerationError,
   QuizSaveError,
 } from "../utils/errors";
+import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
+import { falseHobbies, falseArtists } from "../utils/fakeData";
+
 
 interface FakeAnswers {
   username: string[];
@@ -144,7 +147,39 @@ function QuizEditContent() {
     verySimilarName2,
     verySimilarName3,
     fetchFakeNames,
+    fetchFakeNames,
   ]);
+
+  // Helper for random selection
+  const getRandomFakes = (source: string[], exclude: string, count: number = 3) => {
+    const filtered = source.filter((item) => item !== exclude);
+    const result: string[] = [];
+    const sourceCopy = [...filtered];
+    
+    while (result.length < count && sourceCopy.length > 0) {
+      const randomIndex = Math.floor(Math.random() * sourceCopy.length);
+      result.push(sourceCopy[randomIndex]);
+      sourceCopy.splice(randomIndex, 1);
+    }
+    return result;
+  };
+
+  const generateHobbies = () => {
+    if (!hobby) return;
+    const fakes = getRandomFakes(falseHobbies, hobby);
+    if (fakes.length > 0) setFalseHobby1(fakes[0]);
+    if (fakes.length > 1) setFalseHobby2(fakes[1]);
+    if (fakes.length > 2) setFalseHobby3(fakes[2]);
+  };
+
+  const generateArtists = () => {
+    if (!favoriteArtist) return;
+    const fakes = getRandomFakes(falseArtists, favoriteArtist);
+    if (fakes.length > 0) setFalseArtist1(fakes[0]);
+    if (fakes.length > 1) setFalseArtist2(fakes[1]);
+    if (fakes.length > 2) setFalseArtist3(fakes[2]);
+  };
+
 
   const handleSave = useCallback(async () => {
     // Validate that we have enough fake answers
@@ -177,17 +212,24 @@ function QuizEditContent() {
         verySimilarUsername: [verySimilarName1, verySimilarName2, verySimilarName3].filter(n => n.trim()),
       };
 
-      // Save fake answers to EventUserData
+      // Generate the actual Quiz object
+      const myQuiz = generateQuizFromProfileAndFakes(myProfile, fakeAnswers);
+
+      // Save Quiz to EventUserData
       await apis.events.updateEventUserData({
         eventId,
         userId: meData.id,
         eventUserDataUpdateRequest: {
           userData: {
+            myQuiz, 
+            // We can still keep fakeAnswers if we want to support re-editing exactly as is, 
+            // but the requirement implies generating the quiz for others to play.
             fakeAnswers,
             updatedAt: new Date().toISOString(),
           },
         },
       });
+
 
       // Navigate back to lobby
       navigate(`/events/${eventId}`);
@@ -259,7 +301,21 @@ function QuizEditContent() {
         </Text>
       </Alert>
 
+
+
+      <Group justify="center">
+        <Button
+          onClick={fetchFakeNames}
+          loading={generating}
+          variant="default"
+          size="xs"
+        >
+          名前を自動生成 (AI)
+        </Button>
+      </Group>
+
       {/* Name section */}
+
       <Paper withBorder p="md" radius="md">
         <Stack gap="sm">
           <Title order={5}>名前</Title>
@@ -323,6 +379,16 @@ function QuizEditContent() {
         </Stack>
       </Paper>
 
+      <Group justify="center">
+        <Button
+          onClick={generateHobbies}
+          variant="default"
+          size="xs"
+        >
+          趣味の選択肢を自動生成 (ランダム)
+        </Button>
+      </Group>
+
       {/* Hobby section */}
       <Paper withBorder p="md" radius="md">
         <Stack gap="sm">
@@ -362,6 +428,20 @@ function QuizEditContent() {
           />
         </Stack>
       </Paper>
+
+
+
+
+
+      <Group justify="center">
+        <Button
+          onClick={generateArtists}
+          variant="default"
+          size="xs"
+        >
+          アーティストの選択肢を自動生成 (ランダム)
+        </Button>
+      </Group>
 
       {/* Artist section */}
       <Paper withBorder p="md" radius="md">
@@ -403,15 +483,8 @@ function QuizEditContent() {
         </Stack>
       </Paper>
 
-      <Group justify="center">
-        <Button
-          onClick={fetchFakeNames}
-          loading={generating}
-          variant="default"
-        >
-          名前を自動生成
-        </Button>
-      </Group>
+
+
 
       <Stack gap="sm">
         <Button onClick={handleSave} loading={saving} fullWidth size="md">

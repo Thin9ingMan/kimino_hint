@@ -34,10 +34,13 @@ function CreateEventContent() {
     try {
       const event = await apis.events.createEvent({
         eventCreateRequest: {
-          title: title.trim(),
-          description: description.trim() || undefined,
-          maxParticipants: typeof maxParticipants === 'number' ? maxParticipants : undefined,
+          meta: {
+            name: title.trim(),
+            description: description.trim() || undefined,
+            maxParticipants: typeof maxParticipants === 'number' ? maxParticipants : undefined,
+          },
         },
+
       });
 
       // Navigate to the event lobby

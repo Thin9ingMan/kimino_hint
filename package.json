@@ -20,11 +20,13 @@
     "@yuki-js/quarkus-crud-js-fetch-client": "https://quarkus-crud.ouchiserver.aokiapp.com/clients/yuki-js-quarkus-crud-js-fetch-client-0.0.1.tgz",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-qr-code": "^2.0.18",
     "react-router-dom": "^7.9.1",
     "tabler-icons-react": "^1.56.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@playwright/test": "^1.57.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@typescript-eslint/eslint-plugin": "^8.52.0",

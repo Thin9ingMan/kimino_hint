@@ -37,9 +37,31 @@ function QuizChallengeListContent() {
     ["quiz", "challenges", "attendees", eventId],
     async () => {
       const eventAttendees = await apis.events.listEventAttendees({ eventId });
-      return eventAttendees;
+      // Fetch profiles to get display names
+
+      const enriched = await Promise.all(
+        eventAttendees.map(async (a: any) => {
+          const uid = a.attendeeUserId || a.userId;
+          try {
+            const profile = await apis.profiles.getUserProfile({ userId: uid });
+            return {
+              ...a,
+
+              userId: uid,
+              displayName: profile.profileData?.displayName,
+              profileData: profile.profileData,
+            };
+          } catch (e) {
+            return { ...a, userId: uid };
+          }
+
+        })
+      );
+      return enriched;
+
     }
   );
+
 
   // Filter out the current user from the list
   const otherAttendees = attendees.filter(
@@ -71,8 +93,11 @@ function QuizChallengeListContent() {
 
       {otherAttendees.map((attendee) => {
         // Safely extract display name from attendee metadata
-        const displayName = (attendee.meta as any)?.displayName || 
+        // Safely extract display name from enrichment or metadata
+        const displayName = (attendee as any).displayName || 
+                          (attendee.meta as any)?.displayName || 
                           `ユーザー ${attendee.attendeeUserId}`;
+
         
         return (
           <Paper key={attendee.id} withBorder p="md" radius="md">

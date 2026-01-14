@@ -28,13 +28,14 @@ function HomeContent() {
     <Stack gap="sm">
       <Button
         component={Link}
-        to={canStartQuiz ? "/room" : "#"}
+        to={canStartQuiz ? "/events" : "#"}
         disabled={!canStartQuiz}
         fullWidth
         size="md"
       >
-        クイズへ
+        イベントへ (クイズ)
       </Button>
+
 
       {!canStartQuiz && (
         <Text c="dimmed" size="sm" ta="center">

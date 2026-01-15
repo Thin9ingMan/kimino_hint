@@ -171,7 +171,7 @@ test.describe('Multi-Question Quiz Flow', () => {
     
     // BUG: The result should NOT be shown immediately without user selecting an answer
     // If the bug exists, "不正解" will be visible immediately
-    const isResultShownImmediately = await page.getByText('不正解').isVisible() === true;
+    const isResultShownImmediately = await page.getByText('不正解').isVisible();
     
     if (isResultShownImmediately) {
       console.error('BUG REPRODUCED: "不正解" is shown immediately on Question 2 without user selection!');
@@ -214,7 +214,7 @@ test.describe('Multi-Question Quiz Flow', () => {
     await expect(page.getByText('結果')).toBeVisible({ timeout: 10000 });
     
     // Verify score is 3/3
-    await expect(page.locator('text=/3.*3/').or(page.getByText('3 / 3'))).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/3\\s*\\/\\s*3/').or(page.getByText('3 / 3'))).toBeVisible({ timeout: 5000 });
 
     console.log('Multi-question quiz flow completed successfully - Bug NOT reproduced (test passed)');
   });

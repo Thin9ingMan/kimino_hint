@@ -13,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { apis } from "@/shared/api";
-import { addJoinedEventId } from "@/shared/storage/joinedEvents";
 
 function CreateEventContent() {
   const navigate = useNavigate();
@@ -43,11 +42,6 @@ function CreateEventContent() {
         },
 
       });
-
-      // Save created event as joined event (creator is also a participant)
-      if (event.id) {
-        addJoinedEventId(event.id);
-      }
 
       // Navigate to the event lobby
       navigate(`/events/${event.id}`);

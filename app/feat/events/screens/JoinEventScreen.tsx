@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { apis } from "@/shared/api";
-import { addJoinedEventId } from "@/shared/storage/joinedEvents";
 
 function JoinEventContent() {
   const navigate = useNavigate();
@@ -34,11 +33,6 @@ function JoinEventContent() {
           invitationCode: invitationCode.trim(),
         },
       });
-
-      // Save joined event ID to localStorage
-      if (result.eventId) {
-        addJoinedEventId(result.eventId);
-      }
 
       // Navigate to event lobby
       navigate(`/events/${result.eventId}`);

@@ -141,7 +141,7 @@ test.describe('Host Quiz Save Issue', () => {
     // 4. WORKAROUND: Manually join own event
     await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
       headers: { 'Authorization': token },
-      data: { invitationCode: invitationCode }
+      data: { invitationCode }
     });
 
     console.log('✅ Host manually joined their own event (workaround)');

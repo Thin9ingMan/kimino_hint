@@ -51,8 +51,14 @@ function CreateEventContent() {
             invitationCode: event.invitationCode,
           },
         });
-      } catch (joinErr) {
-        console.warn("Failed to auto-join event as creator:", joinErr);
+      } catch (joinErr: any) {
+        console.warn("Failed to auto-join event as creator:", {
+          error: joinErr,
+          eventId: event.id,
+          invitationCode: event.invitationCode,
+          status: joinErr?.response?.status,
+          message: joinErr?.message
+        });
         // Don't fail the whole flow - user can manually join later if needed
       }
 

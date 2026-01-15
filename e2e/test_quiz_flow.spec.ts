@@ -29,9 +29,11 @@ test('Quiz Creation Flow', async ({ page }) => {
     headers: { 'Authorization': token },
     data: {
       eventCreateRequest: {
-        name: "E2E Test Event",
-        description: "Testing Quiz Flow",
-        capacity: 10
+        meta: {
+          name: "E2E Test Event",
+          description: "Testing Quiz Flow",
+          maxParticipants: 10
+        }
       }
     }
   });

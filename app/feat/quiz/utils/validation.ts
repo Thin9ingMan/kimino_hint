@@ -32,26 +32,30 @@ export function validateQuizQuestion(question: QuizQuestion): ValidationResult {
   } else {
     // Check for empty choices
     question.choices.forEach((choice, index) => {
-      if (!choice || choice.trim().length === 0) {
+      if (!choice.text || choice.text.trim().length === 0) {
         errors.push(`選択肢${index + 1}が空です`);
       }
-      if (choice && choice.length > 100) {
+      if (choice.text && choice.text.length > 100) {
         errors.push(`選択肢${index + 1}が長すぎます（最大100文字）`);
       }
     });
 
     // Check for duplicate choices
-    const uniqueChoices = new Set(question.choices.map(c => c.trim()));
+    const uniqueChoices = new Set(question.choices.map(c => c.text.trim()));
     if (uniqueChoices.size !== question.choices.length) {
       errors.push("選択肢に重複があります");
     }
   }
 
-  // Validate correct index
-  if (typeof question.correctIndex !== 'number') {
-    errors.push("正解インデックスが不正です");
-  } else if (question.correctIndex < 0 || question.correctIndex > 3) {
-    errors.push("正解インデックスが範囲外です（0-3）");
+  // Validate correct choice
+  const correctChoices = question.choices.filter(c => c.isCorrect);
+  if (correctChoices.length === 0) {
+    errors.push("正解が設定されていません");
+  } else if (correctChoices.length > 1) {
+    // Optional: Allow multiple correct answers? 
+    // For now, let's keep it to exactly one for strictness if desired, 
+    // but the model supports more.
+    errors.push("正解は1つだけ設定してください");
   }
 
   return {
@@ -76,8 +80,8 @@ export function validateQuiz(quiz: Quiz): ValidationResult {
     errors.push("問題が1つもありません");
   }
 
-  if (quiz.questions.length > 10) {
-    errors.push("問題が多すぎます（最大10問）");
+  if (quiz.questions.length > 20) {
+    errors.push("問題が多すぎます（最大20問）");
   }
 
   // Validate each question
@@ -175,7 +179,11 @@ export function prepareQuizForSave(quiz: Quiz): { quiz: Quiz | null; errors: str
     questions: quiz.questions.map(q => ({
       ...q,
       question: sanitizeInput(q.question),
-      choices: q.choices.map(c => sanitizeInput(c)) as [string, string, string, string],
+      choices: q.choices.map(c => ({
+        ...c,
+        text: sanitizeInput(c.text)
+      })),
+      explanation: q.explanation ? sanitizeInput(q.explanation) : undefined,
     })),
   };
 
@@ -187,9 +195,10 @@ export function prepareQuizForSave(quiz: Quiz): { quiz: Quiz | null; errors: str
  */
 export function isAnswerCorrect(
   question: QuizQuestion,
-  selectedIndex: number
+  selectedChoiceId: string
 ): boolean {
-  return selectedIndex === question.correctIndex;
+  const choice = question.choices.find(c => c.id === selectedChoiceId);
+  return !!choice?.isCorrect;
 }
 
 /**
@@ -197,14 +206,14 @@ export function isAnswerCorrect(
  */
 export function calculateScore(
   questions: QuizQuestion[],
-  answers: number[]
+  answerChoiceIds: string[]
 ): {
   score: number;
   total: number;
   percentage: number;
   correct: boolean[];
 } {
-  const correct = questions.map((q, i) => isAnswerCorrect(q, answers[i]));
+  const correct = questions.map((q, i) => isAnswerCorrect(q, answerChoiceIds[i]));
   const score = correct.filter(Boolean).length;
   const total = questions.length;
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;

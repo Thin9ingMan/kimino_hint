@@ -1,4 +1,4 @@
-import type { Quiz, QuizQuestion } from "../types";
+import type { Quiz, QuizQuestion, QuizChoice } from "../types";
 import type { UserProfile } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 interface FakeAnswers {
@@ -21,39 +21,44 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 /**
- * Ensure we have exactly 4 unique choices
+ * Ensure we have exactly 4 unique choices as QuizChoice objects
  */
 function ensureFourChoices(
   correctAnswer: string,
   fakeChoices: string[],
   fallbackPrefix: string
-): [string, string, string, string] {
-  const allChoices = [correctAnswer];
+): QuizChoice[] {
+  const choiceTexts = [correctAnswer];
   
   // Add fake choices, filtering out duplicates and empty strings
   for (const fake of fakeChoices) {
-    if (fake && fake.trim() && fake !== correctAnswer && !allChoices.includes(fake)) {
-      allChoices.push(fake);
-      if (allChoices.length >= 4) break;
+    if (fake && fake.trim() && fake !== correctAnswer && !choiceTexts.includes(fake)) {
+      choiceTexts.push(fake);
+      if (choiceTexts.length >= 4) break;
     }
   }
   
   // Fill remaining slots with generated choices
   let counter = 1;
-  while (allChoices.length < 4) {
+  while (choiceTexts.length < 4) {
     const generated = `${fallbackPrefix}${counter}`;
-    if (!allChoices.includes(generated)) {
-      allChoices.push(generated);
+    if (!choiceTexts.includes(generated)) {
+      choiceTexts.push(generated);
     }
     counter++;
   }
   
-  return allChoices.slice(0, 4) as [string, string, string, string];
+  // Map to QuizChoice objects with unique IDs and direct correctness
+  return choiceTexts.map(text => ({
+    id: crypto.randomUUID(),
+    text: text,
+    isCorrect: text === correctAnswer,
+  }));
 }
 
 /**
  * Generate quiz questions from profile data and fake answers
- * This matches the legacy behavior where fake answers are pre-generated
+ * Updated to support the new robust ID-based format.
  */
 export function generateQuizFromProfileAndFakes(
   profile: UserProfile,
@@ -62,114 +67,47 @@ export function generateQuizFromProfileAndFakes(
   const profileData = profile.profileData || {};
   const questions: QuizQuestion[] = [];
 
-  // Question 1: Name (with completely different fake names)
+  const addQuestion = (title: string, correctValue: string, fakes: string[], fallback: string) => {
+    const choices = ensureFourChoices(correctValue, fakes, fallback);
+    const shuffledChoices = shuffleArray(choices);
+    
+    questions.push({
+      id: crypto.randomUUID(),
+      question: title,
+      choices: shuffledChoices,
+    });
+  };
+
+  // Question 1: Name
   if (profileData.displayName && fakeAnswers.username) {
-    const correctAnswer = profileData.displayName as string;
-    const choices = ensureFourChoices(
-      correctAnswer,
-      fakeAnswers.username || [],
-      "ユーザー"
-    );
-    const shuffled = shuffleArray(choices);
-    const correctIndex = shuffled.indexOf(correctAnswer);
-
-    questions.push({
-      question: "名前は何でしょう？",
-      choices: shuffled as [string, string, string, string],
-      correctIndex,
-    });
+    addQuestion("名前は何でしょう？", profileData.displayName as string, fakeAnswers.username, "ユーザー");
   }
 
-  // Question 2: Faculty (if exists in profile)
+  // Question 2: Faculty
   if (profileData.faculty) {
-    const correctAnswer = profileData.faculty as string;
     const fakeFaculties = ["工学部", "理学部", "文学部", "経済学部", "医学部", "法学部"];
-    const choices = ensureFourChoices(
-      correctAnswer,
-      fakeFaculties.filter(f => f !== correctAnswer),
-      "その他学部"
-    );
-    const shuffled = shuffleArray(choices);
-    const correctIndex = shuffled.indexOf(correctAnswer);
-
-    questions.push({
-      question: "学部は何でしょう？",
-      choices: shuffled as [string, string, string, string],
-      correctIndex,
-    });
+    addQuestion("学部は何でしょう？", profileData.faculty as string, fakeFaculties.filter(f => f !== profileData.faculty), "その他学部");
   }
 
-  // Question 3: Grade (if exists in profile)
+  // Question 3: Grade
   if (profileData.grade) {
-    const correctAnswer = profileData.grade as string;
     const fakeGrades = ["1年生", "2年生", "3年生", "4年生", "5年生", "6年生"];
-    const choices = ensureFourChoices(
-      correctAnswer,
-      fakeGrades.filter(g => g !== correctAnswer),
-      "その他"
-    );
-    const shuffled = shuffleArray(choices);
-    const correctIndex = shuffled.indexOf(correctAnswer);
-
-    questions.push({
-      question: "学年は何でしょう？",
-      choices: shuffled as [string, string, string, string],
-      correctIndex,
-    });
+    addQuestion("学年は何でしょう？", profileData.grade as string, fakeGrades.filter(g => g !== profileData.grade), "その他");
   }
 
   // Question 4: Hobby
   if (profileData.hobby && fakeAnswers.hobby) {
-    const correctAnswer = profileData.hobby as string;
-    const choices = ensureFourChoices(
-      correctAnswer,
-      fakeAnswers.hobby || [],
-      "趣味"
-    );
-    const shuffled = shuffleArray(choices);
-    const correctIndex = shuffled.indexOf(correctAnswer);
-
-    questions.push({
-      question: "趣味は何でしょう？",
-      choices: shuffled as [string, string, string, string],
-      correctIndex,
-    });
+    addQuestion("趣味は何でしょう？", profileData.hobby as string, fakeAnswers.hobby, "趣味");
   }
 
-  // Question 5: Name again (with very similar fake names)
+  // Question 5: Name again
   if (profileData.displayName && fakeAnswers.verySimilarUsername) {
-    const correctAnswer = profileData.displayName as string;
-    const choices = ensureFourChoices(
-      correctAnswer,
-      fakeAnswers.verySimilarUsername || [],
-      "名前"
-    );
-    const shuffled = shuffleArray(choices);
-    const correctIndex = shuffled.indexOf(correctAnswer);
-
-    questions.push({
-      question: "改めて、名前は何でしょう？",
-      choices: shuffled as [string, string, string, string],
-      correctIndex,
-    });
+    addQuestion("改めて、名前は何でしょう？", profileData.displayName as string, fakeAnswers.verySimilarUsername, "名前");
   }
 
   // Question 6: Favorite Artist
   if (profileData.favoriteArtist && fakeAnswers.artist) {
-    const correctAnswer = profileData.favoriteArtist as string;
-    const choices = ensureFourChoices(
-      correctAnswer,
-      fakeAnswers.artist || [],
-      "アーティスト"
-    );
-    const shuffled = shuffleArray(choices);
-    const correctIndex = shuffled.indexOf(correctAnswer);
-
-    questions.push({
-      question: "好きなアーティストは誰でしょう？",
-      choices: shuffled as [string, string, string, string],
-      correctIndex,
-    });
+    addQuestion("好きなアーティストは誰でしょう？", profileData.favoriteArtist as string, fakeAnswers.artist, "アーティスト");
   }
 
   return {

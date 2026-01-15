@@ -47,8 +47,14 @@ function QuizResultContent() {
     ],
   ]);
 
-  // Generate quiz from profile + fake answers
+  // Generate quiz from profile + fake answers OR use stored myQuiz
   const quiz = useMemo(() => {
+    // 1. Try myQuiz (New Standard)
+    if (quizData?.userData?.myQuiz) {
+        return quizData.userData.myQuiz;
+    }
+
+    // 2. Legacy / Fallback
     const fakeAnswers = quizData?.userData?.fakeAnswers;
     if (!fakeAnswers || !targetProfile) {
       return null;

@@ -87,12 +87,12 @@ function QuizQuestionContent() {
   }
 
   const question = quiz.questions[questionIndex];
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
 
   const handleAnswer = useCallback(
-    (choiceIndex: number) => {
-      setSelectedIndex(choiceIndex);
+    (choiceId: string) => {
+      setSelectedChoiceId(choiceId);
       setShowResult(true);
 
       // Store the answer in session storage
@@ -100,10 +100,12 @@ function QuizQuestionContent() {
       const stored = sessionStorage.getItem(storageKey);
       const answers = stored ? JSON.parse(stored) : [];
       
-      const isCorrect = choiceIndex === question.correctIndex;
+      const selectedChoice = question.choices.find(c => c.id === choiceId);
+      const isCorrect = !!selectedChoice?.isCorrect;
+      
       answers[questionIndex] = {
-        questionIndex,
-        selectedIndex: choiceIndex,
+        questionId: question.id,
+        selectedChoiceId: choiceId,
         isCorrect,
         answeredAt: new Date().toISOString(),
       };
@@ -117,7 +119,7 @@ function QuizQuestionContent() {
         sessionStorage.setItem(scoreKey, String(currentScore + 1));
       }
     },
-    [eventId, targetUserId, questionIndex, question.correctIndex]
+    [eventId, targetUserId, questionIndex, question.id, question.choices]
   );
 
   const handleNext = useCallback(() => {
@@ -130,7 +132,8 @@ function QuizQuestionContent() {
     }
   }, [eventId, targetUserId, questionNo, questionIndex, quiz.questions.length, navigate]);
 
-  const isCorrect = selectedIndex === question.correctIndex;
+  const selectedChoice = question.choices.find(c => c.id === selectedChoiceId);
+  const isCorrect = !!selectedChoice?.isCorrect;
   const progress = ((questionNo) / quiz.questions.length) * 100;
 
   return (
@@ -152,29 +155,29 @@ function QuizQuestionContent() {
         </Title>
 
         <Stack gap="sm">
-          {question.choices.map((choice, idx) => {
+          {question.choices.map((choice) => {
             let color = undefined;
             let variant: "default" | "filled" | "light" = "default";
 
             if (showResult) {
-              if (idx === question.correctIndex) {
+              if (choice.isCorrect) {
                 color = "green";
                 variant = "filled";
-              } else if (idx === selectedIndex) {
+              } else if (choice.id === selectedChoiceId) {
                 color = "red";
                 variant = "light";
               }
-            } else if (selectedIndex === idx) {
+            } else if (selectedChoiceId === choice.id) {
               variant = "light";
             }
 
             return (
               <Button
-                key={idx}
+                key={choice.id}
                 size="lg"
                 color={color}
                 variant={variant}
-                onClick={() => handleAnswer(idx)}
+                onClick={() => handleAnswer(choice.id)}
                 disabled={showResult}
                 fullWidth
                 styles={{
@@ -188,7 +191,7 @@ function QuizQuestionContent() {
                   },
                 }}
               >
-                {choice}
+                {choice.text}
               </Button>
             );
           })}
@@ -204,9 +207,14 @@ function QuizQuestionContent() {
             <Text size="sm">
               {isCorrect
                 ? "よくできました！"
-                : `正解は「${question.choices[question.correctIndex]}」でした。`}
+                : `正解は「${question.choices.find(c => c.isCorrect)?.text}」でした。`}
             </Text>
-            <Button onClick={handleNext} fullWidth>
+            {question.explanation && (
+              <Text size="xs" c="dimmed">
+                解説: {question.explanation}
+              </Text>
+            )}
+            <Button onClick={handleNext} fullWidth mt="sm">
               {questionIndex + 1 < quiz.questions.length ? "次の問題へ" : "結果を見る"}
             </Button>
           </Stack>

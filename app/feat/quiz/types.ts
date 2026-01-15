@@ -4,21 +4,37 @@
  */
 
 /**
- * A single quiz question with 4 choices.
- * The correct answer position is randomized on the server side.
+ * A single quiz choice.
+ */
+export interface QuizChoice {
+  /** Unique identifier for the choice */
+  id: string;
+  /** The text displayed to the user */
+  text: string;
+  /** Whether this is a correct answer */
+  isCorrect: boolean;
+  /** Optional metadata for future extension (e.g., image URL, weight) */
+  metadata?: Record<string, any>;
+}
+
+/**
+ * A single quiz question.
  */
 export interface QuizQuestion {
+  /** Unique identifier for the question */
+  id: string;
   /** The question text */
   question: string;
-  /** 4 answer choices (order is already randomized) */
-  choices: [string, string, string, string];
-  /** Index of the correct answer in the choices array (0-3) */
-  correctIndex: number;
+  /** List of choices */
+  choices: QuizChoice[];
+  /** Optional explanation shown after answering */
+  explanation?: string;
+  /** Optional metadata for categorization or AI generation context */
+  metadata?: Record<string, any>;
 }
 
 /**
  * A complete quiz for one participant.
- * Each participant creates their own quiz for others to answer.
  */
 export interface Quiz {
   /** Array of quiz questions */
@@ -28,13 +44,13 @@ export interface Quiz {
 }
 
 /**
- * Quiz answer from a participant
+ * Quiz answer from a participant.
  */
 export interface QuizAnswer {
-  /** Which question this answers (0-based index) */
-  questionIndex: number;
-  /** Which choice was selected (0-3) */
-  selectedIndex: number;
+  /** ID of the question this answers */
+  questionId: string;
+  /** ID of the choice that was selected */
+  selectedChoiceId: string;
   /** Whether the answer was correct */
   isCorrect: boolean;
   /** When this answer was submitted */
@@ -42,7 +58,7 @@ export interface QuizAnswer {
 }
 
 /**
- * Quiz result for one participant answering another participant's quiz
+ * Quiz result for one participant answering another participant's quiz.
  */
 export interface QuizResult {
   /** ID of the quiz owner (whose quiz was answered) */

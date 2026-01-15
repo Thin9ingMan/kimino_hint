@@ -1,4 +1,4 @@
-import type { Quiz, QuizQuestion } from "../types";
+import type { Quiz, QuizQuestion, QuizChoice } from "../types";
 import type { UserProfile } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 /**
@@ -21,111 +21,78 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
   const profileData = profile.profileData || {};
   const questions: QuizQuestion[] = [];
 
-  // Question 1: Name/Display Name
-  if (profileData.displayName) {
-    const correctAnswer = profileData.displayName as string;
-    const fakeNames = ["田中 太郎", "鈴木 花子", "佐藤 健", "高橋 美咲"];
-    // Ensure we have exactly 3 fake names different from the correct answer
-    const filtered = fakeNames.filter(name => name !== correctAnswer);
-    const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
+  const addQuestion = (title: string, correctValue: string, fakes: string[], fallback: string) => {
+    const choiceTexts = [correctValue];
+    const filtered = fakes.filter(f => f !== correctValue);
+    choiceTexts.push(...filtered.slice(0, 3));
     
-    // Ensure we have exactly 4 choices
-    while (allChoices.length < 4) {
-      allChoices.push(`ユーザー${Math.floor(Math.random() * 100)}`);
+    while (choiceTexts.length < 4) {
+      choiceTexts.push(`${fallback}${Math.floor(Math.random() * 100)}`);
     }
+
+    const choices: QuizChoice[] = choiceTexts.map(text => ({
+      id: crypto.randomUUID(),
+      text: text,
+      isCorrect: text === correctValue,
+    }));
     
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
-    const correctIndex = shuffled.indexOf(correctAnswer);
+    const shuffledChoices = shuffleArray(choices);
 
     questions.push({
-      question: "この人の名前は何でしょう？",
-      choices: shuffled,
-      correctIndex,
+      id: crypto.randomUUID(),
+      question: title,
+      choices: shuffledChoices,
     });
+  };
+
+  // Question 1: Name
+  if (profileData.displayName) {
+    addQuestion(
+      "この人の名前は何でしょう？",
+      profileData.displayName as string,
+      ["田中 太郎", "鈴木 花子", "佐藤 健", "高橋 美咲"],
+      "ユーザー"
+    );
   }
 
   // Question 2: Hobby
   if (profileData.hobby) {
-    const correctAnswer = profileData.hobby as string;
-    const fakeHobbies = ["読書", "サッカー", "料理", "音楽鑑賞"];
-    const filtered = fakeHobbies.filter(hobby => hobby !== correctAnswer);
-    const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
-    
-    while (allChoices.length < 4) {
-      allChoices.push(`趣味${Math.floor(Math.random() * 100)}`);
-    }
-    
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
-    const correctIndex = shuffled.indexOf(correctAnswer);
-
-    questions.push({
-      question: "趣味は何でしょう？",
-      choices: shuffled,
-      correctIndex,
-    });
+    addQuestion(
+      "趣味は何でしょう？",
+      profileData.hobby as string,
+      ["読書", "サッカー", "料理", "音楽鑑賞"],
+      "趣味"
+    );
   }
 
   // Question 3: Favorite Artist
   if (profileData.favoriteArtist) {
-    const correctAnswer = profileData.favoriteArtist as string;
-    const fakeArtists = ["YOASOBI", "ヨルシカ", "米津玄師", "あいみょん"];
-    const filtered = fakeArtists.filter(artist => artist !== correctAnswer);
-    const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
-    
-    while (allChoices.length < 4) {
-      allChoices.push(`アーティスト${Math.floor(Math.random() * 100)}`);
-    }
-    
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
-    const correctIndex = shuffled.indexOf(correctAnswer);
-
-    questions.push({
-      question: "好きなアーティストは誰でしょう？",
-      choices: shuffled,
-      correctIndex,
-    });
+    addQuestion(
+      "好きなアーティストは誰でしょう？",
+      profileData.favoriteArtist as string,
+      ["YOASOBI", "ヨルシカ", "米津玄師", "あいみょん"],
+      "アーティスト"
+    );
   }
 
   // Question 4: Grade
   if (profileData.grade) {
-    const correctAnswer = profileData.grade as string;
-    const fakeGrades = ["1年生", "2年生", "3年生", "4年生"];
-    const filtered = fakeGrades.filter((g) => g !== correctAnswer);
-    const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
-    
-    while (allChoices.length < 4) {
-      allChoices.push(`${Math.floor(Math.random() * 6) + 1}年生`);
-    }
-    
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
-    const correctIndex = shuffled.indexOf(correctAnswer);
-
-    questions.push({
-      question: "学年は何でしょう？",
-      choices: shuffled,
-      correctIndex,
-    });
+    addQuestion(
+      "学年は何でしょう？",
+      profileData.grade as string,
+      ["1年生", "2年生", "3年生", "4年生"],
+      "年生"
+    );
   }
 
   // Question 5: Faculty
   if (profileData.faculty) {
-    const correctAnswer = profileData.faculty as string;
-    const fakeFaculties = ["工学部", "理学部", "文学部", "経済学部"];
-    const filtered = fakeFaculties.filter((f) => f !== correctAnswer);
-    const allChoices = [correctAnswer, ...filtered.slice(0, 3)];
-    
-    while (allChoices.length < 4) {
-      allChoices.push(`学部${Math.floor(Math.random() * 100)}`);
-    }
-    
-    const shuffled = shuffleArray(allChoices.slice(0, 4)) as [string, string, string, string];
-    const correctIndex = shuffled.indexOf(correctAnswer);
-
-    questions.push({
-      question: "学部は何でしょう？",
-      choices: shuffled,
-      correctIndex,
-    });
+    addQuestion(
+      "学部は何でしょう？",
+      profileData.faculty as string,
+      ["工学部", "理学部", "文学部", "経済学部"],
+      "学部"
+    );
   }
 
   return {
@@ -138,16 +105,17 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
  * Calculate quiz score
  */
 export function calculateScore(
-  answers: { selectedIndex: number }[],
+  answers: { questionId: string, selectedChoiceId: string }[],
   quiz: Quiz
 ): number {
   let score = 0;
-  answers.forEach((answer, index) => {
-    if (
-      quiz.questions[index] &&
-      answer.selectedIndex === quiz.questions[index].correctIndex
-    ) {
-      score++;
+  answers.forEach((answer) => {
+    const question = quiz.questions.find(q => q.id === answer.questionId);
+    if (question) {
+      const selectedChoice = question.choices.find(c => c.id === answer.selectedChoiceId);
+      if (selectedChoice?.isCorrect) {
+        score++;
+      }
     }
   });
   return score;

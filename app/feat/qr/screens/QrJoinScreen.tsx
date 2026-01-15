@@ -11,6 +11,7 @@ import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useQueryParam } from "@/shared/hooks/useQueryParam";
 import { apis } from "@/shared/api";
+import { addJoinedEventId } from "@/shared/storage/joinedEvents";
 
 function QrJoinContent() {
   const navigate = useNavigate();
@@ -33,6 +34,11 @@ function QrJoinContent() {
             invitationCode: code,
           },
         });
+
+        // Save joined event ID to localStorage
+        if (result.eventId) {
+          addJoinedEventId(result.eventId);
+        }
 
         // Navigate to event lobby on success
         navigate(`/events/${result.eventId}`, { replace: true });

@@ -21,6 +21,7 @@ import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
+import { Loading } from "@/shared/ui/Loading";
 import {
   handleQuizError,
   getErrorMessage,
@@ -328,7 +329,7 @@ function QuizEditContent() {
 
       {/* Similar Name Section */}
       <Stack gap="xs">
-        <Title order={5}>Q. 私の「名前」はどれ？ (難問)</Title>
+        <Title order={5}>Q. 改めて、私の「名前」はどれ？</Title>
         <Stack gap="sm">
           <ChoiceInput value={displayName} isCorrect />
           {fakes.verySimilarNames.map((val, i) => (
@@ -384,7 +385,7 @@ function QuizEditContent() {
 
       <Paper
         p="md"
-        withBorder
+        shadow="xl"
         style={{
           position: "fixed",
           bottom: 20,
@@ -425,7 +426,7 @@ export function QuizEditScreen() {
           </Alert>
         )}
       >
-        <Suspense fallback={<Loader p="xl" />}>
+        <Suspense fallback={<Loading />}>
           <QuizEditContent />
         </Suspense>
       </ErrorBoundary>

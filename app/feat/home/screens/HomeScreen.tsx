@@ -1,11 +1,13 @@
-import { Alert, Button, Stack, Text } from "@mantine/core";
+import { Alert, Button, Stack, Text, SimpleGrid, Paper, ThemeIcon, Group } from "@mantine/core";
 import { Link } from "react-router-dom";
 import { Suspense } from "react";
+import { IconBulb, IconUser, IconUsers, IconHelp, IconArrowRight, IconAlertTriangle } from "@tabler/icons-react";
 
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+import { Loading } from "@/shared/ui/Loading";
 
 function HomeContent() {
   // プロフィールの存在確認
@@ -25,46 +27,85 @@ function HomeContent() {
   }
 
   return (
-    <Stack gap="sm">
-      <Button
+    <Stack gap="xl">
+      {/* Hero / Main Action */}
+      <Paper
         component={Link}
         to={canStartQuiz ? "/events" : "#"}
-        disabled={!canStartQuiz}
-        fullWidth
-        size="md"
+        radius="xl"
+        shadow="lg"
+        p="xl"
+        style={{
+            backgroundColor: 'var(--mantine-primary-color-filled)',
+            color: 'white',
+            textDecoration: 'none',
+            opacity: canStartQuiz ? 1 : 0.9,
+            cursor: canStartQuiz ? 'pointer' : 'not-allowed',
+        }}
+        onClick={(e: React.MouseEvent) => {
+             if (!canStartQuiz) e.preventDefault();
+        }}
       >
-        イベントへ (クイズ)
-      </Button>
-
-
+        <Group justify="space-between" align="center" wrap="nowrap">
+            <Stack gap={4}>
+                    <Group gap="xs">
+                    <ThemeIcon size="lg" color="white" variant="transparent">
+                        <IconBulb size={28} />
+                    </ThemeIcon>
+                    <Text fw={700} size="lg" c="white">イベントに参加</Text>
+                    </Group>
+                    <Text size="sm" c="white" opacity={0.9} style={{ lineHeight: 1.5 }}>
+                    みんなのクイズに挑戦したり、<br />出題したりしよう
+                    </Text>
+            </Stack>
+            <IconArrowRight color="white" />
+        </Group>
+      </Paper>
+      
       {!canStartQuiz && (
-        <Text c="dimmed" size="sm" ta="center">
-          プロフィールを作成してからクイズに進んでください
-        </Text>
+        <Alert icon={<IconAlertTriangle size={16} />} variant="light" color="orange" title="まずはプロフィール作成">
+            クイズに参加するにはプロフィールが必要です。下のボタンから作成してください。
+        </Alert>
       )}
 
-      <Button
-        component={Link}
-        to="/profiles"
-        variant="light"
-        fullWidth
-        size="md"
-      >
-        プロフィール一覧へ
-      </Button>
+      <SimpleGrid cols={2} spacing="md">
+        {/* Profile List */}
+        <Paper
+            component={Link}
+            to="/profiles"
+            p="lg"
+            shadow="md"
+            radius="lg"
+            style={{ textDecoration: "none", color: 'inherit' }}
+        >
+            <Stack gap="sm" align="center">
+                <ThemeIcon size={48} radius="md" variant="light" color="indigo">
+                        <IconUsers size={28} />
+                </ThemeIcon>
+                <Text size="sm" fw={600}>みんなの<br/>プロフィール</Text>
+            </Stack>
+        </Paper>
 
-      <Button
-        component={Link}
-        to="/me"
-        variant="light"
-        fullWidth
-        size="md"
-      >
-        マイページへ
-      </Button>
+        {/* My Page */}
+        <Paper
+            component={Link}
+            to="/me"
+            p="lg"
+            shadow="md"
+            radius="lg"
+            style={{ textDecoration: "none", color: 'inherit' }}
+        >
+            <Stack gap="sm" align="center">
+                <ThemeIcon size={48} radius="md" variant="light" color="pink">
+                        <IconUser size={28} />
+                </ThemeIcon>
+                <Text size="sm" fw={600}>マイページ</Text>
+            </Stack>
+        </Paper>
+      </SimpleGrid>
 
-      <Button component={Link} to="/help" variant="default" fullWidth>
-          使い方
+      <Button component={Link} to="/help" variant="subtle" color="gray" leftSection={<IconHelp size={16}/>}>
+        使い方を見る
       </Button>
     </Stack>
   );
@@ -85,7 +126,7 @@ export function HomeScreen() {
           </Alert>
         )}
       >
-        <Suspense fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}>
+        <Suspense fallback={<Loading />}>
           <HomeContent />
         </Suspense>
       </ErrorBoundary>

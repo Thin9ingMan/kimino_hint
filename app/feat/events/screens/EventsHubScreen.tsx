@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { InfoAlert } from "@/shared/ui/InfoAlert";
 import { NavigationButtonList } from "@/shared/ui/NavigationButtonList";
-import { InvitationCodeInput } from "@/feat/events/components/InvitationCodeInput";
 import { apis } from "@/shared/api";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 
@@ -75,13 +74,6 @@ export function EventsHubScreen() {
 
         <NavigationButtonList buttons={buttons} />
 
-        <InvitationCodeInput
-          label="招待コード（ショートカット）"
-          placeholder="例: QUIZ-2025-01"
-          buttonText="このコードで参加する"
-          navigateTo="/events/join"
-          includeStateData
-        />
 
         <Stack gap="sm" mt="md">
            <EventsList />

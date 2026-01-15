@@ -3,18 +3,15 @@ import {
   Container as MantineContainer,
   Group,
   Title,
-  Text,
   ActionIcon,
 } from "@mantine/core";
-import { Home } from "tabler-icons-react";
+import { IconHome } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 import React from "react";
 
 type Props = {
   children?: React.ReactNode;
   title?: string;
-  /** アプリ名（左上・ホームリンク） */
-  appTitle?: string;
   /** Optional max width passed to Mantine Container. */
   size?: React.ComponentProps<typeof MantineContainer>["size"];
   isHome?: boolean;
@@ -27,27 +24,41 @@ export function Container({
   isHome = false,
 }: Props) {
   return (
-    <MantineContainer size={size} py={{ base: "xl", sm: 60 }}>
+    <MantineContainer size={size} py={{ base: "xl", sm: 60 }} style={{ position: 'relative', zIndex: 1 }}>
       <Box>
-        {/* ヘッダー */}
-        <Group mb="lg" justify="flex-start" >
-          {/* 左：常に同じホームリンク */}
-          {!isHome && (
+        {/* Header */}
+        <Group mb={40} align="center" justify={isHome ? "center" : "space-between"}>
+          {!isHome ? (
             <Link to="/" style={{ textDecoration: "none" }}>
               <ActionIcon
                 variant="subtle"
-                color="dark"
-                size="lg"
+                color="gray"
+                size="xl"
+                radius="xl"
                 aria-label="ホームに戻る"
-                title="ホームに戻る"
               >
-                <Home style={{ width: 32, height: 32 }} />
+                <IconHome size={28} stroke={1.5} />
               </ActionIcon>
             </Link>
+          ) : (
+             <Box /> 
           )}
-          <Title order={1} ta="center" size={36} fw={800} flex={1}>
-            {title}
-          </Title>
+
+          {title && (
+            <Title 
+              order={1} 
+              ta="center" 
+              size={28} 
+              fw={800} 
+              style={{ letterSpacing: '0.05em', color: 'var(--mantine-color-slate-8)' }}
+            >
+              {title}
+            </Title>
+          )}
+
+           {/* Spacer to balance the header if back button exists */}
+           {!isHome && <Box w={44} />} 
+           {isHome && <Box />}
         </Group>
 
         {children}

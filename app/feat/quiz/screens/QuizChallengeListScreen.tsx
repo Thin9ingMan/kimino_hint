@@ -1,22 +1,25 @@
 import {
   Alert,
   Button,
-  Paper,
+  Card,
   Stack,
   Text,
   Title,
   Group,
   Avatar,
+  ThemeIcon,
+  Badge,
 } from "@mantine/core";
 import { Suspense } from "react";
 import { Link } from "react-router-dom";
+import { IconClock, IconPlayerPlay, IconUsers } from "@tabler/icons-react";
 
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
-import type { Quiz } from "../types";
+import { Loading } from "@/shared/ui/Loading";
 
 function QuizChallengeListContent() {
   const eventId = useNumericParam("eventId");
@@ -38,7 +41,6 @@ function QuizChallengeListContent() {
     async () => {
       const eventAttendees = await apis.events.listEventAttendees({ eventId });
       // Fetch profiles to get display names
-
       const enriched = await Promise.all(
         eventAttendees.map(async (a: any) => {
           const uid = a.attendeeUserId || a.userId;
@@ -46,7 +48,6 @@ function QuizChallengeListContent() {
             const profile = await apis.profiles.getUserProfile({ userId: uid });
             return {
               ...a,
-
               userId: uid,
               displayName: profile.profileData?.displayName,
               profileData: profile.profileData,
@@ -54,11 +55,9 @@ function QuizChallengeListContent() {
           } catch (e) {
             return { ...a, userId: uid };
           }
-
         })
       );
       return enriched;
-
     }
   );
 
@@ -70,13 +69,18 @@ function QuizChallengeListContent() {
 
   if (!otherAttendees.length) {
     return (
-      <Stack gap="md">
-        <Alert color="blue" title="参加者待ち">
-          <Text size="sm">
-            他の参加者が参加するまでお待ちください。
-          </Text>
-        </Alert>
-        <Button component={Link} to={`/events/${eventId}`} fullWidth>
+      <Stack gap="xl" align="center" py="xl">
+        <ThemeIcon size={80} radius="circle" variant="light" color="gray">
+             <IconClock size={40} />
+        </ThemeIcon>
+        <Stack gap="xs" align="center">
+            <Title order={3}>参加者待ち</Title>
+            <Text c="dimmed" ta="center">
+            まだ他の参加者がいません。<br/>
+            もう少しお待ちください。
+            </Text>
+        </Stack>
+        <Button component={Link} to={`/events/${eventId}`} variant="outline" size="md">
           ロビーへ戻る
         </Button>
       </Stack>
@@ -84,50 +88,51 @@ function QuizChallengeListContent() {
   }
 
   return (
-    <Stack gap="md">
-      <Alert color="blue" title="クイズに挑戦">
-        <Text size="sm">
-          他の参加者のクイズに挑戦しましょう！
-        </Text>
+    <Stack gap="lg">
+      <Alert color="indigo" variant="light" title="クイズに挑戦" icon={<IconUsers size={16} />}>
+        他の参加者のクイズに挑戦して、スコアを競いましょう！
       </Alert>
 
+      <Stack gap="sm">
       {otherAttendees.map((attendee) => {
-        // Safely extract display name from attendee metadata
-        // Safely extract display name from enrichment or metadata
         const displayName = (attendee as any).displayName || 
                           (attendee.meta as any)?.displayName || 
                           `ユーザー ${attendee.attendeeUserId}`;
-
         
         return (
-          <Paper key={attendee.id} withBorder p="md" radius="md">
-            <Group>
-              <Avatar radius="xl" />
-              <Stack gap={4} style={{ flex: 1 }}>
-                <Title order={5}>
-                  {displayName}
-                </Title>
-                <Text size="sm" c="dimmed">
-                  クイズに挑戦する
-                </Text>
-              </Stack>
+          <Card key={attendee.id} padding="lg" radius="lg">
+            <Group justify="space-between">
+              <Group>
+                <Avatar radius="xl" size="md" color="indigo" name={displayName} />
+                <Stack gap={0}>
+                  <Text fw={600} size="md">
+                    {displayName}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    クイズに挑戦する
+                  </Text>
+                </Stack>
+              </Group>
+
               <Button
                 component={Link}
                 to={`/events/${eventId}/quiz/challenge/${attendee.attendeeUserId}/1`}
                 onClick={() => {
-                  // Clear previous quiz data when starting a new quiz
                   sessionStorage.removeItem(`quiz_${eventId}_${attendee.attendeeUserId}_answers`);
                   sessionStorage.removeItem(`quiz_${eventId}_${attendee.attendeeUserId}_score`);
                 }}
+                variant="light"
+                rightSection={<IconPlayerPlay size={16} />}
               >
                 開始
               </Button>
             </Group>
-          </Paper>
+          </Card>
         );
       })}
+      </Stack>
 
-      <Button component={Link} to={`/events/${eventId}`} variant="default" fullWidth>
+      <Button component={Link} to={`/events/${eventId}`} variant="subtle" color="gray" fullWidth>
         ロビーへ戻る
       </Button>
     </Stack>
@@ -149,9 +154,7 @@ export function QuizChallengeListScreen() {
           </Alert>
         )}
       >
-        <Suspense
-          fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}
-        >
+        <Suspense fallback={<Loading />}>
           <QuizChallengeListContent />
         </Suspense>
       </ErrorBoundary>

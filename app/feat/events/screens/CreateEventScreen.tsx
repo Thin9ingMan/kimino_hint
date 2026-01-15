@@ -52,10 +52,13 @@ function CreateEventContent() {
             invitationCode: event.invitationCode,
           },
         });
+        console.log("Event creator auto-joined as attendee");
       } catch (joinErr: any) {
         // If join fails with 409 Conflict, the user is already joined (which is fine)
         // Any other error should be logged but not prevent navigation
-        if (joinErr?.response?.status !== 409) {
+        if (joinErr?.response?.status === 409) {
+          console.log("Event creator already joined (409 Conflict - expected)");
+        } else {
           console.warn("Failed to auto-join event:", joinErr);
         }
       }

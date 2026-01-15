@@ -42,11 +42,7 @@ test('Quiz Creation Flow', async ({ page }) => {
   // Note: When creating events via UI (CreateEventScreen), the creator is auto-joined
   await page.request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
     headers: { 'Authorization': token },
-    data: {
-      eventJoinByCodeRequest: {
-        invitationCode: eventData.invitationCode
-      }
-    }
+    data: { invitationCode: eventData.invitationCode }
   });
 
   // 2. Login in browser (set token in localStorage)

@@ -40,11 +40,7 @@ test.describe('Full User Journey', () => {
     // When creating events via UI (CreateEventScreen), the creator is auto-joined.
     await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
         headers: { 'Authorization': tokenA },
-        data: { 
-          eventJoinByCodeRequest: {
-            invitationCode: invitationCode
-          }
-        }
+        data: { invitationCode: invitationCode }
     });
 
 

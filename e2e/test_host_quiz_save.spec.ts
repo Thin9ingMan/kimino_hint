@@ -47,7 +47,7 @@ test.describe('Host Quiz Save Issue', () => {
     const eventData = await createEventRes.json();
     const eventId = eventData.id;
 
-    console.log(`Event Created: ID=${eventId}, Code=${eventData.invitationCode}`);
+    console.log(`Event Created: ID=${eventId}`);
 
     // NOTE: We do NOT manually join the event here - this is the bug
 

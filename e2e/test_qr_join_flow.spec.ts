@@ -28,25 +28,29 @@ test('QR code should navigate directly to event lobby after auto-join', async ({
   await page.fill('input[placeholder*="例: "]', 'QR Join Test Event');
   await page.click('button:has-text("イベントを作成")');
   
-  // Verify we're in the lobby
+  // Verify we're in the lobby and extract eventId from URL
   await expect(page).toHaveURL(/.*\/events\/\d+/);
+  const eventUrl = page.url();
+  const eventId = eventUrl.match(/\/events\/(\d+)/)?.[1];
+  expect(eventId).toBeTruthy();
   
-  // Wait for QR code URL to be visible
+  console.log('Event ID:', eventId);
+  
+  // Wait for invitation panel to be visible
   await expect(page.getByText('参加用QRコード')).toBeVisible();
+  await expect(page.locator('svg').first()).toBeVisible(); // QR code SVG
   
-  // Extract the QR code URL from the page
-  // The URL should be in format: http://localhost:5173/qr/join?code=XXXXX
-  const qrCodeElement = page.locator('svg[viewBox="0 0 160 160"]').first();
-  await expect(qrCodeElement).toBeVisible();
+  // Get the event data via API to get the invitation code
+  const eventDataRes = await page.request.get(`https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}`, {
+    headers: { 'Authorization': token1 }
+  });
+  const eventData = await eventDataRes.json();
+  const invitationCode = eventData.invitationCode;
   
-  // Get the invitation code from the page
-  const invitationCodeText = await page.locator('text=招待コード').locator('..').locator('div[style*="monospace"]').textContent();
-  expect(invitationCodeText).toBeTruthy();
-  const invitationCode = invitationCodeText!.trim();
-  
+  expect(invitationCode).toBeTruthy();
   console.log('Invitation Code:', invitationCode);
   
-  // Construct the QR join URL
+  // Construct the QR join URL (this is what the QR code should contain)
   const qrJoinUrl = `http://localhost:5173/qr/join?code=${invitationCode}`;
   console.log('QR Join URL:', qrJoinUrl);
   

@@ -31,6 +31,7 @@ export function JoinedEventsList() {
         }
 
         // Fetch event details for each joined event ID
+        // Note: This creates N API calls. Consider implementing batch API if available.
         const eventPromises = eventIds.map(async (eventId) => {
           try {
             const event = await apis.events.getEventById({ eventId });
@@ -44,10 +45,10 @@ export function JoinedEventsList() {
 
         const events = await Promise.all(eventPromises);
         
-        // Filter out null values (failed fetches) and sort by most recent
+        // Filter out null values (failed fetches)
         const validEvents = events
           .filter((event): event is JoinedEvent => event !== null)
-          .reverse(); // Most recently joined first
+          .reverse(); // Most recently joined first (assumes IDs are sequential)
 
         setJoinedEvents(validEvents);
       } catch (error) {
@@ -59,7 +60,7 @@ export function JoinedEventsList() {
     };
 
     loadJoinedEvents();
-  }, []);
+  }, []); // Run only once on mount
 
   if (loading) {
     return (

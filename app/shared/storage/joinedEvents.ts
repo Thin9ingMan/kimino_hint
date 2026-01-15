@@ -15,7 +15,15 @@ export function getJoinedEventIds(): number[] {
     if (!stored) return [];
     
     const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) ? parsed.filter(id => typeof id === 'number') : [];
+    const filtered = Array.isArray(parsed) ? parsed.filter(id => typeof id === 'number') : [];
+    
+    // Log if we found invalid entries
+    if (Array.isArray(parsed) && filtered.length !== parsed.length) {
+      console.warn('Found and removed invalid event IDs from localStorage:', 
+        parsed.filter(id => typeof id !== 'number'));
+    }
+    
+    return filtered;
   } catch (error) {
     console.error('Failed to parse joined event IDs:', error);
     return [];

@@ -32,7 +32,7 @@ function pickDisplayName(
 }
 
 function ProfileListContent() {
-  const data = useSuspenseQuery(["friendships", "received"], () =>
+  const data = useSuspenseQuery(["friendships.listReceivedFriendships"], () =>
     apis.friendships.listReceivedFriendships()
   );
 

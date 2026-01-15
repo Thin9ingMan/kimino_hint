@@ -1,24 +1,11 @@
-import { Button, Stack } from "@mantine/core";
+import { Alert, Button, Stack, Text } from "@mantine/core";
 import { Link } from "react-router-dom";
-import { useState } from "react";
 
 import { Container } from "@/shared/ui/Container";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { EventConnectionStatus, LiveEvent, ConnectionStatus } from "@/feat/events/components/EventConnectionStatus";
-import { EventLiveEventsList } from "@/feat/events/components/EventLiveEventsList";
 
 export function EventLiveScreen() {
   const eventId = useNumericParam("eventId");
-  const [events, setEvents] = useState<LiveEvent[]>([]);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
-
-  const handleEventReceived = (event: LiveEvent) => {
-    setEvents((prev) => [event, ...prev].slice(0, 50));
-  };
-
-  const handleStatusChange = (status: ConnectionStatus) => {
-    setConnectionStatus(status);
-  };
 
   if (!eventId) {
     return (
@@ -36,27 +23,16 @@ export function EventLiveScreen() {
   return (
     <Container title="ライブ更新">
       <Stack gap="md">
-        <EventConnectionStatus
-          eventId={eventId}
-          onEventReceived={handleEventReceived}
-          onStatusChange={handleStatusChange}
-          showControls
-        />
+        <Alert color="yellow" title="工事中">
+          <Text size="sm">
+            SSE（Server-Sent Events）機能は現在準備中です。
+            しばらくお待ちください。
+          </Text>
+        </Alert>
 
-        <Button component={Link} to={`/events/${eventId}`} variant="default">
+        <Button component={Link} to={`/events/${eventId}`} variant="default" fullWidth>
           ロビーに戻る
         </Button>
-
-        {connectionStatus === "ready" && events.length > 0 && (
-          <EventLiveEventsList
-            events={events}
-            title="ライブ更新"
-            showTimestamp
-            showEventType
-            showUserId
-            variant="detailed"
-          />
-        )}
       </Stack>
     </Container>
   );

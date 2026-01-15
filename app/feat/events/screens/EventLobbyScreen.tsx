@@ -12,9 +12,13 @@ import { Link } from "react-router-dom";
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+import {
+  useSuspenseQueries,
+} from "@/shared/hooks/useSuspenseQuery";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { EventAttendeesList } from "@/feat/events/components/EventAttendeesList";
+import { EventInvitationPanel } from "@/feat/events/components/EventInvitationPanel";
+
 
 function EventLobbyContent() {
   const eventId = useNumericParam("eventId");
@@ -23,14 +27,43 @@ function EventLobbyContent() {
     throw new Error("eventId が不正です");
   }
 
-  const [eventData, attendees] = useSuspenseQuery(
-    ["events", "lobby", eventId],
-    () =>
-      Promise.all([
-        apis.events.getEventById({ eventId }),
-        apis.events.listEventAttendees({ eventId }),
-      ])
-  );
+  /* Parallel fetching with standardized keys */
+  const [eventData, attendees] = useSuspenseQueries([
+    [
+      ["events.getEventById", { eventId }],
+      () => apis.events.getEventById({ eventId }),
+    ],
+    [
+      ["events.listEventAttendees", { eventId }],
+      async () => {
+        const eventAttendees = await apis.events.listEventAttendees({
+          eventId,
+        });
+        // Fetch profiles to get display names
+        const enriched = await Promise.all(
+          eventAttendees.map(async (a: any) => {
+            const uid = a.attendeeUserId || a.userId;
+            try {
+              const profile = await apis.profiles.getUserProfile({
+                userId: uid,
+              });
+              return {
+                ...a,
+                userId: uid,
+                displayName: profile.profileData?.displayName,
+                profileData: profile.profileData,
+              };
+            } catch (e) {
+              // Ignore missing profile errors (e.g. 404)
+              return { ...a, userId: uid };
+            }
+          })
+        );
+        return enriched;
+      },
+    ],
+  ]);
+
 
   if (!eventData) {
     return (
@@ -48,15 +81,19 @@ function EventLobbyContent() {
         <Stack gap={6}>
           <Title order={4}>イベント情報</Title>
           <Text size="sm" c="dimmed">
-            {(eventData as any).name || "（名前未設定）"}
+            {(eventData as any).meta?.name || "（名前未設定）"}
           </Text>
-          {(eventData as any).description && (
+          {(eventData as any).meta?.description && (
             <Text size="sm" mt="xs">
-              {(eventData as any).description}
+              {(eventData as any).meta?.description}
             </Text>
           )}
+
         </Stack>
       </Paper>
+
+      <EventInvitationPanel invitationCode={(eventData as any).invitationCode} />
+
 
       <EventAttendeesList
         attendees={(attendees ?? []).map((a: any) => ({
@@ -72,11 +109,11 @@ function EventLobbyContent() {
       />
 
       <Stack gap="sm">
-        <Button component={Link} to={`/events/${eventId}/live`} fullWidth>
-          ライブ更新を見る
+        <Button component={Link} to={`/events/${eventId}/quiz`} fullWidth>
+          自分のクイズを編集
         </Button>
-        <Button component={Link} to={`/events/${eventId}/quiz`} fullWidth variant="light">
-          クイズへ
+        <Button component={Link} to={`/events/${eventId}/quiz/challenges`} fullWidth variant="light">
+          クイズに挑戦
         </Button>
         <Button component={Link} to="/events" variant="default" fullWidth>
           イベント一覧へ

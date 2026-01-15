@@ -36,9 +36,15 @@ test.describe('Full User Journey', () => {
     console.log(`Event Created: ID=${eventId}, Code=${invitationCode}`);
 
     // Explicitly join User A to ensure they appear in attendees list
+    // Note: This is required when creating events via API for testing.
+    // When creating events via UI (CreateEventScreen), the creator is auto-joined.
     await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
         headers: { 'Authorization': tokenA },
-        data: { invitationCode }
+        data: { 
+          eventJoinByCodeRequest: {
+            invitationCode: invitationCode
+          }
+        }
     });
 
 

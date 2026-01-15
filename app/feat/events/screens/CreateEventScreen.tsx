@@ -43,6 +43,19 @@ function CreateEventContent() {
 
       });
 
+      // Auto-join the creator as an attendee
+      // This is required for the creator to be able to save quiz data via updateEventUserData
+      try {
+        await apis.events.joinEventByCode({
+          eventJoinByCodeRequest: {
+            invitationCode: event.invitationCode,
+          },
+        });
+      } catch (joinErr) {
+        console.warn("Failed to auto-join event as creator:", joinErr);
+        // Don't fail the whole flow - user can manually join later if needed
+      }
+
       // Navigate to the event lobby
       navigate(`/events/${event.id}`);
     } catch (err) {

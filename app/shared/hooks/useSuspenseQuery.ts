@@ -1,5 +1,6 @@
 import {
   useSuspenseQuery as useTanstackSuspenseQuery,
+  useSuspenseQueries as useTanstackSuspenseQueries,
   type QueryKey,
   type UseSuspenseQueryOptions as TanstackUseSuspenseQueryOptions,
 } from "@tanstack/react-query";
@@ -10,12 +11,7 @@ export type UseSuspenseQueryOptions<TQueryFnData, TData = TQueryFnData> = Omit<
 >;
 
 /**
- * Suspense wrapper for TanStack Query.
- *
- * - Uses TanStack's built-in suspense query hook
- * - Throws a promise while loading (so `Suspense` shows fallback)
- * - Throws the error (so `ErrorBoundary` catches it)
- * - Returns resolved `data`
+ * Suspense wrapper for TanStack Query (Standard)
  */
 export function useSuspenseQuery<TQueryFnData, TData = TQueryFnData>(
   queryKey: QueryKey,
@@ -29,4 +25,36 @@ export function useSuspenseQuery<TQueryFnData, TData = TQueryFnData>(
   });
 
   return data;
+}
+
+// Explicit tuple type for type inference
+// [Key, Fn] or [Key, Fn, Options]
+export type SuspenseQueryTuple<TData = unknown> =
+  | [QueryKey, () => Promise<TData>]
+  | [
+      QueryKey,
+      () => Promise<TData>,
+      UseSuspenseQueryOptions<TData, TData> | undefined,
+    ];
+
+/**
+ * Wrapper for useSuspenseQueries to execute multiple queries in parallel.
+ * Accepts ONLY an array of tuples [key, fn] or [key, fn, options].
+ * Infers valid return types.
+ */
+export function useSuspenseQueries<T extends readonly unknown[]>(queries: {
+  [K in keyof T]: SuspenseQueryTuple<T[K]>;
+}): T {
+  const results = useTanstackSuspenseQueries({
+    queries: queries.map((q) => {
+      const [queryKey, queryFn, options] = q;
+      return {
+        queryKey,
+        queryFn,
+        ...(options ?? {}),
+      };
+    }) as any, // internal casting for tanstack
+  });
+
+  return results.map((r) => r.data) as any as T;
 }

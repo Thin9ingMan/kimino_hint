@@ -81,7 +81,7 @@ function EditProfileForm() {
   const navigate = useNavigate();
 
   // 初期データ取得（Suspense化）
-  const initialData = useSuspenseQuery(["profiles", "myProfile"], async () => {
+  const initialData = useSuspenseQuery(["profiles.getMyProfile"], async () => {
     try {
       const res = await apis.profiles.getMyProfile();
       return res?.profileData as Record<string, unknown> | null;

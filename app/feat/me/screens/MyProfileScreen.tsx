@@ -14,7 +14,9 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Container } from "@/shared/ui/Container";
 import { ProfileCard, ProfileCardActions } from "@/shared/ui/ProfileCard";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+import {
+  useSuspenseQueries,
+} from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import {
   isUiProfileEmpty,
@@ -66,10 +68,10 @@ function RedirectToEditProfile(props: { to: string }) {
 
 function MyProfileContent() {
   const navigate = useNavigate();
-  const me = useSuspenseQuery(["auth", "me"], () => apis.auth.getCurrentUser());
-  const data = useSuspenseQuery(["profiles", "myProfile"], () =>
-    apis.profiles.getMyProfile()
-  );
+  const [me, data] = useSuspenseQueries([
+    [["auth.getCurrentUser"], () => apis.auth.getCurrentUser()],
+    [["profiles.getMyProfile"], () => apis.profiles.getMyProfile()],
+  ]);
 
   const myUserId = useMemo(() => {
     const v = (me as any)?.id;

@@ -19,7 +19,9 @@ import { useNavigate } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+import {
+  useSuspenseQueries,
+} from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import { Loading } from "@/shared/ui/Loading";
 import {
@@ -111,15 +113,10 @@ function QuizEditContent() {
     throw new Error("eventId が不正です");
   }
 
-  const meData = useSuspenseQuery(["quiz", "edit", "me"], async () => {
-    const me = await apis.auth.getCurrentUser();
-    return me;
-  });
-
-  const myProfile = useSuspenseQuery(["quiz", "edit", "profile"], async () => {
-    const profile = await apis.profiles.getMyProfile();
-    return profile;
-  });
+  const [meData, myProfile] = useSuspenseQueries([
+    [["auth.getCurrentUser"], () => apis.auth.getCurrentUser()],
+    [["profiles.getMyProfile"], () => apis.profiles.getMyProfile()],
+  ]);
 
   const profileData = myProfile.profileData || {};
   const displayName = (profileData.displayName as string) || "";

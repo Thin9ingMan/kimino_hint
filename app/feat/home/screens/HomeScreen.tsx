@@ -13,7 +13,7 @@ function HomeContent() {
   // プロフィールの存在確認
   let canStartQuiz = false;
   try {
-    useSuspenseQuery(["profiles", "myProfile"], () => apis.profiles.getMyProfile());
+    useSuspenseQuery(["profiles.getMyProfile"], () => apis.profiles.getMyProfile());
     canStartQuiz = true;
   } catch (e: any) {
     // 404の場合はプロフィール未作成 -> canStartQuiz = false

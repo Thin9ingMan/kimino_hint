@@ -12,7 +12,9 @@ import { Link } from "react-router-dom";
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+import {
+  useSuspenseQueries,
+} from "@/shared/hooks/useSuspenseQuery";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { EventAttendeesList } from "@/feat/events/components/EventAttendeesList";
 import { EventInvitationPanel } from "@/feat/events/components/EventInvitationPanel";
@@ -25,36 +27,42 @@ function EventLobbyContent() {
     throw new Error("eventId が不正です");
   }
 
-  const [eventData, attendees] = useSuspenseQuery(
-    ["events", "lobby", eventId],
-    () =>
-      Promise.all([
-        apis.events.getEventById({ eventId }),
-        apis.events.listEventAttendees({ eventId }).then(async (attendees) => {
-          // The API returns basic attendee info (attendeeUserId).
-          // We must fetch profiles to get display names.
-          return Promise.all(
-            attendees.map(async (a: any) => {
-              const uid = a.attendeeUserId || a.userId;
-              try {
-                const profile = await apis.profiles.getUserProfile({ userId: uid });
-                return {
-                  ...a,
-                  userId: uid,
-                  displayName: profile.profileData?.displayName,
-                  profileData: profile.profileData,
-                };
-              } catch (e) {
-                // Ignore missing profile errors (e.g. 404)
-                return { ...a, userId: uid };
-              }
-            })
-          );
-        }),
-
-
-      ])
-  );
+  /* Parallel fetching with standardized keys */
+  const [eventData, attendees] = useSuspenseQueries([
+    [
+      ["events.getEventById", { eventId }],
+      () => apis.events.getEventById({ eventId }),
+    ],
+    [
+      ["events.listEventAttendees", { eventId }],
+      async () => {
+        const eventAttendees = await apis.events.listEventAttendees({
+          eventId,
+        });
+        // Fetch profiles to get display names
+        const enriched = await Promise.all(
+          eventAttendees.map(async (a: any) => {
+            const uid = a.attendeeUserId || a.userId;
+            try {
+              const profile = await apis.profiles.getUserProfile({
+                userId: uid,
+              });
+              return {
+                ...a,
+                userId: uid,
+                displayName: profile.profileData?.displayName,
+                profileData: profile.profileData,
+              };
+            } catch (e) {
+              // Ignore missing profile errors (e.g. 404)
+              return { ...a, userId: uid };
+            }
+          })
+        );
+        return enriched;
+      },
+    ],
+  ]);
 
 
   if (!eventData) {

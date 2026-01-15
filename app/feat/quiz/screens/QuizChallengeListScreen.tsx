@@ -17,7 +17,9 @@ import { IconClock, IconPlayerPlay, IconUsers } from "@tabler/icons-react";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+import {
+  useSuspenseQueries,
+} from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import { Loading } from "@/shared/ui/Loading";
 
@@ -28,38 +30,37 @@ function QuizChallengeListContent() {
     throw new Error("eventId が不正です");
   }
 
-  const meData = useSuspenseQuery(
-    ["quiz", "challenges", eventId],
-    async () => {
-      const me = await apis.auth.getCurrentUser();
-      return me;
-    }
-  );
-
-  const attendees = useSuspenseQuery(
-    ["quiz", "challenges", "attendees", eventId],
-    async () => {
-      const eventAttendees = await apis.events.listEventAttendees({ eventId });
-      // Fetch profiles to get display names
-      const enriched = await Promise.all(
-        eventAttendees.map(async (a: any) => {
-          const uid = a.attendeeUserId || a.userId;
-          try {
-            const profile = await apis.profiles.getUserProfile({ userId: uid });
-            return {
-              ...a,
-              userId: uid,
-              displayName: profile.profileData?.displayName,
-              profileData: profile.profileData,
-            };
-          } catch (e) {
-            return { ...a, userId: uid };
-          }
-        })
-      );
-      return enriched;
-    }
-  );
+  const [meData, attendees] = useSuspenseQueries([
+    [["auth.getCurrentUser"], () => apis.auth.getCurrentUser()],
+    [
+      ["events.listEventAttendees", { eventId }],
+      async () => {
+        const eventAttendees = await apis.events.listEventAttendees({
+          eventId,
+        });
+        // Fetch profiles to get display names
+        const enriched = await Promise.all(
+          eventAttendees.map(async (a: any) => {
+            const uid = a.attendeeUserId || a.userId;
+            try {
+              const profile = await apis.profiles.getUserProfile({
+                userId: uid,
+              });
+              return {
+                ...a,
+                userId: uid,
+                displayName: profile.profileData?.displayName,
+                profileData: profile.profileData,
+              };
+            } catch (e) {
+              return { ...a, userId: uid };
+            }
+          })
+        );
+        return enriched;
+      },
+    ],
+  ]);
 
 
   // Filter out the current user from the list

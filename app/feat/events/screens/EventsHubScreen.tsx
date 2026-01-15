@@ -8,9 +8,12 @@ import { apis } from "@/shared/api";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 
 function EventsList() {
-  const me = useSuspenseQuery(["auth", "me"], () => apis.auth.getCurrentUser());
-  const events = useSuspenseQuery(["events", "user", me.id], () =>
-    apis.events.listEventsByUser({ userId: me.id })
+  const me = useSuspenseQuery(["auth.getCurrentUser"], () =>
+    apis.auth.getCurrentUser()
+  );
+  const events = useSuspenseQuery(
+    ["events.listEventsByUser", me.id],
+    () => apis.events.listEventsByUser({ userId: me.id })
   );
 
   if (!events || events.length === 0) {

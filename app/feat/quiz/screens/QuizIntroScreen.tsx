@@ -12,7 +12,10 @@ import { Link } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+import {
+  useSuspenseQuery,
+  useSuspenseQueries,
+} from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 
 function QuizIntroContent() {
@@ -22,18 +25,13 @@ function QuizIntroContent() {
     throw new Error("eventId が不正です");
   }
 
-  const meData = useSuspenseQuery(["quiz", "intro", "me"], async () => {
-    const me = await apis.auth.getCurrentUser();
-    return me;
-  });
-
-  const myProfile = useSuspenseQuery(["quiz", "intro", "profile"], async () => {
-    const profile = await apis.profiles.getMyProfile();
-    return profile;
-  });
+  const [meData, myProfile] = useSuspenseQueries([
+    [["auth.getCurrentUser"], () => apis.auth.getCurrentUser()],
+    [["profiles.getMyProfile"], () => apis.profiles.getMyProfile()],
+  ]);
 
   const eventUserData = useSuspenseQuery(
-    ["quiz", "intro", "userdata", eventId, meData.id],
+    ["events.getEventUserData", eventId, meData.id],
     async () => {
       try {
         const userData = await apis.events.getEventUserData({

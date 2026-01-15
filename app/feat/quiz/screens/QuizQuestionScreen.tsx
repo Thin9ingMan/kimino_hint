@@ -14,7 +14,9 @@ import { useNavigate } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+import {
+  useSuspenseQueries,
+} from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import type { Quiz, QuizAnswer } from "../types";
 import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
@@ -30,32 +32,20 @@ function QuizQuestionContent() {
   }
 
   // Fetch target user's profile and quiz data
-  const targetUser = useSuspenseQuery(
-    ["quiz", "challenge", "user", eventId, targetUserId],
-    async () => {
-      const user = await apis.users.getUserById({ userId: targetUserId });
-      return user;
-    }
-  );
-
-  const targetProfile = useSuspenseQuery(
-    ["quiz", "challenge", "profile", eventId, targetUserId],
-    async () => {
-      const profile = await apis.profiles.getUserProfile({ userId: targetUserId });
-      return profile;
-    }
-  );
-
-  const quizData = useSuspenseQuery(
-    ["quiz", "challenge", "data", eventId, targetUserId],
-    async () => {
-      const userData = await apis.events.getEventUserData({
-        eventId,
-        userId: targetUserId,
-      });
-      return userData;
-    }
-  );
+  const [targetUser, targetProfile, quizData] = useSuspenseQueries([
+    [
+      ["users.getUserById", { userId: targetUserId }],
+      () => apis.users.getUserById({ userId: targetUserId }),
+    ],
+    [
+      ["profiles.getUserProfile", { userId: targetUserId }],
+      () => apis.profiles.getUserProfile({ userId: targetUserId }),
+    ],
+    [
+      ["events.getEventUserData", { eventId, userId: targetUserId }],
+      () => apis.events.getEventUserData({ eventId, userId: targetUserId }),
+    ],
+  ]);
 
   // Generate quiz from profile + fake answers OR use stored myQuiz
   const quiz = useMemo(() => {

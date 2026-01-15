@@ -5,18 +5,27 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { apis } from "@/shared/api";
+import { useQueryParam } from "@/shared/hooks/useQueryParam";
 
 function JoinEventContent() {
   const navigate = useNavigate();
+  const codeFromUrl = useQueryParam("code");
   const [invitationCode, setInvitationCode] = useState("");
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-populate invitation code from URL parameter
+  useEffect(() => {
+    if (codeFromUrl) {
+      setInvitationCode(codeFromUrl.toUpperCase());
+    }
+  }, [codeFromUrl]);
 
   const handleJoin = async () => {
     if (!invitationCode.trim()) {

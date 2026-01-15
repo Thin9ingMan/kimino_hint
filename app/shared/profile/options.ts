@@ -368,12 +368,11 @@ export const FACULTY_OPTIONS = [
 ] as const;
 
 export const GRADE_OPTIONS = [
-  "1年",
-  "2年",
-  "3年",
-  "4年",
-  "5年",
-  "6年",
-  "大学院",
+  "学部1年",
+  "学部2年",
+  "学部3年",
+  "学部4年",
+  "修士1年",
+  "修士2年",
   "その他",
 ] as const;

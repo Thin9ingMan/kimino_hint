@@ -14,13 +14,11 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Container } from "@/shared/ui/Container";
 import { ProfileCard, ProfileCardActions } from "@/shared/ui/ProfileCard";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import {
-  useSuspenseQueries,
-} from "@/shared/hooks/useSuspenseQuery";
+import { useCurrentUser } from "@/shared/auth/hooks";
+import { useMyUiProfile } from "@/shared/profile/hooks";
 import { apis } from "@/shared/api";
 import {
   isUiProfileEmpty,
-  mapProfileDataToUiProfile,
 } from "@/shared/profile/profileUi";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
@@ -68,20 +66,14 @@ function RedirectToEditProfile(props: { to: string }) {
 
 function MyProfileContent() {
   const navigate = useNavigate();
-  const [me, data] = useSuspenseQueries([
-    [["auth.getCurrentUser"], () => apis.auth.getCurrentUser()],
-    [["profiles.getMyProfile"], () => apis.profiles.getMyProfile()],
-  ]);
+  const me = useCurrentUser();
+  const profile = useMyUiProfile();
 
   const myUserId = useMemo(() => {
     const v = (me as any)?.id;
     return typeof v === "number" && Number.isFinite(v) ? v : null;
   }, [me]);
 
-  const profile = useMemo(
-    () => mapProfileDataToUiProfile(data?.profileData as any),
-    [data]
-  );
   const shareUrl = useMemo(
     () => (myUserId ? getProfileShareUrl(myUserId) : ""),
     [myUserId]

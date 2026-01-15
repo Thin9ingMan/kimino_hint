@@ -30,8 +30,8 @@ export function useSuspenseQuery<TQueryFnData, TData = TQueryFnData>(
 // Explicit tuple type for type inference
 // [Key, Fn] or [Key, Fn, Options]
 export type SuspenseQueryTuple<TData = unknown> =
-  | [QueryKey, () => Promise<TData>]
-  | [
+  | readonly [QueryKey, () => Promise<TData>]
+  | readonly [
       QueryKey,
       () => Promise<TData>,
       UseSuspenseQueryOptions<TData, TData> | undefined,

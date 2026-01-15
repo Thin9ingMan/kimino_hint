@@ -15,9 +15,9 @@ import { useNavigate } from "react-router-dom";
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
+import { useMyProfile } from "@/shared/profile/hooks";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { FACULTY_OPTIONS, GRADE_OPTIONS } from "@/shared/profile/options";
-import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 // New Spec rule: do NOT import legacy UI from `src/components/*`.
 // We only reuse the *idea* from old EditProfile: field definitions, validation, preview.
@@ -80,24 +80,11 @@ function getString(v: unknown): string {
 function EditProfileForm() {
   const navigate = useNavigate();
 
-  // 初期データ取得（Suspense化）
-  const initialData = useSuspenseQuery(["profiles.getMyProfile"], async () => {
-    try {
-      const res = await apis.profiles.getMyProfile();
-      return res?.profileData as Record<string, unknown> | null;
-    } catch (error) {
-      const is404 =
-        error instanceof ResponseError && error.response.status === 404;
-      // 404 = 未作成なので、null を返して空フォームで続行
-      if (is404) {
-        return null;
-      }
-      throw error;
-    }
-  });
+  // 初期データ取得（共通フックを使用）
+  const initialData = useMyProfile();
 
   const initialProfile: ProfileFormState = useMemo(() => {
-    const pd = initialData ?? {};
+    const pd = (initialData?.profileData as Record<string, unknown>) ?? {};
     return {
       name: getString(pd.displayName),
       furigana: getString(pd.furigana),

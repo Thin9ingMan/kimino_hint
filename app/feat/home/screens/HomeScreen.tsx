@@ -3,18 +3,17 @@ import { Link } from "react-router-dom";
 import { Suspense } from "react";
 import { IconBulb, IconUser, IconUsers, IconHelp, IconArrowRight, IconAlertTriangle } from "@tabler/icons-react";
 
-import { apis } from "@/shared/api";
+import { useMyProfile } from "@/shared/profile/hooks";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { Loading } from "@/shared/ui/Loading";
 
 function HomeContent() {
   // プロフィールの存在確認
   let canStartQuiz = false;
   try {
-    useSuspenseQuery(["profiles.getMyProfile"], () => apis.profiles.getMyProfile());
-    canStartQuiz = true;
+    const profile = useMyProfile();
+    canStartQuiz = !!profile;
   } catch (e: any) {
     // 404の場合はプロフィール未作成 -> canStartQuiz = false
     const status = e?.status ?? e?.response?.status;

@@ -12,10 +12,9 @@ import { Link } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import {
-  useSuspenseQuery,
-  useSuspenseQueries,
-} from "@/shared/hooks/useSuspenseQuery";
+import { useCurrentUser } from "@/shared/auth/hooks";
+import { useMyProfile } from "@/shared/profile/hooks";
+import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 
 function QuizIntroContent() {
@@ -25,10 +24,8 @@ function QuizIntroContent() {
     throw new Error("eventId が不正です");
   }
 
-  const [meData, myProfile] = useSuspenseQueries([
-    [["auth.getCurrentUser"], () => apis.auth.getCurrentUser()],
-    [["profiles.getMyProfile"], () => apis.profiles.getMyProfile()],
-  ]);
+  const meData = useCurrentUser();
+  const myProfile = useMyProfile();
 
   const eventUserData = useSuspenseQuery(
     ["events.getEventUserData", eventId, meData.id],

@@ -17,9 +17,8 @@ import { IconClock, IconPlayerPlay, IconUsers } from "@tabler/icons-react";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import {
-  useSuspenseQueries,
-} from "@/shared/hooks/useSuspenseQuery";
+import { useCurrentUser } from "@/shared/auth/hooks";
+import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import { Loading } from "@/shared/ui/Loading";
 
@@ -30,8 +29,8 @@ function QuizChallengeListContent() {
     throw new Error("eventId が不正です");
   }
 
-  const [meData, attendees] = useSuspenseQueries([
-    [["auth.getCurrentUser"], () => apis.auth.getCurrentUser()],
+  const meData = useCurrentUser();
+  const [attendees] = useSuspenseQueries([
     [
       ["events.listEventAttendees", { eventId }],
       async () => {

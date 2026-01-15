@@ -19,9 +19,8 @@ import { useNavigate } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import {
-  useSuspenseQueries,
-} from "@/shared/hooks/useSuspenseQuery";
+import { useCurrentUser } from "@/shared/auth/hooks";
+import { useMyProfile } from "@/shared/profile/hooks";
 import { apis } from "@/shared/api";
 import { Loading } from "@/shared/ui/Loading";
 import {
@@ -113,10 +112,8 @@ function QuizEditContent() {
     throw new Error("eventId が不正です");
   }
 
-  const [meData, myProfile] = useSuspenseQueries([
-    [["auth.getCurrentUser"], () => apis.auth.getCurrentUser()],
-    [["profiles.getMyProfile"], () => apis.profiles.getMyProfile()],
-  ]);
+  const meData = useCurrentUser();
+  const myProfile = useMyProfile();
 
   const profileData = myProfile.profileData || {};
   const displayName = (profileData.displayName as string) || "";

@@ -4,13 +4,12 @@ import { Link } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { InfoAlert } from "@/shared/ui/InfoAlert";
 import { NavigationButtonList } from "@/shared/ui/NavigationButtonList";
-import { apis } from "@/shared/api";
+import { useCurrentUser } from "@/shared/auth/hooks";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+import { apis } from "@/shared/api";
 
 function EventsList() {
-  const me = useSuspenseQuery(["auth.getCurrentUser"], () =>
-    apis.auth.getCurrentUser()
-  );
+  const me = useCurrentUser();
   const events = useSuspenseQuery(
     ["events.listEventsByUser", me.id],
     () => apis.events.listEventsByUser({ userId: me.id })

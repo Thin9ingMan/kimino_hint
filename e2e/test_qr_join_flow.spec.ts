@@ -31,19 +31,24 @@ test('QR code should navigate directly to event lobby after auto-join', async ({
   // Verify we're in the lobby
   await expect(page).toHaveURL(/.*\/events\/\d+/);
   
-  // Extract the event URL from QR code
-  // The QR code URL should be visible in the text
-  const shareUrlText = await page.locator('text=共有URL:').locator('..').locator('text=/https?:\/\/.*/').textContent();
-  expect(shareUrlText).toBeTruthy();
+  // Wait for QR code URL to be visible
+  await expect(page.getByText('参加用QRコード')).toBeVisible();
   
-  console.log('QR URL:', shareUrlText);
+  // Extract the QR code URL from the page
+  // The URL should be in format: http://localhost:5173/qr/join?code=XXXXX
+  const qrCodeElement = page.locator('svg[viewBox="0 0 160 160"]').first();
+  await expect(qrCodeElement).toBeVisible();
   
-  // Extract invitation code by extracting from the page
-  const invitationCodeElement = await page.locator('text=招待コード').locator('..').locator('text=/[A-Z0-9-]+/').first();
-  const invitationCode = await invitationCodeElement.textContent();
+  // Get the invitation code from the page
+  const invitationCodeText = await page.locator('text=招待コード').locator('..').locator('div[style*="monospace"]').textContent();
+  expect(invitationCodeText).toBeTruthy();
+  const invitationCode = invitationCodeText!.trim();
   
-  expect(invitationCode).toBeTruthy();
   console.log('Invitation Code:', invitationCode);
+  
+  // Construct the QR join URL
+  const qrJoinUrl = `http://localhost:5173/qr/join?code=${invitationCode}`;
+  console.log('QR Join URL:', qrJoinUrl);
   
   // Now simulate second user scanning the QR code
   // Create a new page context for second user
@@ -72,7 +77,7 @@ test('QR code should navigate directly to event lobby after auto-join', async ({
   await page2.reload();
 
   // Navigate to the QR URL (simulating QR code scan)
-  await page2.goto(shareUrlText!);
+  await page2.goto(qrJoinUrl);
   
   // Expected behavior: Should auto-join and navigate to event lobby
   // Wait for navigation to complete

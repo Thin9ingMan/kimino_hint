@@ -53,10 +53,9 @@ function CreateEventContent() {
         });
       } catch (joinErr: any) {
         console.warn("Failed to auto-join event as creator:", {
-          error: joinErr,
           eventId: event.id,
           status: joinErr?.response?.status,
-          message: joinErr?.message
+          message: joinErr?.message || "Unknown error"
         });
         // Don't fail the whole flow - user can manually join later if needed
       }

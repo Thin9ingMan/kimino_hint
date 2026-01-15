@@ -7,6 +7,7 @@ import { NavigationButtonList } from "@/shared/ui/NavigationButtonList";
 import { useCurrentUser } from "@/shared/auth/hooks";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
+import { JoinedEventsList } from "@/feat/events/components/JoinedEventsList";
 
 function EventsList() {
   const me = useCurrentUser();
@@ -76,6 +77,9 @@ export function EventsHubScreen() {
 
         <NavigationButtonList buttons={buttons} />
 
+        <Stack gap="sm" mt="md">
+           <JoinedEventsList />
+        </Stack>
 
         <Stack gap="sm" mt="md">
            <EventsList />

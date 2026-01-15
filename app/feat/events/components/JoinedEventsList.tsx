@@ -8,8 +8,8 @@ import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 export function JoinedEventsList() {
   const me = useCurrentUser();
   const joinedEvents = useSuspenseQuery(
-    ["events.listAttendedEventsByUser", me.id],
-    () => apis.events.listAttendedEventsByUser({ userId: me.id })
+    ["events.listMyAttendedEvents", me.id],
+    () => apis.events.listMyAttendedEvents()
   );
 
   if (!joinedEvents || joinedEvents.length === 0) {

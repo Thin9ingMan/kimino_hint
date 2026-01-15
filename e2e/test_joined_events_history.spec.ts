@@ -59,8 +59,13 @@ test('Joined Events History - Display and Re-enter', async ({ page }) => {
   await expect(page.getByText('Test Event for Joining', { exact: false })).toBeVisible();
 
   // 6. Navigate back to Events Hub
+  const attendedEventsResponsePromise = page.waitForResponse((response) =>
+    response.url().includes('/api/me/attended-events')
+  );
   await page.click('text=イベント一覧へ');
   await expect(page).toHaveURL(/.*\/events$/);
+  const attendedEventsResponse = await attendedEventsResponsePromise;
+  expect(attendedEventsResponse.status()).toBe(200);
 
   // 7. CRITICAL TEST: Verify "Joined Events" section exists
   await expect(page.getByText('参加したイベント')).toBeVisible();

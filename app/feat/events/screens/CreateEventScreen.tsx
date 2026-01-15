@@ -55,7 +55,6 @@ function CreateEventContent() {
         console.warn("Failed to auto-join event as creator:", {
           error: joinErr,
           eventId: event.id,
-          invitationCode: event.invitationCode,
           status: joinErr?.response?.status,
           message: joinErr?.message
         });

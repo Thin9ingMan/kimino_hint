@@ -43,6 +43,23 @@ function CreateEventContent() {
 
       });
 
+      // Auto-join the organizer as an attendee
+      // This ensures the organizer can save quizzes and access participant data
+      // Fixes issues #71 and #72
+      try {
+        await apis.events.joinEventByCode({
+          eventJoinByCodeRequest: {
+            invitationCode: event.invitationCode,
+          },
+        });
+      } catch (joinErr: any) {
+        // If join fails with 409 Conflict, the user is already joined (which is fine)
+        // Any other error should be logged but not prevent navigation
+        if (joinErr?.response?.status !== 409) {
+          console.warn("Failed to auto-join event:", joinErr);
+        }
+      }
+
       // Navigate to the event lobby
       navigate(`/events/${event.id}`);
     } catch (err) {

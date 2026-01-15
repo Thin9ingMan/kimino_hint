@@ -171,7 +171,7 @@ test.describe('Multi-Question Quiz Flow', () => {
     
     // BUG: The result should NOT be shown immediately without user selecting an answer
     // If the bug exists, "不正解" will be visible immediately
-    const isResultShownImmediately = await page.getByText('不正解').isVisible({ timeout: 1000 }).catch(() => false);
+    const isResultShownImmediately = await page.getByText('不正解').isVisible() === true;
     
     if (isResultShownImmediately) {
       console.error('BUG REPRODUCED: "不正解" is shown immediately on Question 2 without user selection!');

@@ -249,7 +249,7 @@ function QuizEditContent() {
 
     const initialQuestions: QuestionState[] = [];
 
-    // Names
+    // Question 1: Name
     if (displayName) {
       initialQuestions.push({
         id: "q-names",
@@ -258,17 +258,9 @@ function QuizEditContent() {
         title: "私の「名前」はどれ？",
         choices: createInitialChoices(displayName),
       });
-      
-      initialQuestions.push({
-        id: "q-vsim-names",
-        type: "fixed",
-        category: "verySimilarNames",
-        title: "改めて、私の「名前」はどれ？",
-        choices: createInitialChoices(displayName),
-      });
     }
 
-    // Faculty
+    // Question 2: Faculty
     if (myFaculty) {
       initialQuestions.push({
         id: "q-faculty",
@@ -279,7 +271,7 @@ function QuizEditContent() {
       });
     }
 
-    // Grade
+    // Question 3: Grade
     if (myGrade) {
       initialQuestions.push({
         id: "q-grade",
@@ -290,7 +282,7 @@ function QuizEditContent() {
       });
     }
 
-    // Hobby
+    // Question 4: Hobby
     if (hobby) {
       initialQuestions.push({
         id: "q-hobby",
@@ -301,7 +293,18 @@ function QuizEditContent() {
       });
     }
 
-    // Artist
+    // Question 5: Name again (Very Similar Names)
+    if (displayName) {
+      initialQuestions.push({
+        id: "q-vsim-names",
+        type: "fixed",
+        category: "verySimilarNames",
+        title: "改めて、私の「名前」はどれ？",
+        choices: createInitialChoices(displayName),
+      });
+    }
+
+    // Question 6: Artist
     if (favoriteArtist) {
       initialQuestions.push({
         id: "q-artist",

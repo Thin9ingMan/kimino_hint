@@ -124,13 +124,8 @@ test.describe('Question Order Verification', () => {
     }
 
     // Specifically check that "改めて、私の「名前」はどれ？" is NOT in position 2
-    if (questionTitles.length >= 2) {
-      if (questionTitles[1].includes('改めて') || questionTitles[1].includes('名前')) {
-        // Check if it's the "again" question
-        if (questionTitles[1] === '改めて、私の「名前」はどれ？') {
-          throw new Error('BUG REPRODUCED: "改めて、私の「名前」はどれ？" appears at position 2 instead of position 5!');
-        }
-      }
+    if (questionTitles.length >= 2 && questionTitles[1] === '改めて、私の「名前」はどれ？') {
+      throw new Error('BUG REPRODUCED: "改めて、私の「名前」はどれ？" appears at position 2 instead of position 5!');
     }
 
     // Check that "改めて、私の「名前」はどれ？" appears at position 5 (index 4)

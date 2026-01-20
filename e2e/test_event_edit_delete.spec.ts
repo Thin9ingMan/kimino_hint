@@ -71,7 +71,7 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   await expect(page.getByText('Updated Event Name', { exact: false }).first()).toBeVisible();
   
   // Check description is visible in the event info section (not in modal)
-  const eventInfoSection = page.locator('div').filter({ hasText: 'イベント情報' }).first();
+  let eventInfoSection = page.locator('div').filter({ hasText: 'イベント情報' }).first();
   await expect(eventInfoSection.getByText('Updated description')).toBeVisible();
 
   // Screenshot 4: Updated event lobby
@@ -80,6 +80,9 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   // 7. Reload page to verify persistence
   await page.reload();
   await expect(page.getByText('Updated Event Name', { exact: false }).first()).toBeVisible();
+  
+  // Re-locate event info section after reload to avoid stale element
+  eventInfoSection = page.locator('div').filter({ hasText: 'イベント情報' }).first();
   await expect(eventInfoSection.getByText('Updated description')).toBeVisible();
 
   console.log('Event editing verified successfully');

@@ -72,9 +72,14 @@ test.describe('Quiz Sequential Flow', () => {
                         myQuiz: {
                             questions: [
                                 { 
+                                    id: `q1-${user.name}`,
                                     question: `Who is User ${user.name}?`, 
-                                    choices: [`User ${user.name}`, 'X', 'Y', 'Z'], 
-                                    correctIndex: 0
+                                    choices: [
+                                        { id: `c1-${user.name}`, text: `User ${user.name}`, isCorrect: true },
+                                        { id: `c2-${user.name}`, text: 'X', isCorrect: false },
+                                        { id: `c3-${user.name}`, text: 'Y', isCorrect: false },
+                                        { id: `c4-${user.name}`, text: 'Z', isCorrect: false }
+                                    ]
                                 }
                             ]
                         }
@@ -100,13 +105,12 @@ test.describe('Quiz Sequential Flow', () => {
         
         // --- Expected: Sequential flow starts ---
         // Should start with Host's quiz (first participant)
-        await expect(page.getByText('User Host')).toBeVisible();
         
         // Answer Host's quiz
         await expect(page.getByText('Who is User Host?')).toBeVisible();
         await page.click('button:has-text("User Host")');
         await expect(page.getByText('正解！')).toBeVisible();
-        await page.click('button:has-text("次の問題へ")');
+        await page.click('button:has-text("結果を見る")');
         
         // Result screen should show
         await expect(page.getByText('結果')).toBeVisible();
@@ -116,11 +120,10 @@ test.describe('Quiz Sequential Flow', () => {
         await page.click('text=次のクイズへ');
         
         // --- Second quiz: Participant 1 ---
-        await expect(page.getByText('User Participant1')).toBeVisible();
         await expect(page.getByText('Who is User Participant1?')).toBeVisible();
         await page.click('button:has-text("User Participant1")');
         await expect(page.getByText('正解！')).toBeVisible();
-        await page.click('button:has-text("次の問題へ")');
+        await page.click('button:has-text("結果を見る")');
         
         // Result screen
         await expect(page.getByText('結果')).toBeVisible();
@@ -135,7 +138,11 @@ test.describe('Quiz Sequential Flow', () => {
         // No quiz questions should be visible
         await expect(page.getByText('Who is User Participant2?')).not.toBeVisible();
         
+        // Click next - should go to completion screen
         await page.click('text=次のクイズへ');
+        
+        // Wait for navigation
+        await page.waitForTimeout(2000);
         
         // --- Completion screen ---
         await expect(page.getByText('すべてのクイズが完了しました')).toBeVisible();

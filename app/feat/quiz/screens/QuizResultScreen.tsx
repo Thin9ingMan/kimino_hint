@@ -9,8 +9,8 @@ import {
   Group,
   Center,
 } from "@mantine/core";
-import { Suspense, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Suspense, useMemo, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
@@ -26,6 +26,7 @@ import { getPerformanceRating } from "../utils/validation";
 function QuizResultContent() {
   const eventId = useNumericParam("eventId");
   const targetUserId = useNumericParam("targetUserId");
+  const navigate = useNavigate();
 
   if (!eventId || !targetUserId) {
     throw new Error("パラメータが不正です");
@@ -72,6 +73,23 @@ function QuizResultContent() {
   const totalQuestions = quiz?.questions?.length ?? 0;
   const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
   const performanceRating = getPerformanceRating(percentage);
+
+  // Handle next quiz navigation
+  const handleNextQuiz = useCallback(() => {
+    // Get current quiz progress
+    const progressKey = `quiz_sequence_${eventId}`;
+    const stored = sessionStorage.getItem(progressKey);
+    const progress = stored ? JSON.parse(stored) : { completedQuizzes: [] };
+    
+    // Mark current quiz as completed
+    const newProgress = {
+      completedQuizzes: [...progress.completedQuizzes, targetUserId],
+    };
+    sessionStorage.setItem(progressKey, JSON.stringify(newProgress));
+    
+    // Navigate to sequence screen to continue
+    navigate(`/events/${eventId}/quiz/sequence`);
+  }, [eventId, targetUserId, navigate]);
 
   return (
     <Stack gap="md">
@@ -125,8 +143,8 @@ function QuizResultContent() {
       </Paper>
 
       <Stack gap="sm">
-        <Button component={Link} to={`/events/${eventId}/quiz/challenges`} fullWidth>
-          他のクイズに挑戦
+        <Button onClick={handleNextQuiz} fullWidth>
+          次のクイズへ
         </Button>
         <Button component={Link} to={`/events/${eventId}`} variant="default" fullWidth>
           ロビーへ戻る

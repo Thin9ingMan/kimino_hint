@@ -112,7 +112,16 @@ function EventLobbyContent() {
         <Button component={Link} to={`/events/${eventId}/quiz`} fullWidth>
           自分のクイズを編集
         </Button>
-        <Button component={Link} to={`/events/${eventId}/quiz/challenges`} fullWidth variant="light">
+        <Button 
+          component={Link} 
+          to={`/events/${eventId}/quiz/sequence`} 
+          fullWidth 
+          variant="light"
+          onClick={() => {
+            // Reset quiz sequence progress when starting
+            sessionStorage.removeItem(`quiz_sequence_${eventId}`);
+          }}
+        >
           クイズに挑戦
         </Button>
         <Button component={Link} to="/events" variant="default" fullWidth>

@@ -53,7 +53,7 @@ function QuizSequenceContent() {
                 displayName: profile.profileData?.displayName,
                 profileData: profile.profileData,
               };
-            } catch (e) {
+            } catch {
               return { ...a, userId: uid, attendeeUserId: uid };
             }
           })

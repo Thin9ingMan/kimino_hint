@@ -66,9 +66,17 @@ function QuizSequenceContent() {
 
   // Get quiz completion state from sessionStorage
   const quizProgress = useMemo(() => {
-    const stored = sessionStorage.getItem(`quiz_sequence_${eventId}`);
-    if (stored) {
-      return JSON.parse(stored);
+    try {
+      const stored = sessionStorage.getItem(`quiz_sequence_${eventId}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Validate the structure
+        if (parsed && Array.isArray(parsed.completedQuizzes)) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to parse quiz progress from sessionStorage:', error);
     }
     return { completedQuizzes: [] };
   }, [eventId, refreshKey]);
@@ -105,14 +113,17 @@ function QuizSequenceContent() {
   // If it's the user's own quiz, show special screen
   if (isOwnQuiz) {
     const handleNext = () => {
-      // Mark this quiz as completed
-      const newProgress = {
-        completedQuizzes: [...quizProgress.completedQuizzes, currentAttendee.attendeeUserId],
-      };
-      sessionStorage.setItem(`quiz_sequence_${eventId}`, JSON.stringify(newProgress));
-      
-      // Trigger re-render by updating refreshKey
-      setRefreshKey(prev => prev + 1);
+      // Mark this quiz as completed (avoid duplicates)
+      const completed = quizProgress.completedQuizzes;
+      if (!completed.includes(currentAttendee.attendeeUserId)) {
+        const newProgress = {
+          completedQuizzes: [...completed, currentAttendee.attendeeUserId],
+        };
+        sessionStorage.setItem(`quiz_sequence_${eventId}`, JSON.stringify(newProgress));
+        
+        // Trigger re-render by updating refreshKey
+        setRefreshKey(prev => prev + 1);
+      }
     };
 
     return (

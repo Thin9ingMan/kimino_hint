@@ -76,19 +76,34 @@ function QuizResultContent() {
 
   // Handle next quiz navigation
   const handleNextQuiz = useCallback(() => {
-    // Get current quiz progress
-    const progressKey = `quiz_sequence_${eventId}`;
-    const stored = sessionStorage.getItem(progressKey);
-    const progress = stored ? JSON.parse(stored) : { completedQuizzes: [] };
-    
-    // Mark current quiz as completed
-    const newProgress = {
-      completedQuizzes: [...progress.completedQuizzes, targetUserId],
-    };
-    sessionStorage.setItem(progressKey, JSON.stringify(newProgress));
-    
-    // Navigate to sequence screen to continue
-    navigate(`/events/${eventId}/quiz/sequence`);
+    // Get current quiz progress with error handling
+    try {
+      const progressKey = `quiz_sequence_${eventId}`;
+      const stored = sessionStorage.getItem(progressKey);
+      let progress = { completedQuizzes: [] };
+      
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && Array.isArray(parsed.completedQuizzes)) {
+          progress = parsed;
+        }
+      }
+      
+      // Mark current quiz as completed (avoid duplicates)
+      if (!progress.completedQuizzes.includes(targetUserId)) {
+        const newProgress = {
+          completedQuizzes: [...progress.completedQuizzes, targetUserId],
+        };
+        sessionStorage.setItem(progressKey, JSON.stringify(newProgress));
+      }
+      
+      // Navigate to sequence screen to continue
+      navigate(`/events/${eventId}/quiz/sequence`);
+    } catch (error) {
+      console.error('Failed to update quiz progress:', error);
+      // Navigate anyway to avoid blocking the user
+      navigate(`/events/${eventId}/quiz/sequence`);
+    }
   }, [eventId, targetUserId, navigate]);
 
   return (

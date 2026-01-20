@@ -34,10 +34,17 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   await expect(page.getByText('Original Event Name', { exact: false })).toBeVisible();
   await expect(page.getByText('Original description', { exact: false })).toBeVisible();
 
+  // Screenshot 1: Event lobby with edit button
+  await page.screenshot({ path: '/tmp/event_lobby_with_edit_button.png', fullPage: true });
+
   // 3. Click Edit button (this should exist per the requirement)
   const editButton = page.getByRole('button', { name: /編集|イベント情報を編集/ });
   await expect(editButton).toBeVisible();
   await editButton.click();
+
+  // Screenshot 2: Edit modal opened
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: '/tmp/event_edit_modal.png', fullPage: true });
 
   // 4. Edit the event name and description
   const nameInput = page.getByLabel(/イベント名|名前/);
@@ -48,19 +55,33 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   await expect(descInput).toBeVisible();
   await descInput.fill('Updated description');
 
+  // Screenshot 3: Modal with edited values
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: '/tmp/event_edit_modal_filled.png', fullPage: true });
+
   // 5. Save changes
   const saveButton = page.getByRole('button', { name: /保存|更新/ });
   await expect(saveButton).toBeVisible();
   await saveButton.click();
 
+  // Wait for modal to close
+  await page.waitForTimeout(1000);
+
   // 6. Verify changes are reflected
-  await expect(page.getByText('Updated Event Name', { exact: false })).toBeVisible();
-  await expect(page.getByText('Updated description', { exact: false })).toBeVisible();
+  await expect(page.getByText('Updated Event Name', { exact: false }).first()).toBeVisible();
+  
+  // Check description is visible in the event info section (not in modal)
+  const eventInfoSection = page.locator('div').filter({ hasText: 'イベント情報' }).first();
+  await expect(eventInfoSection.getByText('Updated description')).toBeVisible();
+
+  // Screenshot 4: Updated event lobby
+  await page.screenshot({ path: '/tmp/event_lobby_updated.png', fullPage: true });
 
   // 7. Reload page to verify persistence
   await page.reload();
-  await expect(page.getByText('Updated Event Name', { exact: false })).toBeVisible();
-  await expect(page.getByText('Updated description', { exact: false })).toBeVisible();
+  await expect(page.getByText('Updated Event Name', { exact: false }).first()).toBeVisible();
+  await expect(eventInfoSection.getByText('Updated description')).toBeVisible();
 
   console.log('Event editing verified successfully');
+  console.log('Screenshots saved to /tmp/');
 });

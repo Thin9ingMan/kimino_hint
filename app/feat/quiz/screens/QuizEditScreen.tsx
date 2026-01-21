@@ -13,6 +13,7 @@ import {
   Loader,
   Card,
   Divider,
+  Textarea,
 } from "@mantine/core";
 import {
   IconRotate,
@@ -53,6 +54,7 @@ interface QuestionState {
   category: QuestionCategory;
   title: string;
   choices: ChoiceState[];
+  explanation?: string;
 }
 
 interface ChoiceInputProps {
@@ -191,6 +193,22 @@ function QuestionEditor({
             />
           ))}
         </Stack>
+
+        <Divider variant="dashed" label="補足説明（任意）" labelPosition="center" mt="md" />
+
+        <Textarea
+          label="補足説明"
+          placeholder="正解・不正解が表示された後に出題者が伝えたい補足情報を入力してください（例: この趣味を始めたきっかけは...）"
+          value={question.explanation || ""}
+          onChange={(e) => onChange({ ...question, explanation: e.currentTarget.value })}
+          minRows={3}
+          maxRows={6}
+          autosize
+          styles={(theme) => ({
+            label: { marginBottom: 8, fontWeight: 600, color: theme.colors.gray[7] },
+            input: { fontSize: theme.fontSizes.sm }
+          })}
+        />
       </Stack>
     </Card>
   );
@@ -489,6 +507,7 @@ function QuizEditContent() {
           id: q.id,
           question: q.title,
           choices: q.choices.map(c => ({ id: c.id, text: c.text, isCorrect: c.isCorrect })),
+          explanation: q.explanation,
         })),
         updatedAt: new Date().toISOString(),
       };

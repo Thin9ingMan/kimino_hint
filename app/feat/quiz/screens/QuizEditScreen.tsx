@@ -16,7 +16,6 @@ import {
 } from "@mantine/core";
 import {
   IconRotate,
-  IconCheck,
   IconDice5,
   IconPlus,
   IconTrash,
@@ -63,7 +62,6 @@ interface ChoiceInputProps {
   onReroll?: () => void;
   loading?: boolean;
   placeholder?: string;
-  onSetCorrect?: () => void;
   readOnly?: boolean;
 }
 
@@ -74,21 +72,17 @@ function ChoiceInput({
   onReroll,
   loading = false,
   placeholder,
-  onSetCorrect,
   readOnly = false,
 }: ChoiceInputProps) {
   return (
     <Group gap="xs" wrap="nowrap">
-      <ActionIcon
-        variant={isCorrect ? "filled" : "light"}
-        color={isCorrect ? "teal" : "gray"}
-        onClick={onSetCorrect}
-        size={40}
-        radius="md"
-        title={isCorrect ? "正解" : "正解に設定"}
-      >
-        <IconCheck size={18} />
-      </ActionIcon>
+      <Box
+        style={{
+          width: 40,
+          height: 40,
+          flexShrink: 0,
+        }}
+      />
       <TextInput
         flex={1}
         value={value}
@@ -188,13 +182,6 @@ function QuestionEditor({
                 const newChoices = question.choices.map(c => 
                   c.id === choice.id ? { ...c, text: val } : c
                 );
-                onChange({ ...question, choices: newChoices });
-              }}
-              onSetCorrect={() => {
-                const newChoices = question.choices.map(c => ({
-                  ...c,
-                  isCorrect: c.id === choice.id
-                }));
                 onChange({ ...question, choices: newChoices });
               }}
               onReroll={isFixed && !choice.isCorrect ? () => onRerollChoice(choice.id) : undefined}

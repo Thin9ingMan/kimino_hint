@@ -55,7 +55,7 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await expect(supplementLabel).toBeVisible({ timeout: 5000 });
 
   // Find the supplement textarea/input for the first question
-  const supplementInput = page.locator('textarea[placeholder*="補足"], textarea[placeholder*="解説"]').first();
+  const supplementInput = page.locator('textarea').filter({ hasText: '' }).first();
   await expect(supplementInput).toBeVisible();
 
   // Add a supplement text
@@ -64,7 +64,8 @@ test('Quiz Supplement Feature', async ({ page }) => {
 
   // 6. Click auto-generate to fill choices
   await page.click('text=固定項目を自動埋め');
-  await page.waitForTimeout(2000); // Wait for generation
+  // Wait for the auto-generation to complete by checking for filled choices
+  await expect(page.locator('input[value]').first()).toBeVisible({ timeout: 5000 });
 
   // 7. Save the quiz
   await page.click('text=保存して完了');

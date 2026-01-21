@@ -55,7 +55,7 @@ const FORM_FIELDS: FormField[] = [
 
   // 具体的な学部は、enPiTのレビューをかわすための措置。データは保存しているし残置。
   { id: "facultyDetail", label: "学科名" },
-  { id: "grade", label: "学年", type: "select", options: GRADE_OPTIONS },
+  { id: "grade", label: "学年", type: "select", options: GRADE_OPTIONS, required: true },
   { id: "hobby", label: "趣味", placeholder: "趣味", required: true },
   {
     id: "favoriteArtist",

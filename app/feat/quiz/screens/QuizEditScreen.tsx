@@ -39,6 +39,8 @@ import {
   QuizSaveError,
 } from "../utils/errors";
 import { falseHobbies, falseArtists, faculty, grade } from "../utils/fakeData";
+import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
+import type { Quiz } from "../types";
 
 type QuestionCategory = "names" | "verySimilarNames" | "hobbies" | "artists" | "faculty" | "grade" | "custom";
 
@@ -232,6 +234,16 @@ function QuizEditContent() {
   const myFaculty = (profileData.faculty as string) || "";
   const myGrade = (profileData.grade as string) || "";
 
+  // Fetch existing quiz data
+  const [existingQuizData] = useSuspenseQueries([
+    [
+      ["events.getEventUserData", { eventId, userId: meData.id }],
+      () => apis.events.getEventUserData({ eventId, userId: meData.id }),
+    ],
+  ]);
+
+  const existingQuiz = existingQuizData?.userData?.myQuiz as Quiz | undefined;
+
   const [questions, setQuestions] = useState<QuestionState[]>([]);
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
@@ -252,6 +264,53 @@ function QuizEditContent() {
     if (isInitialized.current) return;
     if (!displayName && !hobby && !favoriteArtist && !myFaculty && !myGrade) return;
 
+    // If we have existing quiz data, load it
+    if (existingQuiz && existingQuiz.questions && existingQuiz.questions.length > 0) {
+      const loadedQuestions: QuestionState[] = existingQuiz.questions.map(q => {
+        // Determine the category and type based on question id or content
+        let category: QuestionCategory = "custom";
+        let type: "fixed" | "custom" = "custom";
+
+        if (q.id === "q-names") {
+          category = "names";
+          type = "fixed";
+        } else if (q.id === "q-vsim-names") {
+          category = "verySimilarNames";
+          type = "fixed";
+        } else if (q.id === "q-hobby") {
+          category = "hobbies";
+          type = "fixed";
+        } else if (q.id === "q-artist") {
+          category = "artists";
+          type = "fixed";
+        } else if (q.id === "q-faculty") {
+          category = "faculty";
+          type = "fixed";
+        } else if (q.id === "q-grade") {
+          category = "grade";
+          type = "fixed";
+        }
+
+        return {
+          id: q.id,
+          type,
+          category,
+          title: q.question,
+          choices: q.choices.map(c => ({
+            id: c.id,
+            text: c.text,
+            isCorrect: c.isCorrect,
+          })),
+          explanation: q.explanation,
+        };
+      });
+
+      setQuestions(loadedQuestions);
+      isInitialized.current = true;
+      return;
+    }
+
+    // Otherwise, create initial questions from profile
     const initialQuestions: QuestionState[] = [];
 
     // Question 1: Name
@@ -322,7 +381,7 @@ function QuizEditContent() {
 
     setQuestions(initialQuestions);
     isInitialized.current = true;
-  }, [displayName, hobby, favoriteArtist, myFaculty, myGrade]);
+  }, [displayName, hobby, favoriteArtist, myFaculty, myGrade, existingQuiz]);
 
   const updateQuestion = (index: number, updated: QuestionState) => {
     setQuestions((prev) => {

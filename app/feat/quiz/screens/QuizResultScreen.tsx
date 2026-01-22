@@ -190,16 +190,20 @@ function QuizResultContent() {
                       <Table.Td>{question.question}</Table.Td>
                       <Table.Td>{correctChoice?.text || '不明'}</Table.Td>
                       <Table.Td>
-                        <Group gap="xs">
-                          <Text>
-                            {answer?.isCorrect ? '⭕' : '✖'}
-                          </Text>
-                          {!answer?.isCorrect && userChoice && (
-                            <Text size="sm" c="dimmed">
-                              ({userChoice.text})
+                        {answer ? (
+                          <Group gap="xs">
+                            <Text>
+                              {answer.isCorrect ? '⭕' : '✖'}
                             </Text>
-                          )}
-                        </Group>
+                            {!answer.isCorrect && userChoice && (
+                              <Text size="sm" c="dimmed">
+                                ({userChoice.text})
+                              </Text>
+                            )}
+                          </Group>
+                        ) : (
+                          <Text c="dimmed">未回答</Text>
+                        )}
                       </Table.Td>
                     </Table.Tr>
                   );

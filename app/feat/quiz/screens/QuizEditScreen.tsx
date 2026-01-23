@@ -238,7 +238,14 @@ function QuizEditContent() {
   const [existingQuizData] = useSuspenseQueries([
     [
       ["events.getEventUserData", { eventId, userId: meData.id }],
-      () => apis.events.getEventUserData({ eventId, userId: meData.id }),
+      async () => {
+        try {
+          return await apis.events.getEventUserData({ eventId, userId: meData.id });
+        } catch {
+          // Return null if user data doesn't exist yet (e.g., new participant)
+          return null;
+        }
+      },
     ],
   ]);
 

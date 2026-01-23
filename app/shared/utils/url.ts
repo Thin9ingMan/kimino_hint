@@ -9,7 +9,7 @@
  * @returns The normalized base path (e.g., "/" or "/kimino_hint/")
  */
 export function normalizeBaseUrlPath(): string {
-  const basePath = String(import.meta.env.BASE_URL || "/");
+  const basePath = import.meta.env.BASE_URL || "/";
   return basePath.endsWith("/") ? basePath : `${basePath}/`;
 }
 

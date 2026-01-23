@@ -14,15 +14,11 @@ import {
 } from "@mantine/core";
 import { Copy, Check } from "tabler-icons-react";
 import QRCode from "react-qr-code";
+import { buildFullUrl } from "@/shared/utils";
 
 type Props = {
   invitationCode?: string;
 };
-
-function normalizeBaseUrlPath(): string {
-  const basePath = String(import.meta.env.BASE_URL || "/");
-  return basePath.endsWith("/") ? basePath : `${basePath}/`;
-}
 
 export function EventInvitationPanel({ invitationCode }: Props) {
   if (!invitationCode) {
@@ -30,8 +26,7 @@ export function EventInvitationPanel({ invitationCode }: Props) {
   }
 
   // URL for auto-joining via QR code
-  const base = normalizeBaseUrlPath();
-  const joinUrl = `${window.location.origin}${base}qr/join?code=${invitationCode}`;
+  const joinUrl = buildFullUrl(`qr/join?code=${invitationCode}`);
 
   return (
     <Paper withBorder p="md" radius="md">

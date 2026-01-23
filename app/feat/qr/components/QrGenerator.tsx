@@ -1,6 +1,7 @@
 import { Button, Stack, Text, TextInput, Box, Image } from "@mantine/core";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { normalizeBaseUrlPath } from "@/shared/utils";
 
 interface QrGeneratorProps {
   baseUrl?: string;
@@ -10,11 +11,6 @@ interface QrGeneratorProps {
   showDirectLink?: boolean;
   placeholder?: string;
   label?: string;
-}
-
-function normalizeBaseUrlPath(): string {
-  const basePath = String(import.meta.env.BASE_URL || "/");
-  return basePath.endsWith("/") ? basePath : `${basePath}/`;
 }
 
 /**

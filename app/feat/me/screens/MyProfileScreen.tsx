@@ -21,15 +21,10 @@ import {
   isUiProfileEmpty,
 } from "@/shared/profile/profileUi";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
-
-function normalizeBaseUrlPath(): string {
-  const basePath = String(import.meta.env.BASE_URL || "/");
-  return basePath.endsWith("/") ? basePath : `${basePath}/`;
-}
+import { buildFullUrl } from "@/shared/utils";
 
 function getProfileShareUrl(userId: number): string {
-  const base = normalizeBaseUrlPath();
-  return `${window.location.origin}${base}profiles/${userId}`;
+  return buildFullUrl(`profiles/${userId}`);
 }
 
 function getQrImageUrl(url: string, size: number): string {

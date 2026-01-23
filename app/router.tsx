@@ -23,6 +23,7 @@ import { QuizChallengeListScreen } from "./feat/quiz/screens/QuizChallengeListSc
 import { QuizSequenceScreen } from "./feat/quiz/screens/QuizSequenceScreen";
 import { QuizQuestionScreen } from "./feat/quiz/screens/QuizQuestionScreen";
 import { QuizResultScreen } from "./feat/quiz/screens/QuizResultScreen";
+import { QuizRewardsScreen } from "./feat/quiz/screens/QuizRewardsScreen";
 import { QrHubScreen } from "./feat/qr/screens/QrHubScreen";
 import { QrProfileScreen } from "./feat/qr/screens/QrProfileScreen";
 import { QrScanScreen } from "./feat/qr/screens/QrScanScreen";
@@ -77,6 +78,10 @@ export function AppRouter() {
         <Route
           path="/events/:eventId/quiz/challenge/:targetUserId/result"
           element={<QuizResultScreen />}
+        />
+        <Route
+          path="/events/:eventId/quiz/challenge/:targetUserId/rewards"
+          element={<QuizRewardsScreen />}
         />
 
         {/* QR */}

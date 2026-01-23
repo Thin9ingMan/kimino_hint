@@ -618,23 +618,12 @@ function QuizEditContent() {
       )}
 
       <Box>
-        <Group justify="space-between" align="center" mb="md">
-          <Box>
-            <Title order={3}>クイズエディタ</Title>
-            <Text size="sm" c="dimmed">
-              自由に質問を追加して、あなただけのクイズを作りましょう
-            </Text>
-          </Box>
-          <Button
-            variant="light"
-            leftSection={<IconRotate size={16} />}
-            onClick={fillAll}
-            loading={loadingMap.all}
-            size="sm"
-          >
-            固定項目を自動埋め
-          </Button>
-        </Group>
+        <Box mb="md">
+          <Title order={3}>クイズエディタ</Title>
+          <Text size="sm" c="dimmed">
+            自由に質問を追加して、あなただけのクイズを作りましょう
+          </Text>
+        </Box>
       </Box>
 
       <Stack gap="lg">
@@ -688,6 +677,14 @@ function QuizEditContent() {
         <Group grow gap="sm">
           <Button variant="default" onClick={() => navigate(`/events/${eventId}`)}>
             キャンセル
+          </Button>
+          <Button
+            variant="light"
+            leftSection={<IconRotate size={16} />}
+            onClick={fillAll}
+            loading={loadingMap.all}
+          >
+            誤答を生成
           </Button>
           <Button onClick={handleSave} loading={saving}>
             保存して完了

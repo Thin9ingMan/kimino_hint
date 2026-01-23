@@ -189,7 +189,7 @@ test.describe('Choice Randomization Verification', () => {
         }
 
         // Take a screenshot for debugging
-        await page.screenshot({ path: `/tmp/quiz_question_${i + 1}.png` });
+        await page.screenshot({ path: `test-results/quiz_question_${i + 1}.png` });
 
         // Go to next question
         const nextButton = page.locator('button').filter({ hasText: /次の問題へ|結果を見る/ }).first();

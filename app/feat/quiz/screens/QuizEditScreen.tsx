@@ -41,6 +41,7 @@ import {
 import { falseHobbies, falseArtists, faculty, grade } from "../utils/fakeData";
 import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import type { Quiz } from "../types";
+import { shuffleArray } from "../utils/shuffle";
 
 type QuestionCategory = "names" | "verySimilarNames" | "hobbies" | "artists" | "faculty" | "grade" | "custom";
 
@@ -540,18 +541,6 @@ function QuizEditContent() {
     } finally {
       setLoadingMap({ all: false });
     }
-  };
-
-  /**
-   * Shuffle an array using Fisher-Yates algorithm
-   */
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
   };
 
   const handleSave = async () => {

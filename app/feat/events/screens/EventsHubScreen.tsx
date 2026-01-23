@@ -8,42 +8,20 @@ import { InfoAlert } from "@/shared/ui/InfoAlert";
 import { NavigationButtonList } from "@/shared/ui/NavigationButtonList";
 import { useCurrentUser } from "@/shared/auth/hooks";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
-import { apis, getApiBaseUrl } from "@/shared/api";
-import { getJwtToken } from "@/shared/api";
+import { apis } from "@/shared/api";
 import { JoinedEventsList } from "@/feat/events/components/JoinedEventsList";
 import { useQueryClient } from "@tanstack/react-query";
-
-// Custom delete function until API client is updated
-// Note: DELETE endpoint was added in https://github.com/yuki-js/quarkus-crud/pull/83
-// but needs to be deployed to production. Once deployed, this can be replaced with
-// the generated API client method: apis.events.deleteEvent({ eventId })
-async function deleteEvent(eventId: number): Promise<void> {
-  const token = getJwtToken();
-  const response = await fetch(`${getApiBaseUrl()}/api/events/${eventId}`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': token ? `Bearer ${token}` : '',
-    },
-  });
-
-  if (!response.ok) {
-    if (response.status === 403) {
-      throw new Error('削除する権限がありません');
-    } else if (response.status === 404) {
-      throw new Error('イベントが見つかりません');
-    } else {
-      throw new Error('イベントの削除に失敗しました');
-    }
-  }
-}
 
 function EventsList() {
   const me = useCurrentUser();
   const queryClient = useQueryClient();
-  const events = useSuspenseQuery(
+  const allEvents = useSuspenseQuery(
     ["events.listEventsByUser", me.id],
     () => apis.events.listEventsByUser({ userId: me.id })
   );
+
+  // Filter out deleted events (soft-deleted events have status: 'deleted')
+  const events = allEvents?.filter((event: any) => event.status !== 'deleted') || [];
 
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<any>(null);
@@ -65,7 +43,7 @@ function EventsList() {
     setDeleteError(null);
 
     try {
-      await deleteEvent(eventToDelete.id);
+      await apis.events.deleteEvent({ eventId: eventToDelete.id });
 
       // Invalidate queries to refetch data
       await queryClient.invalidateQueries({

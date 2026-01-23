@@ -89,12 +89,7 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   console.log('Screenshots saved to /tmp/');
 });
 
-test.skip('Delete Event from Events Hub', async ({ page }) => {
-  // Note: This test is currently skipped because the DELETE /api/events/{id} endpoint
-  // has not been deployed to production yet. The backend PR (yuki-js/quarkus-crud#83)
-  // has been merged but needs to be deployed.
-  // Once the endpoint is available, remove the .skip() to enable this test.
-  
+test('Delete Event from Events Hub', async ({ page }) => {
   // 1. Setup Guest and Profile
   const authRes = await page.request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/auth/guest');
   const token = authRes.headers()['authorization'];
@@ -160,27 +155,34 @@ test.skip('Delete Event from Events Hub', async ({ page }) => {
   await page.waitForTimeout(1000);
   
   // 7. Verify event is no longer in the "created events" list
-  // After deletion and reload, the event should not appear in "created events"
-  const createdEventsText = page.getByText('作成したイベント');
+  // We need to check specifically in the "作成したイベント" section
+  // The event might still be in "参加したイベント" but should not be in "作成したイベント"
   
-  // Check if "created events" section is visible or if message shows no events
-  const noEventsMessage = page.getByText('まだ作成したイベントはありません');
-  const isNoEventsVisible = await noEventsMessage.isVisible().catch(() => false);
+  // First, let's wait for the page to load completely
+  await page.waitForSelector('text=作成したイベント', { timeout: 5000 }).catch(() => null);
   
-  if (isNoEventsVisible) {
-    // Perfect! No events left
+  // Check if the "no events" message is shown
+  const noEventsMessage = page.locator('text=まだ作成したイベントはありません');
+  const hasNoEvents = await noEventsMessage.isVisible().catch(() => false);
+  
+  if (hasNoEvents) {
     console.log('No created events found - deletion successful');
   } else {
-    // Check that the deleted event is not in the list
-    const eventCards = page.locator('div').filter({ hasText: '作成したイベント' }).locator('div[class*="Card"]');
-    const eventCount = await eventCards.count();
-    console.log(`Found ${eventCount} event cards after deletion`);
+    // Find the "Created Events" section specifically
+    const createdEventsSection = page.locator('h5:has-text("作成したイベント")').locator('..');
     
-    // Make sure "Event to Delete" is not in any card
-    for (let i = 0; i < eventCount; i++) {
-      const cardText = await eventCards.nth(i).textContent();
-      if (cardText?.includes('Event to Delete')) {
-        throw new Error('Deleted event still appears in created events list');
+    // Look for event cards in this section
+    const cardsInCreatedSection = createdEventsSection.locator('div[class*="mantine-Card"]');
+    const count = await cardsInCreatedSection.count();
+    
+    console.log(`Found ${count} cards in created events section`);
+    
+    // Verify the deleted event is not in this section
+    for (let i = 0; i < count; i++) {
+      const card = cardsInCreatedSection.nth(i);
+      const text = await card.textContent();
+      if (text?.includes('Event to Delete')) {
+        throw new Error('Deleted event still appears in created events section');
       }
     }
   }

@@ -107,10 +107,10 @@ function EventLobbyContent() {
     setError(null);
 
     try {
-      await apis.events.updateEventMeta({
+      await apis.events.updateEvent({
         eventId,
-        userMeta: {
-          usermeta: {
+        eventUpdateRequest: {
+          meta: {
             name: editName.trim(),
             description: editDescription.trim() || undefined,
           },

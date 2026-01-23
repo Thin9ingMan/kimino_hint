@@ -542,6 +542,18 @@ function QuizEditContent() {
     }
   };
 
+  /**
+   * Shuffle an array using Fisher-Yates algorithm
+   */
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   const handleSave = async () => {
     // Validation
     const invalidQuestion = questions.find(q => !q.title.trim() || q.choices.some(c => !c.text.trim()));
@@ -567,12 +579,12 @@ function QuizEditContent() {
         artist: getWrongTexts("artists"),
       };
 
-      // Construct direct correctness Quiz object
+      // Construct direct correctness Quiz object with shuffled choices
       const myQuiz = {
         questions: questions.map(q => ({
           id: q.id,
           question: q.title,
-          choices: q.choices.map(c => ({ id: c.id, text: c.text, isCorrect: c.isCorrect })),
+          choices: shuffleArray(q.choices.map(c => ({ id: c.id, text: c.text, isCorrect: c.isCorrect }))),
           explanation: q.explanation,
         })),
         updatedAt: new Date().toISOString(),

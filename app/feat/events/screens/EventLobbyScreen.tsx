@@ -5,8 +5,12 @@ import {
   Stack,
   Text,
   Title,
+  Modal,
+  TextInput,
+  Textarea,
+  Group,
 } from "@mantine/core";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { apis } from "@/shared/api";
@@ -18,10 +22,19 @@ import {
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { EventAttendeesList } from "@/feat/events/components/EventAttendeesList";
 import { EventInvitationPanel } from "@/feat/events/components/EventInvitationPanel";
+import { useCurrentUser } from "@/shared/auth/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 function EventLobbyContent() {
   const eventId = useNumericParam("eventId");
+  const me = useCurrentUser();
+  const queryClient = useQueryClient();
+  const [editModalOpened, setEditModalOpened] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!eventId) {
     throw new Error("eventId が不正です");
@@ -75,11 +88,65 @@ function EventLobbyContent() {
     );
   }
 
+  const isCreator = (eventData as any).initiatorId === me.id;
+
+  const handleOpenEditModal = () => {
+    setEditName((eventData as any).meta?.name || "");
+    setEditDescription((eventData as any).meta?.description || "");
+    setError(null);
+    setEditModalOpened(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editName.trim()) {
+      setError("イベント名を入力してください");
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      await apis.events.updateEvent({
+        eventId,
+        eventUpdateRequest: {
+          meta: {
+            name: editName.trim(),
+            description: editDescription.trim() || undefined,
+          },
+        },
+      });
+
+      // Invalidate queries to refetch data
+      await queryClient.invalidateQueries({
+        queryKey: ["events.getEventById", { eventId }],
+      });
+
+      setEditModalOpened(false);
+    } catch (err) {
+      console.error("Failed to update event:", err);
+      setError("イベントの更新に失敗しました。もう一度お試しください。");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <Stack gap="md">
       <Paper withBorder p="md" radius="md">
         <Stack gap={6}>
-          <Title order={4}>イベント情報</Title>
+          <Group justify="space-between" align="flex-start">
+            <Title order={4}>イベント情報</Title>
+            {isCreator && (
+              <Button
+                size="xs"
+                variant="light"
+                onClick={handleOpenEditModal}
+              >
+                編集
+              </Button>
+            )}
+          </Group>
           <Text size="sm" c="dimmed">
             {(eventData as any).meta?.name || "（名前未設定）"}
           </Text>
@@ -91,6 +158,56 @@ function EventLobbyContent() {
 
         </Stack>
       </Paper>
+
+      <Modal
+        opened={editModalOpened}
+        onClose={() => setEditModalOpened(false)}
+        title={<Text fw={700}>イベント情報を編集</Text>}
+        centered
+      >
+        <Stack gap="md">
+          {error && (
+            <Alert color="red" title="エラー" onClose={() => setError(null)} withCloseButton>
+              <Text size="sm">{error}</Text>
+            </Alert>
+          )}
+
+          <TextInput
+            label="イベント名"
+            placeholder="例: 新入生歓迎会クイズ大会"
+            value={editName}
+            onChange={(e) => setEditName(e.currentTarget.value)}
+            required
+            maxLength={100}
+          />
+
+          <Textarea
+            label="説明"
+            placeholder="イベントの詳細を入力してください"
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.currentTarget.value)}
+            minRows={3}
+            maxLength={500}
+          />
+
+          <Group justify="flex-end" gap="sm">
+            <Button
+              variant="default"
+              onClick={() => setEditModalOpened(false)}
+              disabled={saving}
+            >
+              キャンセル
+            </Button>
+            <Button
+              onClick={handleSaveEdit}
+              loading={saving}
+              disabled={!editName.trim()}
+            >
+              保存
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
 
       <EventInvitationPanel invitationCode={(eventData as any).invitationCode} />
 

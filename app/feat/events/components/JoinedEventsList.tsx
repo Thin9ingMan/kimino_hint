@@ -7,10 +7,13 @@ import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 
 export function JoinedEventsList() {
   const me = useCurrentUser();
-  const joinedEvents = useSuspenseQuery(
+  const allJoinedEvents = useSuspenseQuery(
     ["events.listMyAttendedEvents", me.id],
     () => apis.events.listMyAttendedEvents()
   );
+
+  // Filter out deleted events
+  const joinedEvents = allJoinedEvents?.filter((event: any) => event.status !== 'deleted') || [];
 
   if (!joinedEvents || joinedEvents.length === 0) {
     return (

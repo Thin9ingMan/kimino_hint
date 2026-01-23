@@ -88,3 +88,106 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   console.log('Event editing verified successfully');
   console.log('Screenshots saved to /tmp/');
 });
+
+test.skip('Delete Event from Events Hub', async ({ page }) => {
+  // Note: This test is currently skipped because the DELETE /api/events/{id} endpoint
+  // has not been deployed to production yet. The backend PR (yuki-js/quarkus-crud#83)
+  // has been merged but needs to be deployed.
+  // Once the endpoint is available, remove the .skip() to enable this test.
+  
+  // 1. Setup Guest and Profile
+  const authRes = await page.request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/auth/guest');
+  const token = authRes.headers()['authorization'];
+  
+  await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
+      headers: { 'Authorization': token },
+      data: {
+        updateRequest: {
+          displayName: "Delete Tester",
+          hobby: "Testing",
+          favoriteArtist: "E2E"
+        }
+      }
+    });
+
+  // Login
+  await page.goto('http://localhost:5173/');
+  await page.evaluate((t) => {
+    localStorage.setItem('jwtToken', t.replace('Bearer ', ''));
+  }, token);
+  await page.reload();
+
+  // 2. Create Event
+  await page.goto('http://localhost:5173/events/new');
+  await page.fill('input[placeholder*="例: "]', 'Event to Delete');
+  await page.fill('textarea[placeholder*="イベントの詳細"]', 'This event will be deleted');
+  await page.click('button:has-text("イベントを作成")');
+  
+  // Verify event created
+  await expect(page).toHaveURL(/.*\/events\/\d+/);
+  await expect(page.getByText('Event to Delete')).toBeVisible();
+
+  // 3. Go back to Events Hub
+  await page.goto('http://localhost:5173/events');
+  await expect(page.getByText('作成したイベント')).toBeVisible();
+  
+  // Screenshot 1: Events hub with delete button
+  await page.screenshot({ path: '/tmp/events_hub_with_delete_button.png', fullPage: true });
+  
+  // 4. Find the event and delete button
+  const eventCard = page.locator('div').filter({ hasText: 'Event to Delete' }).first();
+  await expect(eventCard).toBeVisible();
+  
+  // Look for delete button (trash icon)
+  const deleteButton = page.getByRole('button', { name: /イベントを削除/ }).first();
+  await expect(deleteButton).toBeVisible();
+  
+  // 5. Click delete button
+  await deleteButton.click();
+  
+  // Screenshot 2: Delete confirmation modal
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: '/tmp/delete_confirmation_modal.png', fullPage: true });
+  
+  // 6. Confirm deletion
+  const confirmButton = page.getByRole('button', { name: /削除する/ });
+  await expect(confirmButton).toBeVisible();
+  await confirmButton.click();
+  
+  // Wait for deletion to complete and reload to ensure fresh data
+  await page.waitForTimeout(2000);
+  await page.reload();
+  await page.waitForTimeout(1000);
+  
+  // 7. Verify event is no longer in the "created events" list
+  // After deletion and reload, the event should not appear in "created events"
+  const createdEventsText = page.getByText('作成したイベント');
+  
+  // Check if "created events" section is visible or if message shows no events
+  const noEventsMessage = page.getByText('まだ作成したイベントはありません');
+  const isNoEventsVisible = await noEventsMessage.isVisible().catch(() => false);
+  
+  if (isNoEventsVisible) {
+    // Perfect! No events left
+    console.log('No created events found - deletion successful');
+  } else {
+    // Check that the deleted event is not in the list
+    const eventCards = page.locator('div').filter({ hasText: '作成したイベント' }).locator('div[class*="Card"]');
+    const eventCount = await eventCards.count();
+    console.log(`Found ${eventCount} event cards after deletion`);
+    
+    // Make sure "Event to Delete" is not in any card
+    for (let i = 0; i < eventCount; i++) {
+      const cardText = await eventCards.nth(i).textContent();
+      if (cardText?.includes('Event to Delete')) {
+        throw new Error('Deleted event still appears in created events list');
+      }
+    }
+  }
+
+  // Screenshot 3: Events hub after deletion
+  await page.screenshot({ path: '/tmp/events_hub_after_deletion.png', fullPage: true });
+
+  console.log('Event deletion verified successfully');
+  console.log('Screenshots saved to /tmp/');
+});

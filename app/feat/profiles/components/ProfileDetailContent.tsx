@@ -4,9 +4,7 @@ import { Link } from "react-router-dom";
 
 import { apis } from "@/shared/api";
 import { ProfileCard } from "@/shared/ui/ProfileCard";
-import {
-  useSuspenseQueries,
-} from "@/shared/hooks/useSuspenseQuery";
+import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { mapProfileDataToUiProfile } from "@/shared/profile/profileUi";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
@@ -22,35 +20,36 @@ export function ProfileDetailContent() {
     throw new Error("userId が不正です");
   }
 
-  /* Parallelize profile fetch and friendship check */
-  const [profileData, isFriendshipExchanged] = useSuspenseQueries([
-    [
-      ["profiles.getUserProfile", { userId }],
-      () => apis.profiles.getUserProfile({ userId }),
-    ],
-    [
-      ["friendships.getFriendshipByOtherUser", { userId }],
-      async () => {
-        try {
-          await apis.friendships.getFriendshipByOtherUser({
-            otherUserId: userId,
-          });
-          return true; // Already exchanged
-        } catch (eOrP: any) {
-          if (eOrP instanceof Promise) {
-            throw eOrP;
-          }
-          // 404 means not exchanged yet.
-          const s = eOrP?.status ?? eOrP?.response?.status;
-          if (s !== 404) {
-            throw eOrP;
-          } else {
-            return false; // Not exchanged
-          }
+  const profileData = useSuspenseQuery(
+    ["profiles.getUserProfile", { userId }],
+    () => apis.profiles.getUserProfile({ userId }),
+    false
+  );
+
+  const isFriendshipExchanged = useSuspenseQuery(
+    ["friendships.getFriendshipByOtherUser", { userId }],
+    async () => {
+      try {
+        await apis.friendships.getFriendshipByOtherUser({
+          otherUserId: userId,
+        });
+        return true; // Already exchanged
+      } catch (eOrP: any) {
+        if (eOrP instanceof Promise) {
+          throw eOrP;
         }
-      },
-    ],
-  ]);
+        // 404 means not exchanged yet.
+        const s = eOrP?.status ?? eOrP?.response?.status;
+
+        if (s !== 404) {
+          throw eOrP;
+        } else {
+          return false; // Not exchanged
+        }
+      }
+    },
+    true
+  );
 
   let alreadyExchanged = isFriendshipExchanged;
   if (exchangeStatus === "done") {

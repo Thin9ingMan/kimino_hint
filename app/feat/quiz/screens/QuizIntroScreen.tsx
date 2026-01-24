@@ -1,11 +1,4 @@
-import {
-  Alert,
-  Button,
-  Stack,
-  Text,
-  Paper,
-  Title,
-} from "@mantine/core";
+import { Alert, Button, Stack, Text, Paper, Title } from "@mantine/core";
 import { Suspense } from "react";
 import { Link } from "react-router-dom";
 
@@ -13,7 +6,6 @@ import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { useCurrentUser } from "@/shared/auth/hooks";
-import { useMyProfile } from "@/shared/profile/hooks";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 
@@ -25,7 +17,6 @@ function QuizIntroContent() {
   }
 
   const meData = useCurrentUser();
-  const myProfile = useMyProfile();
 
   const eventUserData = useSuspenseQuery(
     ["events.getEventUserData", eventId, meData.id],
@@ -88,7 +79,12 @@ function QuizIntroContent() {
         </Stack>
       </Paper>
 
-      <Button component={Link} to={`/events/${eventId}`} variant="default" fullWidth>
+      <Button
+        component={Link}
+        to={`/events/${eventId}`}
+        variant="default"
+        fullWidth
+      >
         ロビーへ戻る
       </Button>
     </Stack>
@@ -111,7 +107,11 @@ export function QuizIntroScreen() {
         )}
       >
         <Suspense
-          fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
         >
           <QuizIntroContent />
         </Suspense>

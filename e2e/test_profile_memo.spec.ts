@@ -33,6 +33,20 @@ test('Profile memo field should persist and be visible only to the viewer', asyn
   // 2. Create User B (will write memo about User A)
   const userB = await createUserWithProfile(page, "User B", "Writing", "Artist B");
 
+  // 2.5. Verify memo field does NOT appear before friendship is established
+  await page.goto(APP_URL);
+  await page.evaluate((t) => {
+    localStorage.setItem('jwtToken', t.replace('Bearer ', ''));
+  }, userB.token);
+  await page.reload();
+  
+  await page.goto(`${APP_URL}/profiles/${userA.userId}`);
+  await expect(page.getByText(`userId: ${userA.userId}`)).toBeVisible({ timeout: 10000 });
+  
+  // Memo field should NOT be visible before friendship
+  const memoFieldBefore = page.locator('textarea[placeholder*="記入"]');
+  await expect(memoFieldBefore).not.toBeVisible();
+
   // 3. Establish friendship between User A and User B (required for memo to work)
   await page.request.post(`${API_BASE_URL}/api/users/${userA.userId}/friendship`, {
     headers: { 'Authorization': userB.token },

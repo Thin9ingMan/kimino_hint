@@ -114,7 +114,7 @@ export function ProfileDetailContent() {
         subtitle={`userId: ${userId}`}
       />
 
-      <MemoField userId={userId} />
+      {isExchanged && <MemoField userId={userId} />}
 
       <Stack gap="sm">
         <Button

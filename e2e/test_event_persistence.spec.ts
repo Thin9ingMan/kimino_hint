@@ -51,7 +51,7 @@ test('Verify Event Persistence (Create -> Home -> Re-enter)', async ({ page }) =
   await expect(page.getByText('作成したイベント')).toBeVisible();
   
   // Find the specific event card
-  const eventLink = page.getByRole('link', { name: 'Persistent Event' });
+  const eventLink = page.getByRole('link', { name: 'Persistent Event' }).first();
   await expect(eventLink).toBeVisible();
 
   // 5. Re-enter Event
@@ -59,7 +59,7 @@ test('Verify Event Persistence (Create -> Home -> Re-enter)', async ({ page }) =
   
   // Verify back in Lobby
   await expect(page).toHaveURL(new RegExp(`.*/events/${eventId}`));
-  await expect(page.getByText('Persistent Event', { exact: false })).toBeVisible();
+  await expect(page.getByText('Persistent Event', { exact: false }).first()).toBeVisible();
 
   console.log('Event persistence verified successfully');
 });

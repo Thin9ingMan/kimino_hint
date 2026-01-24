@@ -136,7 +136,7 @@ test('Joined Events - Multiple Events', async ({ page }) => {
   await expect(page.getByText('参加したイベント')).toBeVisible();
   
   for (const name of eventNames) {
-    await expect(page.getByText(name, { exact: false })).toBeVisible();
+    await expect(page.getByText(name, { exact: false }).first()).toBeVisible();
   }
 
   console.log('Multiple joined events test completed');

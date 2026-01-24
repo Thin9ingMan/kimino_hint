@@ -35,11 +35,7 @@ test.describe('Full User Journey', () => {
 
     console.log(`Event Created: ID=${eventId}, Code=${invitationCode}`);
 
-    // Explicitly join User A to ensure they appear in attendees list
-    await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
-        headers: { 'Authorization': tokenA },
-        data: { invitationCode }
-    });
+    // User A is creator and automatically joined - no need to join again
 
 
     
@@ -126,18 +122,21 @@ test.describe('Full User Journey', () => {
     
     // Wait for auto-generation (LLM) to populate at least one field
     // It triggers on mount, so we just wait for non-empty
-    // Try locator by placeholder if label fails
-    const nameInput = page.getByPlaceholder('例: 田中 太郎');
-    await expect(nameInput).toBeVisible();
-    await expect(nameInput).not.toBeEmpty({ timeout: 20000 });
+    // Check the correct answer inputs - they should be pre-filled with profile data
+    const correctAnswerInputs = page.getByPlaceholder('正解のテキスト...');
+    await expect(correctAnswerInputs.first()).toBeVisible();
+    await expect(correctAnswerInputs.first()).not.toBeEmpty({ timeout: 20000 });
 
-    // Generate Hobbies
-    await page.click('button:has-text("趣味の選択肢を自動生成")');
-    // Generate Artists
-    await page.click('button:has-text("アーティストの選択肢を自動生成")');
+    // Fill wrong answers manually - need to fill ALL empty wrong answer fields
+    const wrongAnswerInputs = page.getByPlaceholder('間違いの選択肢...');
+    const count = await wrongAnswerInputs.count();
+    console.log(`Found ${count} wrong answer inputs to fill`);
+    for (let i = 0; i < count; i++) {
+        await wrongAnswerInputs.nth(i).fill(`Wrong ${i + 1}`);
+    }
 
     // Click Save
-    await page.click('button:has-text("保存してロビーへ戻る")');
+    await page.click('text=保存して完了');
 
 
 

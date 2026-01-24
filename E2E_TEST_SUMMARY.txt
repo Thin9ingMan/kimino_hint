@@ -1,0 +1,203 @@
+================================================================================
+                    E2E TEST EXECUTION SUMMARY
+================================================================================
+
+Total Tests:        20
+Duration:           27.1 minutes
+Framework:          Playwright (Chromium)
+
+RESULTS:
+  ✅ Passed:        12 tests (60%)
+  ❌ Failed:        7 tests (35%)
+  ⚠️  Flaky:        1 test  (5%)
+
+================================================================================
+                            PASSED TESTS (12)
+================================================================================
+
+✅ Navigate from Home to Create Event
+✅ Delete Event from Events Hub
+✅ Verify Event Persistence (Create -> Home -> Re-enter)
+✅ Joined Events History - Display and Re-enter
+✅ Joined Events - Multiple Events
+✅ Profile memo field should persist and be visible only to the viewer
+✅ Verify Event Lobby QR and Invitation Code
+✅ QR code should navigate directly to event lobby after auto-join
+✅ Quiz questions appear in the correct order
+✅ Quiz Edit Screen - Button should be in bottom fixed pill with new name
+✅ Quiz Creation Flow
+✅ Button disabled when attendees missing profile or quiz
+
+================================================================================
+                            FAILED TESTS (7)
+================================================================================
+
+❌ 4 Users (A, B, C, D) can join and play
+   File: test_4_users_quiz.spec.ts:7:5
+   Error: Test timeout waiting for answer button to be clickable
+   Issue: Cannot interact with quiz answer buttons
+   Duration: 2.0m × 3 retries
+
+❌ Quiz choices are randomized when saved
+   File: test_choice_randomization.spec.ts:19:3
+   Error: Test timeout waiting for "開始" (Start) button
+   Issue: Quiz start button not found or not clickable
+   Duration: 2.0m × 3 retries
+
+❌ Edit Event Name and Description from Lobby
+   File: test_event_edit_delete.spec.ts:3:1
+   Error: Playwright strict mode violation - button selector matched 2 elements
+   Issue: Test selector too broad - matches both "Update Participants" and "Save"
+   Duration: 6-8s × 3 retries
+
+❌ User can Join, Create Quiz, and Answer
+   File: test_full_quiz_flow.spec.ts:6:3
+   Error: Test timeout trying to interact with quiz answers
+   Issue: Same as #1 - answer buttons not responding
+   Duration: 1.0m × 3 retries
+
+❌ User can answer multiple questions sequentially without state persistence bug
+   File: test_multi_question_quiz.spec.ts:9:3
+   Error: Test timeout during multi-question quiz flow
+   Issue: Same as #1 & #4 - quiz answer interaction broken
+   Duration: 1.5m × 3 retries
+
+❌ Quiz result screen displays detailed results table with questions and answers
+   File: test_quiz_result_details.spec.ts:9:3
+   Error: Test timeout waiting for "開始" (Start) button
+   Issue: Same as #2 - quiz start button missing
+   Duration: 1.5m × 3 retries
+
+❌ Quiz Supplement Feature
+   File: test_quiz_supplement.spec.ts:3:1
+   Error: Cannot find "クイズエディタ" (Quiz Editor) text on page
+   Issue: Navigation to quiz editor broken or component not rendering
+   Duration: Variable × 3 retries
+
+================================================================================
+                            FLAKY TEST (1)
+================================================================================
+
+⚠️  Quizzes are presented sequentially in join order
+   File: test_quiz_sequential_flow.spec.ts:6:5
+   Error: Sometimes passes, sometimes fails
+   Issue: Race condition in quiz question loading
+   When fails: Cannot find expected quiz question text
+
+================================================================================
+                        COMMON FAILURE PATTERNS
+================================================================================
+
+PATTERN 1: Quiz Answer Button Interaction (5 tests)
+─────────────────────────────────────────────────
+Tests:
+  • 4 Users Quiz
+  • Full Quiz Flow
+  • Multi-Question Quiz
+  • Quiz Result Details (indirectly)
+  • Quiz Supplement (related)
+
+Symptoms:
+  • Tests can create quizzes and events successfully
+  • Tests reach the quiz play page
+  • Tests can see quiz questions
+  • BUT: Cannot click answer buttons (timeout 90-120s)
+
+Root Cause: Answer buttons either not rendering, not clickable, or not responsive
+
+Primary Issue: Quiz play/answer component needs review
+
+
+PATTERN 2: Quiz Start Button Missing (2 tests)
+───────────────────────────────────────────────
+Tests:
+  • Choice Randomization
+  • Quiz Result Details
+
+Symptoms:
+  • Cannot find "開始" (Start) button
+  • Test never reaches quiz play screen
+  • Tests timeout waiting for button
+
+Root Cause: Quiz start button not rendering on page
+
+
+PATTERN 3: Test Selector Ambiguous (1 test)
+────────────────────────────────────────────
+Test:
+  • Edit Event
+
+Symptoms:
+  • Playwright strict mode violation
+  • Selector matches 2 buttons instead of 1
+  • "Save" button selector too broad
+
+Root Cause: Test selector needs to be more specific
+
+
+PATTERN 4: Navigation Broken (1 test)
+──────────────────────────────────────
+Test:
+  • Quiz Supplement Feature
+
+Symptoms:
+  • Cannot navigate to quiz editor
+  • Expected text not found on page
+
+Root Cause: Quiz editor navigation or rendering broken
+
+
+PATTERN 5: Race Condition (1 test - flaky)
+───────────────────────────────────────────
+Test:
+  • Quiz Sequential Flow
+
+Symptoms:
+  • Sometimes passes, sometimes fails
+  • Quiz questions load inconsistently
+
+Root Cause: Async timing issue in quiz question loading
+
+================================================================================
+                        PRIORITY ACTION ITEMS
+================================================================================
+
+🔴 CRITICAL (Fix First - Blocks 5+ Tests)
+──────────────────────────────────────────
+
+1. FIX QUIZ ANSWER BUTTON INTERACTION
+   • Review: Quiz player component
+   • Check: Answer buttons are rendering
+   • Check: Event listeners attached to buttons
+   • Check: Buttons not hidden/disabled
+   • Check: Button selectors correct
+   
+2. FIX QUIZ START BUTTON
+   • Review: Quiz play page component
+   • Check: "開始" button is rendering
+   • Check: Button visibility on page
+   • Check: Button click handlers working
+
+
+🟠 HIGH (Fix Second - Blocks 1-2 Tests)
+───────────────────────────────────────
+
+3. FIX EVENT EDIT BUTTON SELECTOR
+   • Update: test_event_edit_delete.spec.ts line 63
+   • Make selector more specific or use data-testid
+   
+4. FIX QUIZ SUPPLEMENT NAVIGATION
+   • Review: Quiz editor route/component
+   • Check: Navigation to quiz editor works
+   • Check: Quiz editor renders with content
+
+
+🟡 MEDIUM (Fix Third - Flaky Test)
+──────────────────────────────────
+
+5. FIX QUIZ SEQUENTIAL FLOW TIMING
+   • Add explicit waits for questions
+   • Ensure async operations complete
+   • Add retry logic for assertions
+
+================================================================================

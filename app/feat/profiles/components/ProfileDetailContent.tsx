@@ -114,7 +114,11 @@ export function ProfileDetailContent() {
         subtitle={`userId: ${userId}`}
       />
 
-      {isExchanged && <MemoField userId={userId} />}
+      <MemoField 
+        userId={userId} 
+        disabled={!isExchanged}
+        disabledMessage="プロフィール交換後に入力できます"
+      />
 
       <Stack gap="sm">
         <Button

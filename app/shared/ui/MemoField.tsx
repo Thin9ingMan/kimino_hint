@@ -1,10 +1,12 @@
 import { Box, Text, Textarea } from "@mantine/core";
 import { useEffect, useState, useCallback } from "react";
 import { apis } from "@/shared/api";
-import { useAutoSave } from "@/shared/hooks/useAutoSave";
+import { useDebouncedAction } from "@/shared/hooks/useDebouncedAction";
 
 interface MemoFieldProps {
   userId: number;
+  disabled?: boolean;
+  disabledMessage?: string;
 }
 
 /**
@@ -12,12 +14,18 @@ interface MemoFieldProps {
  * 他人のプロフィールを見るときにのみ使用される
  * メモの内容はバックエンドAPIに保存され、ユーザーごとに個別管理される
  */
-export function MemoField({ userId }: MemoFieldProps) {
+export function MemoField({ userId, disabled = false, disabledMessage }: MemoFieldProps) {
   const [memoValue, setMemoValue] = useState<string>("");
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
-  // バックエンドからメモを読み込む
+  // バックエンドからメモを読み込む（友情交換済みの場合のみ）
   useEffect(() => {
+    // If disabled (no friendship), skip loading
+    if (disabled) {
+      setHasLoadedOnce(true);
+      return;
+    }
+
     let isCancelled = false;
 
     const loadMemo = async () => {
@@ -48,7 +56,7 @@ export function MemoField({ userId }: MemoFieldProps) {
     return () => {
       isCancelled = true;
     };
-  }, [userId]);
+  }, [userId, disabled]);
 
   // 自動保存ロジックを再利用可能なフックに委譲
   const handleSave = useCallback(
@@ -63,12 +71,12 @@ export function MemoField({ userId }: MemoFieldProps) {
     [userId]
   );
 
-  const { saveStatus } = useAutoSave({
+  const { status } = useDebouncedAction({
     value: memoValue,
-    onSave: handleSave,
-    enabled: hasLoadedOnce, // Only enable auto-save after initial load
+    onExecute: handleSave,
+    enabled: hasLoadedOnce && !disabled, // Only enable auto-save after initial load and when not disabled
     debounceMs: 500,
-    savedTimeout: 2000,
+    successTimeout: 2000,
     errorTimeout: 3000,
   });
 
@@ -82,26 +90,27 @@ export function MemoField({ userId }: MemoFieldProps) {
         <Text fw={700} size="sm" style={{ color: "#065f46" }}>
           メモ
         </Text>
-        {saveStatus === "saving" && (
+        {status === "executing" && (
           <Text size="xs" c="dimmed" style={{ fontStyle: "italic" }}>
             保存中...
           </Text>
         )}
-        {saveStatus === "saved" && (
+        {status === "success" && (
           <Text size="xs" c="dimmed" style={{ fontStyle: "italic" }}>
             保存しました
           </Text>
         )}
-        {saveStatus === "error" && (
+        {status === "error" && (
           <Text size="xs" c="red" style={{ fontStyle: "italic" }}>
             保存に失敗しました
           </Text>
         )}
       </Box>
       <Textarea
-        placeholder="自由に記入してください"
+        placeholder={disabled ? disabledMessage || "プロフィール交換後に入力できます" : "自由に記入してください"}
         value={memoValue}
         onChange={(event) => handleMemoChange(event.currentTarget.value)}
+        disabled={disabled}
         autosize
         minRows={3}
         variant="filled"

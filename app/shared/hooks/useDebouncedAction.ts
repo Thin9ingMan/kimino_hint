@@ -1,46 +1,48 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useDebouncedValue } from "@mantine/hooks";
 
-export type SaveStatus = "idle" | "saving" | "saved" | "error";
+export type ActionStatus = "idle" | "executing" | "success" | "error";
 
-interface UseAutoSaveOptions<T> {
+interface UseDebouncedActionOptions<T> {
   value: T;
-  onSave: (value: T) => Promise<void>;
-  enabled?: boolean; // Allow consumer to control when to save
+  onExecute: (value: T) => Promise<void>;
+  enabled?: boolean; // Allow consumer to control when to execute
   debounceMs?: number;
-  savedTimeout?: number;
+  successTimeout?: number;
   errorTimeout?: number;
 }
 
-interface UseAutoSaveReturn {
-  saveStatus: SaveStatus;
-  triggerSave: () => void;
+interface UseDebouncedActionReturn {
+  status: ActionStatus;
+  triggerExecute: () => void;
 }
 
 /**
- * Reusable hook for auto-saving data with debounce and status management
+ * Reusable hook for auto-executing actions with debounce and status management
+ * 
+ * Generic hook that can be used for any debounced async action (save, submit, update, etc.)
  * 
  * @param options Configuration options
- * @returns Save status and manual trigger function
+ * @returns Action status and manual trigger function
  * 
  * @example
- * const { saveStatus } = useAutoSave({
+ * const { status } = useDebouncedAction({
  *   value: memoText,
- *   onSave: async (text) => {
+ *   onExecute: async (text) => {
  *     await api.saveMemo({ memo: text });
  *   },
  *   debounceMs: 500,
  * });
  */
-export function useAutoSave<T>({
+export function useDebouncedAction<T>({
   value,
-  onSave,
+  onExecute,
   enabled = true,
   debounceMs = 500,
-  savedTimeout = 2000,
+  successTimeout = 2000,
   errorTimeout = 3000,
-}: UseAutoSaveOptions<T>): UseAutoSaveReturn {
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+}: UseDebouncedActionOptions<T>): UseDebouncedActionReturn {
+  const [status, setStatus] = useState<ActionStatus>("idle");
   const [debouncedValue] = useDebouncedValue(value, debounceMs);
   const isInitialMount = useRef(true);
   const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -61,7 +63,7 @@ export function useAutoSave<T>({
     wasEnabled.current = enabled;
   }, [enabled]);
 
-  // Auto-save when debounced value changes
+  // Auto-execute when debounced value changes
   useEffect(() => {
     // Skip if disabled
     if (!enabled) {
@@ -76,60 +78,60 @@ export function useAutoSave<T>({
 
     let isCancelled = false;
 
-    const save = async () => {
-      setSaveStatus("saving");
+    const execute = async () => {
+      setStatus("executing");
       clearStatusTimer();
 
       try {
-        await onSave(debouncedValue);
+        await onExecute(debouncedValue);
 
         if (!isCancelled) {
-          setSaveStatus("saved");
+          setStatus("success");
           statusTimerRef.current = setTimeout(() => {
-            setSaveStatus("idle");
+            setStatus("idle");
             statusTimerRef.current = null;
-          }, savedTimeout);
+          }, successTimeout);
         }
       } catch (error) {
-        console.error("Auto-save failed:", error);
+        console.error("Auto-execute failed:", error);
         if (!isCancelled) {
-          setSaveStatus("error");
+          setStatus("error");
           statusTimerRef.current = setTimeout(() => {
-            setSaveStatus("idle");
+            setStatus("idle");
             statusTimerRef.current = null;
           }, errorTimeout);
         }
       }
     };
 
-    save();
+    execute();
 
     return () => {
       isCancelled = true;
       clearStatusTimer();
     };
-  }, [debouncedValue, onSave, enabled, savedTimeout, errorTimeout, clearStatusTimer]);
+  }, [debouncedValue, onExecute, enabled, successTimeout, errorTimeout, clearStatusTimer]);
 
-  const triggerSave = useCallback(async () => {
-    setSaveStatus("saving");
+  const triggerExecute = useCallback(async () => {
+    setStatus("executing");
     clearStatusTimer();
 
     try {
-      await onSave(value);
-      setSaveStatus("saved");
+      await onExecute(value);
+      setStatus("success");
       statusTimerRef.current = setTimeout(() => {
-        setSaveStatus("idle");
+        setStatus("idle");
         statusTimerRef.current = null;
-      }, savedTimeout);
+      }, successTimeout);
     } catch (error) {
-      console.error("Manual save failed:", error);
-      setSaveStatus("error");
+      console.error("Manual execute failed:", error);
+      setStatus("error");
       statusTimerRef.current = setTimeout(() => {
-        setSaveStatus("idle");
+        setStatus("idle");
         statusTimerRef.current = null;
       }, errorTimeout);
     }
-  }, [value, onSave, savedTimeout, errorTimeout, clearStatusTimer]);
+  }, [value, onExecute, successTimeout, errorTimeout, clearStatusTimer]);
 
-  return { saveStatus, triggerSave };
+  return { status, triggerExecute };
 }

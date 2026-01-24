@@ -21,7 +21,6 @@ interface EventAttendeesListProps {
   emptyMessage?: string;
   variant?: "list" | "grid" | "compact";
   onRefresh?: () => void;
-  isRefreshing?: boolean;
 }
 
 function getDisplayName(attendee: Attendee): string {
@@ -72,7 +71,6 @@ export function EventAttendeesList({
   emptyMessage = "参加者がいません",
   variant = "list",
   onRefresh,
-  isRefreshing = false,
 }: EventAttendeesListProps) {
   const displayAttendees = maxDisplay 
     ? attendees.slice(0, maxDisplay) 
@@ -155,7 +153,6 @@ export function EventAttendeesList({
             <ActionIcon
               variant="light"
               onClick={onRefresh}
-              loading={isRefreshing}
               aria-label="参加者リストを更新"
             >
               <IconRefresh size={16} />

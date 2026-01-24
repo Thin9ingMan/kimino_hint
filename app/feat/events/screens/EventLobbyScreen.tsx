@@ -35,7 +35,6 @@ function EventLobbyContent() {
   const [editDescription, setEditDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isRefreshingAttendees, setIsRefreshingAttendees] = useState(false);
 
   if (!eventId) {
     throw new Error("eventId が不正です");
@@ -133,17 +132,13 @@ function EventLobbyContent() {
   };
 
   const handleRefreshAttendees = async () => {
-    setIsRefreshingAttendees(true);
     try {
-      await queryClient.invalidateQueries({
+      await queryClient.refetchQueries({
         queryKey: ["events.listEventAttendees", { eventId }],
+        exact: true,
       });
     } catch (error) {
       console.error(`Failed to refresh attendees for event ${eventId}:`, error);
-      // Query invalidation rarely fails, but if it does, we still want to reset the loading state
-      // The UI will show the last known state, which is acceptable
-    } finally {
-      setIsRefreshingAttendees(false);
     }
   };
 
@@ -240,7 +235,6 @@ function EventLobbyContent() {
         linkToProfile
         showJoinTime
         onRefresh={handleRefreshAttendees}
-        isRefreshing={isRefreshingAttendees}
       />
 
       <Stack gap="sm">

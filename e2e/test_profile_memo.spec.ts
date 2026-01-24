@@ -60,6 +60,9 @@ test('Profile memo field should persist and be visible only to the viewer', asyn
   // 6. Verify memo field exists and is visible on OTHER user's profile
   const memoField = page.locator('textarea[placeholder*="記入"]');
   await expect(memoField).toBeVisible();
+  
+  // Wait for initial memo load to complete before typing
+  await page.waitForTimeout(1000);
 
   // 7. Write a memo about User A
   const memoText = 'Met at tech conference 2024. Interested in React.';

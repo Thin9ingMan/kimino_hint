@@ -132,20 +132,12 @@ test.describe('Quiz Result Details', () => {
     await page.goto(`http://localhost:5173/events/${eventId}`);
     await page.waitForTimeout(1000);
 
-    // Click "クイズに挑戦"
+    // Click "クイズに挑戦" - starts sequential quiz flow
     await page.click('text=クイズに挑戦');
     await page.waitForTimeout(1000);
 
-    // Verify Quiz Creator is listed (may be display name or user ID)
-    try {
-      await expect(page.getByText('田所浩治')).toBeVisible({ timeout: 5000 });
-    } catch {
-      console.log('Display name not found, looking for fallback user ID...');
-      await expect(page.getByText(`ユーザー ${creatorUserId}`, { exact: false })).toBeVisible({ timeout: 10000 });
-    }
-
-    // Start the quiz - try clicking the button
-    await page.click('button:has-text("開始")');
+    // The quiz sequence will auto-navigate to first quiz (User A/Quiz Creator's quiz)
+    await page.waitForURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
     await page.waitForTimeout(1000);
 
     // --- Question 1: Answer correctly ---

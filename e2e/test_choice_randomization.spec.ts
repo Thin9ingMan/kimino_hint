@@ -106,9 +106,29 @@ test.describe('Choice Randomization Verification', () => {
     });
 
     // User B joins the event
-    await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
+    const joinRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
       headers: { 'Authorization': tokenB },
       data: { invitationCode }
+    });
+    const joinData = await joinRes.json();
+    const userBId = joinData.attendeeUserId || joinData.userId;
+
+    // User B needs to create a quiz too (required for quiz challenge to be enabled)
+    await request.put(`https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}/users/${userBId}`, {
+      headers: { 'Authorization': tokenB },
+      data: { 
+        userData: { 
+          myQuiz: {
+            questions: [
+              { 
+                question: "Who is User B?", 
+                choices: ["佐藤 花子", "X", "Y", "Z"], 
+                correctIndex: 0
+              }
+            ]
+          }
+        } 
+      }
     });
 
     // --- User B: Take the quiz ---
@@ -121,13 +141,14 @@ test.describe('Choice Randomization Verification', () => {
     await page.goto(`http://localhost:5173/events/${eventId}`);
     await page.waitForTimeout(1000);
 
-    // Click "クイズに挑戦"
+    // Click "クイズに挑戦" - this will start the sequential quiz flow
     await page.click('text=クイズに挑戦');
     await page.waitForTimeout(1000);
 
-    // Select User A's quiz and start it
-    // Find the button/link for User A's quiz
-    await page.locator('.mantine-Card-root', { hasText: '田中 太郎' }).getByText('開始').click();
+    // The quiz sequence screen will auto-navigate to the first quiz
+    // Since User A joined first, User B will see User A's quiz first
+    // Wait for navigation to quiz question screen
+    await page.waitForURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
     await page.waitForTimeout(2000);
 
     // Now we should be on the first question

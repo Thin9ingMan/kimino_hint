@@ -164,15 +164,12 @@ test.describe('Multi-Question Quiz Flow', () => {
     await page.goto(`http://localhost:5173/events/${eventId}`);
     await page.waitForTimeout(1000);
 
-    // Click "クイズに挑戦"
+    // Click "クイズに挑戦" - starts sequential quiz flow
     await page.click('text=クイズに挑戦');
     await page.waitForTimeout(1000);
 
-    // Verify Quiz Creator is listed
-    await expect(page.getByText('Quiz Creator')).toBeVisible({ timeout: 10000 });
-
-    // Start the quiz
-    await page.locator('.mantine-Card-root', { hasText: 'Quiz Creator' }).getByText('開始').click();
+    // The quiz sequence will auto-navigate to first quiz (User A/Quiz Creator's quiz)
+    await page.waitForURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
     await page.waitForTimeout(1000);
 
     // --- Question 1: Answer correctly ---

@@ -60,7 +60,7 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   await page.screenshot({ path: '/tmp/event_edit_modal_filled.png', fullPage: true });
 
   // 5. Save changes
-  const saveButton = page.getByRole('button', { name: /保存|更新/ });
+  const saveButton = page.getByRole('button', { name: '保存' });
   await expect(saveButton).toBeVisible();
   await saveButton.click();
 

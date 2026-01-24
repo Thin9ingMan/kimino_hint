@@ -150,15 +150,12 @@ test.describe('Full User Journey', () => {
 
 
 
-    // C. Answer Quiz (User A's quiz)
+    // C. Answer Quiz (User A's quiz in sequential flow)
     await page.click('text=クイズに挑戦');
     
-    // List of challengers
-    // User A should be listed
-    await expect(page.getByText('User A (Host)')).toBeVisible();
-    
-    // Click the Start button for User A's quiz
-    await page.locator('.mantine-Card-root', { hasText: 'User A (Host)' }).getByText('開始').click();
+    // The quiz sequence will auto-navigate to first quiz (User A's quiz)
+    await page.waitForURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
+    await page.waitForTimeout(1000);
     
     // Answer Question
     await expect(page.getByText('Who am I?')).toBeVisible();
@@ -167,8 +164,8 @@ test.describe('Full User Journey', () => {
     // Result Screen
     await expect(page.getByText('正解！')).toBeVisible();
     
-    await page.click('text=一覧へ戻る');
-    await expect(page).toHaveURL(/.*\/quiz\/challenges/);
+    // Note: With sequential flow, there's no "一覧へ戻る" button
+    // Instead, there's navigation to result/rewards and then next quiz
 
     console.log('Full User Journey verified successfully');
 

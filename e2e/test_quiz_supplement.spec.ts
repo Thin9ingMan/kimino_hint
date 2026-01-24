@@ -47,7 +47,7 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await page.goto(`http://localhost:5173/events/${eventId}/quiz/edit`);
   
   // 4. Wait for page to load
-  await expect(page.getByText('クイズエディタ')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('クイズ編集')).toBeVisible({ timeout: 10000 });
 
   // 5. Find a question card and add a supplement/explanation
   // Look for the "補足説明" or "解説" field
@@ -75,7 +75,7 @@ test('Quiz Supplement Feature', async ({ page }) => {
 
   // 8.5. Navigate back to quiz edit to verify data persistence
   await page.goto(`http://localhost:5173/events/${eventId}/quiz/edit`);
-  await expect(page.getByText('クイズエディタ')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('クイズ編集')).toBeVisible({ timeout: 10000 });
 
   // Verify the supplement text is still there after reload
   const reloadedSupplementInput = page.locator('textarea').filter({ hasText: supplementText }).first();

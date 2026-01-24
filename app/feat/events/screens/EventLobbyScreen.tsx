@@ -35,6 +35,7 @@ function EventLobbyContent() {
   const [editDescription, setEditDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isRefreshingAttendees, setIsRefreshingAttendees] = useState(false);
 
   if (!eventId) {
     throw new Error("eventId が不正です");
@@ -131,6 +132,17 @@ function EventLobbyContent() {
     }
   };
 
+  const handleRefreshAttendees = async () => {
+    setIsRefreshingAttendees(true);
+    try {
+      await queryClient.invalidateQueries({
+        queryKey: ["events.listEventAttendees", { eventId }],
+      });
+    } finally {
+      setIsRefreshingAttendees(false);
+    }
+  };
+
   return (
     <Stack gap="md">
       <Paper withBorder p="md" radius="md">
@@ -223,6 +235,8 @@ function EventLobbyContent() {
         title="参加者"
         linkToProfile
         showJoinTime
+        onRefresh={handleRefreshAttendees}
+        isRefreshing={isRefreshingAttendees}
       />
 
       <Stack gap="sm">

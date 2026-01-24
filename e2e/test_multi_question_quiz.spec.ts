@@ -126,6 +126,36 @@ test.describe('Multi-Question Quiz Flow', () => {
       data: { invitationCode }
     });
 
+    // Get User B's ID
+    const userBDataRes = await request.get('https://quarkus-crud.ouchiserver.aokiapp.com/api/me', {
+      headers: { 'Authorization': tokenB }
+    });
+    const userBData = await userBDataRes.json();
+    const userBId = userBData.id;
+
+    // Create a quiz for User B (required for validation)
+    await request.put(`https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}/users/${userBId}`, {
+      headers: { 'Authorization': tokenB },
+      data: { 
+        userData: { 
+          myQuiz: {
+            questions: [
+              {
+                id: "qB1",
+                question: "私の趣味はどれ？",
+                choices: [
+                  { id: "qB1_c1", text: "Taking Tests", isCorrect: true },
+                  { id: "qB1_c2", text: "Wrong", isCorrect: false },
+                  { id: "qB1_c3", text: "Wrong 2", isCorrect: false },
+                  { id: "qB1_c4", text: "Wrong 3", isCorrect: false }
+                ]
+              }
+            ]
+          }
+        } 
+      }
+    });
+
     // --- User B UI Flow ---
     await page.goto('http://localhost:5173/');
     await page.evaluate((t) => {

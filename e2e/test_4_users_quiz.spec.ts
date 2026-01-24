@@ -30,7 +30,7 @@ test.describe('4 User Quiz Scenario', () => {
         // --- 2. User A Creates Event ---
         const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
             headers: { 'Authorization': userA.token },
-            data: { eventCreateRequest: { meta: { name: "4 User Party" } } }
+            data: { meta: { name: "4 User Party" } }
         });
         const eventData = await createEventRes.json();
         const eventId = eventData.id;
@@ -42,19 +42,31 @@ test.describe('4 User Quiz Scenario', () => {
         
         for (const user of users) {
              // Join (ensure everyone is explicitly joined)
+             // Try to join, but ignore "already joined" errors (409)
+             let myUserId;
              const joinRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
                 headers: { 'Authorization': user.token },
                 data: { invitationCode }
             });
 
-            if (!joinRes.ok()) {
+            if (joinRes.ok()) {
+                const attendee = await joinRes.json();
+                myUserId = attendee.attendeeUserId || attendee.userId;
+                console.log(`User ${user.name} joined as ID=${myUserId}`);
+            } else if (joinRes.status() === 409) {
+                // Already joined (creator case)
+                console.log(`User ${user.name} already joined (likely creator)`);
+                // Get user ID from /me endpoint
+                const meRes = await request.get('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
+                    headers: { 'Authorization': user.token }
+                });
+                const meData = await meRes.json();
+                myUserId = meData.userId;
+                console.log(`User ${user.name} ID from profile: ${myUserId}`);
+            } else {
                 console.error(`User ${user.name} failed to join: ${joinRes.status()} ${await joinRes.text()}`);
                 throw new Error(`User ${user.name} failed to join`);
             }
-
-            const attendee = await joinRes.json();
-            const myUserId = attendee.attendeeUserId || attendee.userId;
-            console.log(`User ${user.name} joined as ID=${myUserId}`);
 
             const quizRes = await request.put(`https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}/users/${myUserId}`, {
 
@@ -107,16 +119,20 @@ test.describe('4 User Quiz Scenario', () => {
         // Go to Challenge List
         await page.click('text=クイズに挑戦');
         
+        // Wait for challenge list to load
+        await page.waitForURL(`**/quiz/challenges`, { timeout: 10000 });
+        await page.waitForTimeout(1000);
+        
         // Verify other 3 users are visible
-        await expect(page.getByText('User A')).toBeVisible();
-        await expect(page.getByText('User B')).toBeVisible();
-        await expect(page.getByText('User C')).toBeVisible();
+        await expect(page.getByText('User A')).toBeVisible({ timeout: 10000 });
+        await expect(page.getByText('User B')).toBeVisible({ timeout: 10000 });
+        await expect(page.getByText('User C')).toBeVisible({ timeout: 10000 });
         // User D should NOT be in the challenge list (cannot challenge self)
         await expect(page.getByText('User D')).not.toBeVisible();
 
         // Play User A's Quiz
         // Find card for User A and click Start
-        await page.locator('.mantine-Paper-root', { hasText: 'User A' }).getByText('開始').click();
+        await page.locator('.mantine-Card-root', { hasText: 'User A' }).getByText('開始').click();
 
 
         await expect(page.getByText('Who is User A?')).toBeVisible();
@@ -131,7 +147,7 @@ test.describe('4 User Quiz Scenario', () => {
 
         
         // Play User B's Quiz
-        await page.locator('.mantine-Paper-root', { hasText: 'User B' }).getByText('開始').click();
+        await page.locator('.mantine-Card-root', { hasText: 'User B' }).getByText('開始').click();
 
 
         await expect(page.getByText('Who is User B?')).toBeVisible();

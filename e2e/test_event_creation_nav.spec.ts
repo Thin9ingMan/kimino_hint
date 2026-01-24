@@ -9,7 +9,7 @@ test('Navigate from Home to Create Event', async ({ page }) => {
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
       headers: { 'Authorization': token },
       data: {
-        updateRequest: {
+        profileData: {
           displayName: "E2E User",
           hobby: "Testing",
           favoriteArtist: "PW"
@@ -28,9 +28,9 @@ test('Navigate from Home to Create Event', async ({ page }) => {
   await expect(page.getByText('キミのヒント')).toBeVisible();
 
   // 2. Click "Events" button on Home
-  // It was previously "クイズへ" but now updated to "イベントへ"
-  const eventButton = page.getByRole('link', { name: /イベントへ|クイズへ/ });
-  await expect(eventButton).toBeEnabled();
+  // The button text is "イベントに参加"
+  const eventButton = page.getByRole('link', { name: /イベントに参加/ });
+  await expect(eventButton).toBeVisible();
   await eventButton.click();
 
   // 3. Verify we are on Events Hub

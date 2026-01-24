@@ -37,11 +37,9 @@ test.describe('Quiz Edit Screen - Button Location', () => {
     const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
       headers: { 'Authorization': token },
       data: { 
-        eventCreateRequest: { 
-          meta: { 
-            name: "Button Location Test Event",
-            description: "Testing button location" 
-          } 
+        meta: { 
+          name: "Button Location Test Event",
+          description: "Testing button location" 
         } 
       }
     });

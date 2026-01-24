@@ -243,12 +243,12 @@ function EventLobbyContent() {
         </Button>
         <Button 
           component={Link} 
-          to={`/events/${eventId}/quiz/sequence`} 
+          to={`/events/${eventId}/quiz/challenges`} 
           fullWidth 
           variant="light"
           onClick={() => {
-            // Reset quiz sequence progress when starting
-            sessionStorage.removeItem(`quiz_sequence_${eventId}`);
+            // Reset quiz progress when starting
+            sessionStorage.removeItem(`quiz_${eventId}_answers`);
           }}
         >
           クイズに挑戦

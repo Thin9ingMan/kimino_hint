@@ -30,11 +30,9 @@ test.describe('Multi-Question Quiz Flow', () => {
     const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
       headers: { 'Authorization': tokenA },
       data: { 
-        eventCreateRequest: { 
-          meta: { 
-            name: "Multi Question Test Event",
-            description: "Testing sequential quiz questions" 
-          } 
+        meta: { 
+          name: "Multi Question Test Event",
+          description: "Testing sequential quiz questions" 
         } 
       }
     });
@@ -144,7 +142,7 @@ test.describe('Multi-Question Quiz Flow', () => {
     await expect(page.getByText('Quiz Creator')).toBeVisible({ timeout: 10000 });
 
     // Start the quiz
-    await page.locator('.mantine-Paper-root', { hasText: 'Quiz Creator' }).getByText('開始').click();
+    await page.locator('.mantine-Card-root', { hasText: 'Quiz Creator' }).getByText('開始').click();
     await page.waitForTimeout(1000);
 
     // --- Question 1: Answer correctly ---

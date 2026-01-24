@@ -9,7 +9,7 @@ test('Joined Events History - Display and Re-enter', async ({ page }) => {
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
       headers: { 'Authorization': token },
       data: {
-        updateRequest: {
+        profileData: {
           displayName: "Joined Events Tester",
           hobby: "Event Joining",
           favoriteArtist: "History"
@@ -31,11 +31,9 @@ test('Joined Events History - Display and Re-enter', async ({ page }) => {
   const eventRes = await page.request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
     headers: { 'Authorization': hostToken },
     data: {
-      eventCreateRequest: {
-        meta: {
-          name: "Test Event for Joining",
-          description: "This is a test event"
-        }
+      meta: {
+        name: "Test Event for Joining",
+        description: "This is a test event"
       }
     }
   });
@@ -92,7 +90,7 @@ test('Joined Events - Multiple Events', async ({ page }) => {
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
       headers: { 'Authorization': token },
       data: {
-        updateRequest: {
+        profileData: {
           displayName: "Multi Event Tester",
           hobby: "Testing",
           favoriteArtist: "Multiple"
@@ -117,9 +115,7 @@ test('Joined Events - Multiple Events', async ({ page }) => {
     const eventRes = await page.request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
       headers: { 'Authorization': hostToken },
       data: {
-        eventCreateRequest: {
-          meta: { name, description: `Description for ${name}` }
-        }
+        meta: { name, description: `Description for ${name}` }
       }
     });
     
@@ -140,7 +136,7 @@ test('Joined Events - Multiple Events', async ({ page }) => {
   await expect(page.getByText('参加したイベント')).toBeVisible();
   
   for (const name of eventNames) {
-    await expect(page.getByText(name, { exact: false })).toBeVisible();
+    await expect(page.getByText(name, { exact: false }).first()).toBeVisible();
   }
 
   console.log('Multiple joined events test completed');

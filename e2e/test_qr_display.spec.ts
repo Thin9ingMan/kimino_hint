@@ -8,7 +8,7 @@ test('Verify Event Lobby QR and Invitation Code', async ({ page }) => {
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
       headers: { 'Authorization': token },
       data: {
-        updateRequest: {
+        profileData: {
           displayName: "QR Tester",
           hobby: "Scanning",
           favoriteArtist: "QR"

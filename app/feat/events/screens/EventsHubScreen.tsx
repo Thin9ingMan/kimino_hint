@@ -43,6 +43,11 @@ function EventsList() {
     setDeleteError(null);
 
     try {
+      // Verify the API method exists
+      if (typeof apis.events.deleteEvent !== 'function') {
+        throw new Error('API client is outdated. Please refresh the page and try again. (deleteEvent method not found)');
+      }
+
       await apis.events.deleteEvent({ eventId: eventToDelete.id });
 
       // Invalidate queries to refetch data

@@ -5,8 +5,6 @@ import {
   Stack,
   Text,
   Title,
-  Box,
-  Textarea,
 } from "@mantine/core";
 import { ReactNode } from "react";
 import { UiProfile } from "@/shared/profile/profileUi";
@@ -51,19 +49,7 @@ export function ProfileCard({
         )}
 
         <ProfileDisplayRows profile={profile} variant={variant} />
-        <Box mt="xs">
-          <Text fw={700} size="sm" mb={5} style={{ color: "#065f46" }}>
-            メモ
-          </Text>
-          <Textarea
-            placeholder="自由に記入してください"
-            defaultValue={""}
-            autosize
-            minRows={3}
-            variant="filled"
-            radius="md"
-          />
-        </Box>
+
         {actions && (
           <Group justify="flex-end" mt="sm">
             {actions}

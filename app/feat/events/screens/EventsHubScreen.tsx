@@ -49,6 +49,11 @@ function EventsList() {
       await queryClient.invalidateQueries({
         queryKey: ["events.listEventsByUser", me.id],
       });
+      
+      // Also invalidate the joined events list since the user is a participant of their own created events
+      await queryClient.invalidateQueries({
+        queryKey: ["events.listMyAttendedEvents", me.id],
+      });
 
       setDeleteModalOpened(false);
       setEventToDelete(null);

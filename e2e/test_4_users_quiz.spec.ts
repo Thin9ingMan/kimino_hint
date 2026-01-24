@@ -76,11 +76,17 @@ test.describe('4 User Quiz Scenario', () => {
                         myQuiz: {
                             questions: [
                                 { 
+                                    id: 'q1',
                                     question: `Who is User ${user.name}?`, 
-                                    choices: [`User ${user.name}`, 'X', 'Y', 'Z'], 
-                                    correctIndex: 0
+                                    choices: [
+                                        { id: 'c1', text: `User ${user.name}`, isCorrect: true },
+                                        { id: 'c2', text: 'X', isCorrect: false },
+                                        { id: 'c3', text: 'Y', isCorrect: false },
+                                        { id: 'c4', text: 'Z', isCorrect: false }
+                                    ]
                                 }
-                            ]
+                            ],
+                            updatedAt: new Date().toISOString()
                         }
                     } 
 
@@ -100,24 +106,20 @@ test.describe('4 User Quiz Scenario', () => {
         await page.goto(`http://localhost:5173/events/${eventId}`);
         
         // Verify Lobby has 4 participants
-        // Wait for loading to finish
         await expect(page.getByText('読み込み中...')).not.toBeVisible({ timeout: 10000 });
 
-        const attendeeList = page.locator('.mantine-Badge-root').getByText(/.*人/).first();
-        try {
-            await expect(attendeeList).toBeVisible({ timeout: 10000 });
-            console.log("Attendee Badge Text:", await attendeeList.innerText());
-            await expect(attendeeList).toHaveText('4人');
-        } catch (e) {
-            console.log("Current Page Text:\n", await page.innerText('body'));
-            throw e;
-        }
+        // Count participant cards
+        const attendeeCards = page.locator('a[href*="/profiles/"]');
+        await expect(attendeeCards).toHaveCount(4, { timeout: 15000 });
+        console.log("✓ 4 participants found in lobby");
 
 
 
         
-        // Go to Challenge List
-        await page.click('text=クイズに挑戦');
+        // Go to Challenge List via Intro
+        await page.click('text=自分のクイズを編集');
+        await expect(page).toHaveURL(/.*\/quiz/);
+        await page.click('text=クイズ一覧を見る');
         
         // Wait for challenge list to load
         await page.waitForURL(`**/quiz/challenges`, { timeout: 10000 });
@@ -138,12 +140,12 @@ test.describe('4 User Quiz Scenario', () => {
         await expect(page.getByText('Who is User A?')).toBeVisible();
         await page.click('button:has-text("User A")'); 
         await expect(page.getByText('正解！')).toBeVisible();
-        await page.click('button:has-text("結果を見る")');
-        await expect(page.getByText('結果')).toBeVisible();
+        await page.getByRole('button', { name: /結果を見る|次の問題へ/ }).click();
+        await expect(page.getByRole('heading', { name: '結果', exact: true })).toBeVisible();
 
 
         // Return to List
-        await page.click('text=他のクイズに挑戦');
+        await page.goto(`http://localhost:5173/events/${eventId}/quiz/challenges`);
 
         
         // Play User B's Quiz

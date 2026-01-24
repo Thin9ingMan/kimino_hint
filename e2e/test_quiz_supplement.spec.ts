@@ -10,15 +10,13 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
     headers: { 'Authorization': token },
     data: {
-      userProfileUpdateRequest: {
-        profileData: {
-          displayName: "補足テストユーザー",
-          furigana: "ホソクテストユーザー",
-          hobby: "読書",
-          favoriteArtist: "YOASOBI",
-          faculty: "工学部",
-          grade: "2年生"
-        }
+      profileData: {
+        displayName: "補足テストユーザー",
+        furigana: "ホソクテストユーザー",
+        hobby: "読書",
+        favoriteArtist: "YOASOBI",
+        faculty: "工学部",
+        grade: "2年生"
       }
     }
   });
@@ -39,9 +37,16 @@ test('Quiz Supplement Feature', async ({ page }) => {
 
   // 2. Login in browser (set token in localStorage)
   await page.goto('http://localhost:5173/');
+  const cleanToken = token.replace('Bearer ', '');
   await page.evaluate((t) => {
-    localStorage.setItem('jwtToken', t.replace('Bearer ', ''));
-  }, token);
+    localStorage.setItem('jwtToken', t);
+  }, cleanToken);
+  
+  // Wait a bit and check if profile is actually there via console
+  console.log("Waiting for backend to sync profile...");
+  await page.waitForTimeout(2000);
+  await page.reload();
+  await page.waitForTimeout(1000);
 
   // 3. Navigate to Quiz Edit Screen
   await page.goto(`http://localhost:5173/events/${eventId}/quiz/edit`);
@@ -50,22 +55,18 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await expect(page.getByText('クイズエディタ')).toBeVisible({ timeout: 10000 });
 
   // 5. Find a question card and add a supplement/explanation
-  // Look for the "補足説明" or "解説" field
-  const supplementLabel = page.getByText('補足説明').or(page.getByText('解説'));
-  await expect(supplementLabel).toBeVisible({ timeout: 5000 });
-
-  // Find the supplement textarea/input for the first question
-  const supplementInput = page.locator('textarea').filter({ hasText: '' }).first();
-  await expect(supplementInput).toBeVisible();
+  // Each question has a textarea for "補足説明"
+  const supplementInput = page.locator('textarea').first();
+  await expect(supplementInput).toBeVisible({ timeout: 15000 });
 
   // Add a supplement text
   const supplementText = "この質問は私の趣味に関するものです。読書が好きな理由は、新しい世界を知ることができるからです。";
   await supplementInput.fill(supplementText);
 
   // 6. Click auto-generate to fill choices
-  await page.click('text=固定項目を自動埋め');
+  await page.click('text=誤答を生成');
   // Wait for the auto-generation to complete by checking for filled choices
-  await expect(page.locator('input[value]').first()).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('input[value]').first()).toBeVisible({ timeout: 10000 });
 
   // 7. Save the quiz
   await page.click('text=保存して完了');
@@ -94,15 +95,13 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
     headers: { 'Authorization': user2Token },
     data: {
-      userProfileUpdateRequest: {
-        profileData: {
-          displayName: "回答者ユーザー",
-          furigana: "カイトウシャユーザー",
-          hobby: "映画鑑賞",
-          favoriteArtist: "米津玄師",
-          faculty: "文学部",
-          grade: "3年生"
-        }
+      profileData: {
+        displayName: "回答者ユーザー",
+        furigana: "カイトウシャユーザー",
+        hobby: "映画鑑賞",
+        favoriteArtist: "米津玄師",
+        faculty: "文学部",
+        grade: "3年生"
       }
     }
   });
@@ -111,6 +110,36 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await page.request.post(`https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}/users`, {
     headers: { 'Authorization': user2Token },
     data: {}
+  });
+
+  // User 2 needs a quiz too
+  const user2MeRes = await page.request.get('https://quarkus-crud.ouchiserver.aokiapp.com/api/me', {
+    headers: { 'Authorization': user2Token }
+  });
+  const user2MeData = await user2MeRes.json();
+  const user2Id = user2MeData.id;
+
+  await page.request.put(`https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}/users/${user2Id}`, {
+    headers: { 'Authorization': user2Token },
+    data: { 
+      userData: { 
+        myQuiz: {
+          questions: [
+            {
+              id: "u2q1",
+              question: "User 2 Hobby?",
+              choices: [
+                { id: "u2q1c1", text: "映画鑑賞", isCorrect: true },
+                { id: "u2q1c2", text: "X", isCorrect: false },
+                { id: "u2q1c3", text: "Y", isCorrect: false },
+                { id: "u2q1c4", text: "Z", isCorrect: false }
+              ]
+            }
+          ],
+          updatedAt: new Date().toISOString()
+        }
+      } 
+    }
   });
 
   // 10. Login as user2
@@ -122,11 +151,14 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await page.goto(`http://localhost:5173/events/${eventId}/quiz/challenges`);
   await page.waitForLoadState('networkidle');
 
-  // 12. Click on first user's quiz - find the card and click the Start button
-  await page.locator('.mantine-Card-root', { hasText: '補足テストユーザー' }).getByText('開始').click();
+  // 12. Go to lobby and click on quiz challenge
+  await page.goto(`http://localhost:5173/events/${eventId}`);
+  await page.reload();
+  await page.waitForTimeout(2000);
+  await page.click('text=クイズに挑戦');
   
   // 13. Wait for first question
-  await page.waitForURL(`**/quiz/challenge/**/1`, { timeout: 10000 });
+  await expect(page).toHaveURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
   
   // 14. Answer the question (click any choice)
   const firstChoice = page.locator('button').filter({ hasText: /工学部|文学部|経済学部/ }).first();

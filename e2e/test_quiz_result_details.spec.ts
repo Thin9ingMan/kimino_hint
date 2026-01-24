@@ -122,6 +122,36 @@ test.describe('Quiz Result Details', () => {
       data: { invitationCode }
     });
 
+    // User B needs a quiz too for allAttendeesReady to be true
+    const userBDataRes = await request.get('https://quarkus-crud.ouchiserver.aokiapp.com/api/me', {
+      headers: { 'Authorization': tokenB }
+    });
+    const userBData = await userBDataRes.json();
+    const userBId = userBData.id;
+
+    await request.put(`https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}/users/${userBId}`, {
+      headers: { 'Authorization': tokenB },
+      data: { 
+        userData: { 
+          myQuiz: {
+            questions: [
+              {
+                id: "qb1",
+                question: "User B Hobby?",
+                choices: [
+                  { id: "qb1_c1", text: "Taking Tests", isCorrect: true },
+                  { id: "qb1_c2", text: "X", isCorrect: false },
+                  { id: "qb1_c3", text: "Y", isCorrect: false },
+                  { id: "qb1_c4", text: "Z", isCorrect: false }
+                ]
+              }
+            ],
+            updatedAt: new Date().toISOString()
+          }
+        } 
+      }
+    });
+
     // --- User B UI Flow ---
     await page.goto('http://localhost:5173/');
     await page.evaluate((t) => {
@@ -130,22 +160,18 @@ test.describe('Quiz Result Details', () => {
 
     // Navigate to event lobby
     await page.goto(`http://localhost:5173/events/${eventId}`);
-    await page.waitForTimeout(1000);
+    await page.reload(); // Ensure fresh data
+    await page.waitForTimeout(2000);
 
-    // Click "クイズに挑戦"
+    // Click "クイズに挑戦" (Goes to sequence)
     await page.click('text=クイズに挑戦');
-    await page.waitForTimeout(1000);
+    
+    // Start the quiz (automatic redirect in sequence)
+    await expect(page).toHaveURL(/.*\/quiz\/challenge\/.*/, { timeout: 15000 });
 
-    // Verify Quiz Creator is listed (may be display name or user ID)
-    try {
-      await expect(page.getByText('田所浩治')).toBeVisible({ timeout: 5000 });
-    } catch {
-      console.log('Display name not found, looking for fallback user ID...');
-      await expect(page.getByText(`ユーザー ${creatorUserId}`, { exact: false })).toBeVisible({ timeout: 10000 });
-    }
-
-    // Start the quiz - try clicking the button
-    await page.click('button:has-text("開始")');
+    // Start the quiz
+    // Note: EventLobby's "クイズに挑戦" now goes to QuizSequenceScreen which redirects to the first question
+    await expect(page).toHaveURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
     await page.waitForTimeout(1000);
 
     // --- Question 1: Answer correctly ---
@@ -175,7 +201,7 @@ test.describe('Quiz Result Details', () => {
 
     // --- Verify Result Screen ---
     console.log('Verifying result screen...');
-    await expect(page.getByText('結果')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: '結果', exact: true })).toBeVisible({ timeout: 10000 });
     
     // Verify score is 2/3
     // Check for the score text containing both numbers
@@ -186,9 +212,9 @@ test.describe('Quiz Result Details', () => {
     console.log('Verifying detailed results table...');
     
     // Check for table headers
-    await expect(page.getByText('問題')).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText('正解')).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText('あなたの回答')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('columnheader', { name: '問題' })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('columnheader', { name: '正解' })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('columnheader', { name: 'あなたの回答' })).toBeVisible({ timeout: 5000 });
     
     // Check for question 1 - correct answer
     await expect(page.getByText('私の名前は？')).toBeVisible();

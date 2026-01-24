@@ -30,6 +30,7 @@ test('Verify Event Lobby QR and Invitation Code', async ({ page }) => {
   
   // 3. Verify Invitation Panel in Lobby
   await expect(page).toHaveURL(/.*\/events\/\d+/);
+  await page.waitForSelector('text=招待', { timeout: 15000 });
   
   // Check Invitation Code is visible (it matches mapped uppercase format usually, e.g. "QUIZ-...")
   // The API generates a random code, so we just check for presence of the panel elements.
@@ -40,8 +41,8 @@ test('Verify Event Lobby QR and Invitation Code', async ({ page }) => {
   await expect(page.getByRole('button', { name: /コピー/ })).toBeVisible();
 
   // Check QR Code
-  // react-qr-code renders an SVG
-  await expect(page.locator('svg').first()).toBeVisible();
+  // react-qr-code renders an SVG inside a box
+  await expect(page.locator('svg').filter({ has: page.locator('rect') }).first()).toBeVisible();
   await expect(page.getByText('参加用QRコード')).toBeVisible();
 
   console.log('QR Code and Invitation Panel verified successfully');

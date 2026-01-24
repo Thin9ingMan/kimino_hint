@@ -115,23 +115,12 @@ test.describe('Quiz Sequential Flow', () => {
         // Result screen should show
         await expect(page.getByText('結果')).toBeVisible();
         
-        // Navigate back to continue sequence
-        // The result details screen might have different buttons depending on context
-        // Try to find either "次のクイズへ", "プロフィールを取得", or go directly to sequence
-        const nextButton = page.getByText('次のクイズへ');
-        const rewardsButton = page.getByText('プロフィールを取得');
-        
-        if (await nextButton.isVisible().catch(() => false)) {
-            await nextButton.click();
-        } else if (await rewardsButton.isVisible().catch(() => false)) {
-            await rewardsButton.click();
-            // After rewards, click "次のクイズへ"
-            await expect(page.getByText('次のクイズへ')).toBeVisible({ timeout: 5000 });
-            await page.click('text=次のクイズへ');
-        } else {
-            // Navigate directly to sequence page
-            await page.goto(`http://localhost:5173/events/${eventId}/quiz/sequence`);
-        }
+        // Navigate to rewards screen
+        await page.click('text=プロフィールを取得');
+
+        // Rewards screen: Click Next Quiz
+        await expect(page.getByText('プロフィール取得')).toBeVisible({ timeout: 10000 });
+        await page.click('text=次のクイズへ');
         
         // --- Second quiz: Participant 1 ---
         await expect(page.getByText('Who is User Participant1?')).toBeVisible();
@@ -142,19 +131,12 @@ test.describe('Quiz Sequential Flow', () => {
         // Result screen
         await expect(page.getByText('結果')).toBeVisible();
         
-        // Navigate to next quiz
-        const nextButton2 = page.getByText('次のクイズへ');
-        const rewardsButton2 = page.getByText('プロフィールを取得');
-        
-        if (await nextButton2.isVisible().catch(() => false)) {
-            await nextButton2.click();
-        } else if (await rewardsButton2.isVisible().catch(() => false)) {
-            await rewardsButton2.click();
-            await expect(page.getByText('次のクイズへ')).toBeVisible({ timeout: 5000 });
-            await page.click('text=次のクイズへ');
-        } else {
-            await page.goto(`http://localhost:5173/events/${eventId}/quiz/sequence`);
-        }
+        // Navigate to rewards screen
+        await page.click('text=プロフィールを取得');
+
+        // Rewards screen: Click Next Quiz
+        await expect(page.getByText('プロフィール取得')).toBeVisible({ timeout: 10000 });
+        await page.click('text=次のクイズへ');
         
         // --- Third quiz: Own quiz (Participant 2) ---
         // Should see special screen instead of quiz

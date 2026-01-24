@@ -69,8 +69,8 @@ test.describe('Choice Randomization Verification', () => {
     await page.click('text=自分のクイズを編集');
     await page.waitForTimeout(1000);
 
-    // Click "クイズを作成"
-    await page.click('text=クイズを作成');
+    // Click "クイズを作成" or "クイズを編集"
+    await page.getByRole('link', { name: /クイズ(を作成|を編集)/ }).click();
     await page.waitForTimeout(2000);
 
     // Verify we're on the edit screen
@@ -79,10 +79,12 @@ test.describe('Choice Randomization Verification', () => {
 
     // Click "誤答を生成" to auto-fill fake answers
     await page.click('text=誤答を生成');
-    await page.waitForTimeout(3000); // Wait for LLM generation
+    // Wait for LLM generation
+    await page.waitForTimeout(5000); 
 
     // Save the quiz
     await page.click('text=保存して完了');
+    await page.waitForURL(/.*\/events\/\d+$/, { timeout: 15000 });
     await page.waitForTimeout(2000);
 
     // Verify return to lobby
@@ -111,23 +113,64 @@ test.describe('Choice Randomization Verification', () => {
       data: { invitationCode }
     });
 
+    // User B needs a quiz too for allAttendeesReady to be true
+    const userBDataRes = await request.get('https://quarkus-crud.ouchiserver.aokiapp.com/api/me', {
+      headers: { 'Authorization': tokenB }
+    });
+    const userBData = await userBDataRes.json();
+    const userBId = userBData.id;
+
+    await request.put(`https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}/users/${userBId}`, {
+      headers: { 'Authorization': tokenB },
+      data: { 
+        userData: { 
+          myQuiz: {
+            questions: [
+              {
+                id: "qb1",
+                question: "User B Hobby?",
+                choices: [
+                  { id: "qb1_c1", text: "Taking Tests", isCorrect: true },
+                  { id: "qb1_c2", text: "X", isCorrect: false },
+                  { id: "qb1_c3", text: "Y", isCorrect: false },
+                  { id: "qb1_c4", text: "Z", isCorrect: false }
+                ]
+              }
+            ],
+            updatedAt: new Date().toISOString()
+          }
+        } 
+      }
+    });
+
     // --- User B: Take the quiz ---
     await page.goto('http://localhost:5173/');
     await page.evaluate((t) => {
       localStorage.setItem('jwtToken', t.replace('Bearer ', ''));
     }, tokenB);
 
-    // Navigate to event lobby
+    // Navigate to event lobby and wait for everyone to be ready
     await page.goto(`http://localhost:5173/events/${eventId}`);
-    await page.waitForTimeout(1000);
+    
+    // Wait for everyone to be ready (reload loop)
+    let ready = false;
+    for (let i = 0; i < 5; i++) {
+        await page.reload();
+        await page.waitForTimeout(2000);
+        if (!(await page.getByText('クイズを開始できません').isVisible().catch(() => false))) {
+            ready = true;
+            break;
+        }
+        console.log(`Lobby not ready (attempt ${i + 1}), retrying...`);
+    }
 
     // Click "クイズに挑戦"
-    await page.click('text=クイズに挑戦');
-    await page.waitForTimeout(1000);
-
-    // Select User A's quiz and start it
-    // Find the button/link for User A's quiz
-    await page.locator('.mantine-Card-root', { hasText: '田中 太郎' }).getByText('開始').click();
+    const quizButton = page.locator('text=クイズに挑戦').first();
+    await expect(quizButton).toBeVisible({ timeout: 15000 });
+    await quizButton.click();
+    
+    // Start the quiz
+    await expect(page).toHaveURL(/.*\/quiz\/challenge\/.*/, { timeout: 15000 });
     await page.waitForTimeout(2000);
 
     // Now we should be on the first question

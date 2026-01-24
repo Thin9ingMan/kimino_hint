@@ -21,9 +21,7 @@ test.describe('Quiz Profile Validation', () => {
     const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
         headers: { 'Authorization': tokenA },
         data: { 
-            eventCreateRequest: {
-                meta: { name: "Validation Test Event", description: "Testing validation" }
-            }
+            meta: { name: "Validation Test Event", description: "Testing validation" }
         }
     });
     const eventData = await createEventRes.json();
@@ -55,7 +53,8 @@ test.describe('Quiz Profile Validation', () => {
                                 { id: 'c4', text: 'User D', isCorrect: false }
                             ]
                         }
-                    ]
+                    ],
+                    updatedAt: new Date().toISOString()
                 }
             } 
         }

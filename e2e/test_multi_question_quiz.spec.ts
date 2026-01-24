@@ -162,18 +162,18 @@ test.describe('Multi-Question Quiz Flow', () => {
 
     // Navigate to event lobby
     await page.goto(`http://localhost:5173/events/${eventId}`);
-    await page.waitForTimeout(1000);
+    await page.reload(); // Ensure fresh data
+    await page.waitForTimeout(2000);
 
     // Click "クイズに挑戦"
     await page.click('text=クイズに挑戦');
-    await page.waitForTimeout(1000);
-
-    // Verify Quiz Creator is listed
-    await expect(page.getByText('Quiz Creator')).toBeVisible({ timeout: 10000 });
+    
+    // Start the quiz
+    await expect(page).toHaveURL(/.*\/quiz\/challenge\/.*/, { timeout: 15000 });
 
     // Start the quiz
-    await page.locator('.mantine-Card-root', { hasText: 'Quiz Creator' }).getByText('開始').click();
-    await page.waitForTimeout(1000);
+    // Note: EventLobby's "クイズに挑戦" now goes to QuizSequenceScreen which redirects to the first question
+    await expect(page).toHaveURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
 
     // --- Question 1: Answer correctly ---
     console.log('Answering Question 1...');
@@ -239,7 +239,7 @@ test.describe('Multi-Question Quiz Flow', () => {
     await page.waitForTimeout(1000);
 
     // --- Verify Result Screen ---
-    await expect(page.getByText('結果')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: '結果', exact: true })).toBeVisible({ timeout: 10000 });
     
     // Verify score is 3/3
     await expect(page.locator('text=/3\\s*\\/\\s*3/').or(page.getByText('3 / 3'))).toBeVisible({ timeout: 5000 });

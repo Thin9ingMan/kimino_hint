@@ -37,8 +37,8 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   // Screenshot 1: Event lobby with edit button
   await page.screenshot({ path: '/tmp/event_lobby_with_edit_button.png', fullPage: true });
 
-  // 3. Click Edit button (this should exist per the requirement)
-  const editButton = page.getByRole('button', { name: /編集|イベント情報を編集/ });
+  // 3. Click Edit button
+  const editButton = page.locator('button').filter({ hasText: /^編集$/ });
   await expect(editButton).toBeVisible();
   await editButton.click();
 
@@ -60,7 +60,7 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   await page.screenshot({ path: '/tmp/event_edit_modal_filled.png', fullPage: true });
 
   // 5. Save changes
-  const saveButton = page.getByRole('button', { name: /保存|更新/ });
+  const saveButton = page.locator('.mantine-Modal-content').getByRole('button', { name: '保存', exact: true });
   await expect(saveButton).toBeVisible();
   await saveButton.click();
 

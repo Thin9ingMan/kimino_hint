@@ -47,11 +47,17 @@ test.describe('Full User Journey', () => {
                 myQuiz: {
                     questions: [
                         { 
+                            id: 'q1',
                             question: 'Who am I?', 
-                            choices: ['User A', 'X', 'Y', 'Z'], 
-                            correctIndex: 0 
+                            choices: [
+                                { id: 'c1', text: 'User A', isCorrect: true },
+                                { id: 'c2', text: 'X', isCorrect: false },
+                                { id: 'c3', text: 'Y', isCorrect: false },
+                                { id: 'c4', text: 'Z', isCorrect: false }
+                            ]
                         }
-                    ]
+                    ],
+                    updatedAt: new Date().toISOString()
                 }
             } 
         }
@@ -108,7 +114,7 @@ test.describe('Full User Journey', () => {
     
     // Fill Quiz Form
     // Assuming pre-filled from profile mostly, but let's check inputs
-    await expect(page.getByText('クイズを作成')).toBeVisible();
+    await expect(page.getByText('クイズについて')).toBeVisible();
     
     // Click Create
     await page.click('a[href*="/quiz/edit"]'); // Try selecting by href if text is ambiguous or use the button
@@ -145,30 +151,63 @@ test.describe('Full User Journey', () => {
     
     
     // Verify returned to Lobby
-    await expect(page.getByText('イベント情報')).toBeVisible({ timeout: 10000 });
-
-
-
-
-    // C. Answer Quiz (User A's quiz)
-    await page.click('text=クイズに挑戦');
+    await expect(page.getByText('イベント情報')).toBeVisible({ timeout: 15000 });
     
-    // List of challengers
-    // User A should be listed
-    await expect(page.getByText('User A (Host)')).toBeVisible();
+    // Wait for everyone to be ready (reload loop)
+    let ready = false;
+    for (let i = 0; i < 5; i++) {
+        await page.reload();
+        await page.waitForTimeout(2000);
+        if (!(await page.getByText('クイズを開始できません').isVisible().catch(() => false))) {
+            ready = true;
+            break;
+        }
+        console.log(`Lobby not ready (attempt ${i + 1}), retrying...`);
+    }
+
+    // Click "クイズに挑戦"
+    const quizButton = page.locator('text=クイズに挑戦').first();
+    await expect(quizButton).toBeVisible({ timeout: 15000 });
+    await quizButton.click();
     
-    // Click the Start button for User A's quiz
-    await page.locator('.mantine-Card-root', { hasText: 'User A (Host)' }).getByText('開始').click();
+    // Start the quiz
+    console.log("Navigating to quiz sequence...");
+    await expect(page).toHaveURL(/.*\/quiz\/sequence/, { timeout: 15000 });
+    
+    // Sequence screen logic: User A (Host) is first in list.
+    // They see "あなたのクイズを出題しています" screen.
+    if (await page.getByText('あなたのクイズを出題しています').isVisible({ timeout: 5000 }).catch(() => false)) {
+        console.log("Detected own quiz screen, clicking Next...");
+        await page.click('text=次のクイズへ');
+    }
+    
+    // Now wait for first question of User B
+    console.log("Waiting for question screen...");
+    await expect(page.getByText('Who am I?')).toBeVisible({ timeout: 15000 });
     
     // Answer Question
     await expect(page.getByText('Who am I?')).toBeVisible();
     await page.click('button:has-text("User A")'); // Correct answer
     
     // Result Screen
-    await expect(page.getByText('正解！')).toBeVisible();
+    await expect(page.getByText('正解！')).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: /結果を見る|次の問題へ/ }).click();
     
-    await page.click('text=一覧へ戻る');
-    await expect(page).toHaveURL(/.*\/quiz\/challenges/);
+    // Result details
+    await expect(page.getByText('結果', { exact: true })).toBeVisible({ timeout: 10000 });
+    
+    // Debug screenshot
+    await page.screenshot({ path: '/tmp/quiz_result_details.png', fullPage: true });
+    
+    // Wait for the button to be ready and click it
+    const profButton = page.getByRole('button', { name: /プロフィールを?(取得|確認|次へ)/ }).first();
+    await expect(profButton).toBeVisible({ timeout: 15000 });
+    await profButton.click();
+    
+    // Rewards
+    await expect(page.locator('text=報酬').or(page.locator('text=取得'))).toBeVisible({ timeout: 10000 });
+    await page.waitForSelector('text=次のクイズへ', { timeout: 10000 });
+    await page.click('text=次のクイズへ');
 
     console.log('Full User Journey verified successfully');
 

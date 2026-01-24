@@ -1,4 +1,5 @@
-import { Avatar, Badge, Group, Paper, Stack, Text, Title } from "@mantine/core";
+import { Avatar, Badge, Group, Paper, Stack, Text, Title, ActionIcon } from "@mantine/core";
+import { IconRefresh } from "@tabler/icons-react";
 import { Link } from "react-router-dom";
 
 interface Attendee {
@@ -19,6 +20,7 @@ interface EventAttendeesListProps {
   linkToProfile?: boolean;
   emptyMessage?: string;
   variant?: "list" | "grid" | "compact";
+  onRefresh?: () => void;
 }
 
 function getDisplayName(attendee: Attendee): string {
@@ -68,6 +70,7 @@ export function EventAttendeesList({
   linkToProfile = true,
   emptyMessage = "参加者がいません",
   variant = "list",
+  onRefresh,
 }: EventAttendeesListProps) {
   const displayAttendees = maxDisplay 
     ? attendees.slice(0, maxDisplay) 
@@ -146,9 +149,19 @@ export function EventAttendeesList({
       {title && (
         <Group justify="space-between">
           <Title order={4}>{title}</Title>
-          <Badge variant="light" size="sm">
-            {attendees.length}人
-          </Badge>
+          {onRefresh ? (
+            <ActionIcon
+              variant="light"
+              onClick={onRefresh}
+              aria-label="参加者リストを更新"
+            >
+              <IconRefresh size={16} />
+            </ActionIcon>
+          ) : (
+            <Badge variant="light" size="sm">
+              {attendees.length}人
+            </Badge>
+          )}
         </Group>
       )}
       

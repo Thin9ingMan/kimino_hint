@@ -210,9 +210,11 @@ function QuizQuestionContent() {
                 : `正解は「${question.choices.find(c => c.isCorrect)?.text}」でした。`}
             </Text>
             {question.explanation && (
-              <Text size="md" fw={500}>
-                解説: {question.explanation}
-              </Text>
+              <Paper withBorder p="md" radius="md" bg="gray.0">
+                <Text size="md" fw={500}>
+                  解説: {question.explanation}
+                </Text>
+              </Paper>
             )}
             <Button onClick={handleNext} fullWidth mt="sm">
               {questionIndex + 1 < quiz.questions.length ? "次の問題へ" : "結果を見る"}

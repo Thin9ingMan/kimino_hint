@@ -13,12 +13,10 @@ test('Quiz Creation Flow', async ({ page }) => {
 
     headers: { 'Authorization': token },
     data: {
-      updateRequest: {
-        profileData: {
-          displayName: "Test User",
-          hobby: "Coding",
-          favoriteArtist: "AI"
-        }
+      profileData: {
+        displayName: "Test User",
+        hobby: "Coding",
+        favoriteArtist: "AI"
       }
     }
   });
@@ -28,10 +26,10 @@ test('Quiz Creation Flow', async ({ page }) => {
 
     headers: { 'Authorization': token },
     data: {
-      eventCreateRequest: {
+      meta: {
         name: "E2E Test Event",
         description: "Testing Quiz Flow",
-        capacity: 10
+        maxParticipants: 10
       }
     }
   });
@@ -43,6 +41,7 @@ test('Quiz Creation Flow', async ({ page }) => {
   await page.evaluate((t) => {
     localStorage.setItem('jwtToken', t.replace('Bearer ', ''));
   }, token);
+  await page.reload();
 
   
   // 3. Go to Event Lobby

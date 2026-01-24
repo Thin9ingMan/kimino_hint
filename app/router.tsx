@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import { legacyRedirectRoutes } from "../src/App";
+import { legacyRedirectRoutes } from "./legacyRouter";
 
 import { HomeScreen } from "./feat/home/screens/HomeScreen";
 import { HelpScreen } from "./feat/misc/screens/HelpScreen";
@@ -24,9 +24,6 @@ import { QuizSequenceScreen } from "./feat/quiz/screens/QuizSequenceScreen";
 import { QuizQuestionScreen } from "./feat/quiz/screens/QuizQuestionScreen";
 import { QuizResultScreen } from "./feat/quiz/screens/QuizResultScreen";
 import { QuizRewardsScreen } from "./feat/quiz/screens/QuizRewardsScreen";
-import { QrHubScreen } from "./feat/qr/screens/QrHubScreen";
-import { QrProfileScreen } from "./feat/qr/screens/QrProfileScreen";
-import { QrScanScreen } from "./feat/qr/screens/QrScanScreen";
 import { QrJoinScreen } from "./feat/qr/screens/QrJoinScreen";
 
 export function AppRouter() {
@@ -84,11 +81,7 @@ export function AppRouter() {
           element={<QuizRewardsScreen />}
         />
 
-        {/* QR */}
-        <Route path="/qr" element={<QrHubScreen />} />
         <Route path="/qr/join" element={<QrJoinScreen />} />
-        <Route path="/qr/profile" element={<QrProfileScreen />} />
-        <Route path="/qr/scan" element={<QrScanScreen />} />
 
         {/* Legacy URL compat (Phase 0): keep old URLs as thin redirects */}
         {legacyRedirectRoutes}

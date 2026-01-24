@@ -15,7 +15,6 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["app/*"],
-      "@components/*": ["src/components/*"]
     }
   },
   "include": ["app", "src"],

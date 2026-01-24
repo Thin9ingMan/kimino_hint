@@ -36,11 +36,9 @@ test.describe('Question Order Verification', () => {
     const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
       headers: { 'Authorization': tokenA },
       data: { 
-        eventCreateRequest: { 
-          meta: { 
-            name: "Question Order Test Event",
-            description: "Testing question order" 
-          } 
+        meta: { 
+          name: "Question Order Test Event",
+          description: "Testing question order" 
         } 
       }
     });

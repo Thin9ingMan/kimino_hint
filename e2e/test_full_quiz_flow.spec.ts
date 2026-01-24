@@ -27,7 +27,7 @@ test.describe('Full User Journey', () => {
 
     const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
         headers: { 'Authorization': tokenA },
-        data: { eventCreateRequest: eventParams }
+        data: eventParams
     });
     const eventData = await createEventRes.json();
     const eventId = eventData.id;

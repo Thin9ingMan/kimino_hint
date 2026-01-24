@@ -40,11 +40,9 @@ test.describe('Choice Randomization Verification', () => {
     const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
       headers: { 'Authorization': tokenA },
       data: { 
-        eventCreateRequest: { 
-          meta: { 
-            name: "Choice Randomization Test",
-            description: "Testing choice order randomization" 
-          } 
+        meta: { 
+          name: "Choice Randomization Test",
+          description: "Testing choice order randomization" 
         } 
       }
     });

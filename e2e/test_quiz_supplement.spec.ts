@@ -27,11 +27,9 @@ test('Quiz Supplement Feature', async ({ page }) => {
   const eventRes = await page.request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
     headers: { 'Authorization': token },
     data: {
-      eventCreateRequest: {
-        name: "補足機能テストイベント",
-        description: "Testing Quiz Supplement Feature",
-        capacity: 10
-      }
+      name: "補足機能テストイベント",
+      description: "Testing Quiz Supplement Feature",
+      capacity: 10
     }
   });
   const eventData = await eventRes.json();

@@ -30,11 +30,9 @@ test.describe('Multi-Question Quiz Flow', () => {
     const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
       headers: { 'Authorization': tokenA },
       data: { 
-        eventCreateRequest: { 
-          meta: { 
-            name: "Multi Question Test Event",
-            description: "Testing sequential quiz questions" 
-          } 
+        meta: { 
+          name: "Multi Question Test Event",
+          description: "Testing sequential quiz questions" 
         } 
       }
     });

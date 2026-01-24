@@ -9,7 +9,7 @@ test('Navigate from Home to Create Event', async ({ page }) => {
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
       headers: { 'Authorization': token },
       data: {
-        updateRequest: {
+        profileData: {
           displayName: "E2E User",
           hobby: "Testing",
           favoriteArtist: "PW"

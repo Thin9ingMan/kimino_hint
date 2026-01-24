@@ -30,7 +30,7 @@ test.describe('4 User Quiz Scenario', () => {
         // --- 2. User A Creates Event ---
         const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
             headers: { 'Authorization': userA.token },
-            data: { eventCreateRequest: { meta: { name: "4 User Party" } } }
+            data: { meta: { name: "4 User Party" } }
         });
         const eventData = await createEventRes.json();
         const eventId = eventData.id;

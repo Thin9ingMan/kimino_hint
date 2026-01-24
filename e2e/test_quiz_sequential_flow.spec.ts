@@ -28,7 +28,7 @@ test.describe('Quiz Sequential Flow', () => {
         // --- 2. Host Creates Event ---
         const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
             headers: { 'Authorization': userHost.token },
-            data: { eventCreateRequest: { meta: { name: "Sequential Quiz Event" } } }
+            data: { meta: { name: "Sequential Quiz Event" } }
         });
         const eventData = await createEventRes.json();
         const eventId = eventData.id;

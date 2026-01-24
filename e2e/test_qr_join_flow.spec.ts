@@ -8,7 +8,7 @@ test('QR code should navigate directly to event lobby after auto-join', async ({
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
     headers: { 'Authorization': token1 },
     data: {
-      updateRequest: {
+      profileData: {
         displayName: "Event Creator",
         hobby: "Creating Events",
         favoriteArtist: "QR Code"
@@ -65,7 +65,7 @@ test('QR code should navigate directly to event lobby after auto-join', async ({
   await page2.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
     headers: { 'Authorization': token2 },
     data: {
-      updateRequest: {
+      profileData: {
         displayName: "QR Scanner",
         hobby: "Scanning QR Codes",
         favoriteArtist: "Camera App"

@@ -8,7 +8,7 @@ test('Verify Event Persistence (Create -> Home -> Re-enter)', async ({ page }) =
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
       headers: { 'Authorization': token },
       data: {
-        updateRequest: {
+        profileData: {
           displayName: "Persistence Tester",
           hobby: "Persistence",
           favoriteArtist: "PM2"

@@ -30,11 +30,9 @@ test.describe('Quiz Result Details', () => {
     const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
       headers: { 'Authorization': tokenA },
       data: { 
-        eventCreateRequest: { 
-          meta: { 
-            name: "Result Details Test Event",
-            description: "Testing quiz result details display" 
-          } 
+        meta: { 
+          name: "Result Details Test Event",
+          description: "Testing quiz result details display" 
         } 
       }
     });

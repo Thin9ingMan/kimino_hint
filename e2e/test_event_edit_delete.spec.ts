@@ -8,7 +8,7 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
       headers: { 'Authorization': token },
       data: {
-        updateRequest: {
+        profileData: {
           displayName: "Edit Tester",
           hobby: "Testing",
           favoriteArtist: "E2E"
@@ -97,7 +97,7 @@ test('Delete Event from Events Hub', async ({ page }) => {
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
       headers: { 'Authorization': token },
       data: {
-        updateRequest: {
+        profileData: {
           displayName: "Delete Tester",
           hobby: "Testing",
           favoriteArtist: "E2E"

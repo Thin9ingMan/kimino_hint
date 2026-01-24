@@ -41,6 +41,7 @@ import {
 import { falseHobbies, falseArtists, faculty, grade } from "../utils/fakeData";
 import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import type { Quiz } from "../types";
+import { shuffleArray } from "../utils/shuffle";
 
 type QuestionCategory = "names" | "verySimilarNames" | "hobbies" | "artists" | "faculty" | "grade" | "custom";
 
@@ -567,12 +568,12 @@ function QuizEditContent() {
         artist: getWrongTexts("artists"),
       };
 
-      // Construct direct correctness Quiz object
+      // Construct direct correctness Quiz object with shuffled choices
       const myQuiz = {
         questions: questions.map(q => ({
           id: q.id,
           question: q.title,
-          choices: q.choices.map(c => ({ id: c.id, text: c.text, isCorrect: c.isCorrect })),
+          choices: shuffleArray(q.choices.map(c => ({ id: c.id, text: c.text, isCorrect: c.isCorrect }))),
           explanation: q.explanation,
         })),
         updatedAt: new Date().toISOString(),

@@ -8,6 +8,7 @@ import {
   RingProgress,
   Group,
   Center,
+  Table,
 } from "@mantine/core";
 import { Suspense, useMemo } from "react";
 import { Link } from "react-router-dom";
@@ -19,7 +20,7 @@ import {
   useSuspenseQueries,
 } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
-import type { Quiz } from "../types";
+import type { Quiz, QuizAnswer } from "../types";
 import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
 import { getPerformanceRating } from "../utils/validation";
 
@@ -67,6 +68,12 @@ function QuizResultContent() {
   const score = useMemo(() => {
     const stored = sessionStorage.getItem(`quiz_${eventId}_${targetUserId}_score`);
     return stored ? parseInt(stored, 10) : 0;
+  }, [eventId, targetUserId]);
+
+  // Retrieve stored answers from sessionStorage
+  const answers = useMemo<QuizAnswer[]>(() => {
+    const stored = sessionStorage.getItem(`quiz_${eventId}_${targetUserId}_answers`);
+    return stored ? JSON.parse(stored) : [];
   }, [eventId, targetUserId]);
 
   const totalQuestions = quiz?.questions?.length ?? 0;
@@ -124,12 +131,59 @@ function QuizResultContent() {
         </Stack>
       </Paper>
 
+      {/* Detailed Results Table */}
+      {quiz && answers.length > 0 && (
+        <Paper withBorder p="md" radius="md">
+          <Stack gap="md">
+            <Title order={3}>詳細結果</Title>
+            <Table striped highlightOnHover withTableBorder withColumnBorders>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>問題</Table.Th>
+                  <Table.Th>正解</Table.Th>
+                  <Table.Th>あなたの回答</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {quiz.questions.map((question, index) => {
+                  const answer = answers[index];
+                  const correctChoice = question.choices.find(c => c.isCorrect);
+                  const userChoice = answer 
+                    ? question.choices.find(c => c.id === answer.selectedChoiceId) 
+                    : null;
+                  
+                  return (
+                    <Table.Tr key={question.id}>
+                      <Table.Td>{question.question}</Table.Td>
+                      <Table.Td>{correctChoice?.text || '不明'}</Table.Td>
+                      <Table.Td>
+                        {answer ? (
+                          <Group gap="xs">
+                            <Text>
+                              {answer.isCorrect ? '⭕' : '✖'}
+                            </Text>
+                            {!answer.isCorrect && userChoice && (
+                              <Text size="sm" c="dimmed">
+                                ({userChoice.text})
+                              </Text>
+                            )}
+                          </Group>
+                        ) : (
+                          <Text c="dimmed">未回答</Text>
+                        )}
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
+              </Table.Tbody>
+            </Table>
+          </Stack>
+        </Paper>
+      )}
+
       <Stack gap="sm">
-        <Button component={Link} to={`/events/${eventId}/quiz/challenges`} fullWidth>
-          他のクイズに挑戦
-        </Button>
-        <Button component={Link} to={`/events/${eventId}`} variant="default" fullWidth>
-          ロビーへ戻る
+        <Button component={Link} to={`/events/${eventId}/quiz/challenge/${targetUserId}/rewards`} fullWidth>
+          プロフィールを取得
         </Button>
       </Stack>
     </Stack>

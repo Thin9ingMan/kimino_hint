@@ -24,8 +24,8 @@ export function EventInvitationPanel({ invitationCode }: Props) {
     return null;
   }
 
-  // URL for joining directly (if deep linking is supported) or just the event page
-  const joinUrl = `${window.location.origin}/events/join?code=${invitationCode}`;
+  // URL for auto-joining via QR code
+  const joinUrl = `${window.location.origin}/qr/join?code=${invitationCode}`;
 
   return (
     <Paper withBorder p="md" radius="md">

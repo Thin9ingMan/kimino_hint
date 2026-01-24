@@ -225,6 +225,8 @@ function QuizQuestionContent() {
 }
 
 export function QuizQuestionScreen() {
+  const questionNo = useNumericParam("questionNo") ?? 1;
+  
   return (
     <Container title="クイズ">
       <ErrorBoundary
@@ -242,7 +244,7 @@ export function QuizQuestionScreen() {
         <Suspense
           fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}
         >
-          <QuizQuestionContent />
+          <QuizQuestionContent key={questionNo} />
         </Suspense>
       </ErrorBoundary>
     </Container>

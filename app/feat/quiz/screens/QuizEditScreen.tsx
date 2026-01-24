@@ -13,10 +13,10 @@ import {
   Loader,
   Card,
   Divider,
+  Textarea,
 } from "@mantine/core";
 import {
   IconRotate,
-  IconCheck,
   IconDice5,
   IconPlus,
   IconTrash,
@@ -39,6 +39,9 @@ import {
   QuizSaveError,
 } from "../utils/errors";
 import { falseHobbies, falseArtists, faculty, grade } from "../utils/fakeData";
+import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
+import type { Quiz } from "../types";
+import { shuffleArray } from "../utils/shuffle";
 
 type QuestionCategory = "names" | "verySimilarNames" | "hobbies" | "artists" | "faculty" | "grade" | "custom";
 
@@ -54,6 +57,7 @@ interface QuestionState {
   category: QuestionCategory;
   title: string;
   choices: ChoiceState[];
+  explanation?: string;
 }
 
 interface ChoiceInputProps {
@@ -63,7 +67,6 @@ interface ChoiceInputProps {
   onReroll?: () => void;
   loading?: boolean;
   placeholder?: string;
-  onSetCorrect?: () => void;
   readOnly?: boolean;
 }
 
@@ -74,21 +77,17 @@ function ChoiceInput({
   onReroll,
   loading = false,
   placeholder,
-  onSetCorrect,
   readOnly = false,
 }: ChoiceInputProps) {
   return (
     <Group gap="xs" wrap="nowrap">
-      <ActionIcon
-        variant={isCorrect ? "filled" : "light"}
-        color={isCorrect ? "teal" : "gray"}
-        onClick={onSetCorrect}
-        size={40}
-        radius="md"
-        title={isCorrect ? "正解" : "正解に設定"}
-      >
-        <IconCheck size={18} />
-      </ActionIcon>
+      <Box
+        style={{
+          width: 40,
+          height: 40,
+          flexShrink: 0,
+        }}
+      />
       <TextInput
         flex={1}
         value={value}
@@ -190,13 +189,6 @@ function QuestionEditor({
                 );
                 onChange({ ...question, choices: newChoices });
               }}
-              onSetCorrect={() => {
-                const newChoices = question.choices.map(c => ({
-                  ...c,
-                  isCorrect: c.id === choice.id
-                }));
-                onChange({ ...question, choices: newChoices });
-              }}
               onReroll={isFixed && !choice.isCorrect ? () => onRerollChoice(choice.id) : undefined}
               loading={loadingMap[`${question.id}-${choice.id}`]}
               placeholder={choice.isCorrect ? "正解のテキスト..." : "間違いの選択肢..."}
@@ -204,6 +196,22 @@ function QuestionEditor({
             />
           ))}
         </Stack>
+
+        <Divider variant="dashed" label="補足説明（任意）" labelPosition="center" mt="md" />
+
+        <Textarea
+          label="補足説明"
+          placeholder="正解・不正解が表示された後に出題者が伝えたい補足情報を入力してください（例: この趣味を始めたきっかけは...）"
+          value={question.explanation || ""}
+          onChange={(e) => onChange({ ...question, explanation: e.currentTarget.value })}
+          minRows={3}
+          maxRows={6}
+          autosize
+          styles={(theme) => ({
+            label: { marginBottom: 8, fontWeight: 600, color: theme.colors.gray[7] },
+            input: { fontSize: theme.fontSizes.sm }
+          })}
+        />
       </Stack>
     </Card>
   );
@@ -227,6 +235,23 @@ function QuizEditContent() {
   const myFaculty = (profileData.faculty as string) || "";
   const myGrade = (profileData.grade as string) || "";
 
+  // Fetch existing quiz data
+  const [existingQuizData] = useSuspenseQueries([
+    [
+      ["events.getEventUserData", { eventId, userId: meData.id }],
+      async () => {
+        try {
+          return await apis.events.getEventUserData({ eventId, userId: meData.id });
+        } catch {
+          // Return null if user data doesn't exist yet (e.g., new participant)
+          return null;
+        }
+      },
+    ],
+  ]);
+
+  const existingQuiz = existingQuizData?.userData?.myQuiz as Quiz | undefined;
+
   const [questions, setQuestions] = useState<QuestionState[]>([]);
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
@@ -247,9 +272,56 @@ function QuizEditContent() {
     if (isInitialized.current) return;
     if (!displayName && !hobby && !favoriteArtist && !myFaculty && !myGrade) return;
 
+    // If we have existing quiz data, load it
+    if (existingQuiz && existingQuiz.questions && existingQuiz.questions.length > 0) {
+      const loadedQuestions: QuestionState[] = existingQuiz.questions.map(q => {
+        // Determine the category and type based on question id or content
+        let category: QuestionCategory = "custom";
+        let type: "fixed" | "custom" = "custom";
+
+        if (q.id === "q-names") {
+          category = "names";
+          type = "fixed";
+        } else if (q.id === "q-vsim-names") {
+          category = "verySimilarNames";
+          type = "fixed";
+        } else if (q.id === "q-hobby") {
+          category = "hobbies";
+          type = "fixed";
+        } else if (q.id === "q-artist") {
+          category = "artists";
+          type = "fixed";
+        } else if (q.id === "q-faculty") {
+          category = "faculty";
+          type = "fixed";
+        } else if (q.id === "q-grade") {
+          category = "grade";
+          type = "fixed";
+        }
+
+        return {
+          id: q.id,
+          type,
+          category,
+          title: q.question,
+          choices: q.choices.map(c => ({
+            id: c.id,
+            text: c.text,
+            isCorrect: c.isCorrect,
+          })),
+          explanation: q.explanation,
+        };
+      });
+
+      setQuestions(loadedQuestions);
+      isInitialized.current = true;
+      return;
+    }
+
+    // Otherwise, create initial questions from profile
     const initialQuestions: QuestionState[] = [];
 
-    // Names
+    // Question 1: Name
     if (displayName) {
       initialQuestions.push({
         id: "q-names",
@@ -258,17 +330,9 @@ function QuizEditContent() {
         title: "私の「名前」はどれ？",
         choices: createInitialChoices(displayName),
       });
-      
-      initialQuestions.push({
-        id: "q-vsim-names",
-        type: "fixed",
-        category: "verySimilarNames",
-        title: "改めて、私の「名前」はどれ？",
-        choices: createInitialChoices(displayName),
-      });
     }
 
-    // Faculty
+    // Question 2: Faculty
     if (myFaculty) {
       initialQuestions.push({
         id: "q-faculty",
@@ -279,7 +343,7 @@ function QuizEditContent() {
       });
     }
 
-    // Grade
+    // Question 3: Grade
     if (myGrade) {
       initialQuestions.push({
         id: "q-grade",
@@ -290,7 +354,7 @@ function QuizEditContent() {
       });
     }
 
-    // Hobby
+    // Question 4: Hobby
     if (hobby) {
       initialQuestions.push({
         id: "q-hobby",
@@ -301,7 +365,18 @@ function QuizEditContent() {
       });
     }
 
-    // Artist
+    // Question 5: Name again (Very Similar Names)
+    if (displayName) {
+      initialQuestions.push({
+        id: "q-vsim-names",
+        type: "fixed",
+        category: "verySimilarNames",
+        title: "改めて、私の「名前」はどれ？",
+        choices: createInitialChoices(displayName),
+      });
+    }
+
+    // Question 6: Artist
     if (favoriteArtist) {
       initialQuestions.push({
         id: "q-artist",
@@ -314,7 +389,7 @@ function QuizEditContent() {
 
     setQuestions(initialQuestions);
     isInitialized.current = true;
-  }, [displayName, hobby, favoriteArtist, myFaculty, myGrade]);
+  }, [displayName, hobby, favoriteArtist, myFaculty, myGrade, existingQuiz]);
 
   const updateQuestion = (index: number, updated: QuestionState) => {
     setQuestions((prev) => {
@@ -493,12 +568,13 @@ function QuizEditContent() {
         artist: getWrongTexts("artists"),
       };
 
-      // Construct direct correctness Quiz object
+      // Construct direct correctness Quiz object with shuffled choices
       const myQuiz = {
         questions: questions.map(q => ({
           id: q.id,
           question: q.title,
-          choices: q.choices.map(c => ({ id: c.id, text: c.text, isCorrect: c.isCorrect })),
+          choices: shuffleArray(q.choices.map(c => ({ id: c.id, text: c.text, isCorrect: c.isCorrect }))),
+          explanation: q.explanation,
         })),
         updatedAt: new Date().toISOString(),
       };
@@ -543,23 +619,12 @@ function QuizEditContent() {
       )}
 
       <Box>
-        <Group justify="space-between" align="center" mb="md">
-          <Box>
-            <Title order={3}>クイズエディタ</Title>
-            <Text size="sm" c="dimmed">
-              自由に質問を追加して、あなただけのクイズを作りましょう
-            </Text>
-          </Box>
-          <Button
-            variant="light"
-            leftSection={<IconRotate size={16} />}
-            onClick={fillAll}
-            loading={loadingMap.all}
-            size="sm"
-          >
-            固定項目を自動埋め
-          </Button>
-        </Group>
+        <Box mb="md">
+          <Title order={3}>クイズエディタ</Title>
+          <Text size="sm" c="dimmed">
+            自由に質問を追加して、あなただけのクイズを作りましょう
+          </Text>
+        </Box>
       </Box>
 
       <Stack gap="lg">
@@ -613,6 +678,14 @@ function QuizEditContent() {
         <Group grow gap="sm">
           <Button variant="default" onClick={() => navigate(`/events/${eventId}`)}>
             キャンセル
+          </Button>
+          <Button
+            variant="light"
+            leftSection={<IconRotate size={16} />}
+            onClick={fillAll}
+            loading={loadingMap.all}
+          >
+            誤答を生成
           </Button>
           <Button onClick={handleSave} loading={saving}>
             保存して完了

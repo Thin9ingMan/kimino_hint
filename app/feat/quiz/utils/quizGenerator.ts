@@ -1,17 +1,6 @@
 import type { Quiz, QuizQuestion, QuizChoice } from "../types";
 import type { UserProfile } from "@yuki-js/quarkus-crud-js-fetch-client";
-
-/**
- * Shuffle an array using Fisher-Yates algorithm
- */
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
+import { shuffleArray } from "./shuffle";
 
 /**
  * Generate a quiz from a user's profile data

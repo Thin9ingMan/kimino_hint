@@ -52,24 +52,48 @@ function EventLobbyContent() {
         const eventAttendees = await apis.events.listEventAttendees({
           eventId,
         });
-        // Fetch profiles to get display names
+        // Fetch profiles and quiz data to get display names and check readiness
         const enriched = await Promise.all(
           eventAttendees.map(async (a: any) => {
             const uid = a.attendeeUserId || a.userId;
+            let profileData = null;
+            let hasProfile = false;
+            let quizData = null;
+            let hasQuiz = false;
+            
+            // Check profile
             try {
               const profile = await apis.profiles.getUserProfile({
                 userId: uid,
               });
-              return {
-                ...a,
-                userId: uid,
-                displayName: profile.profileData?.displayName,
-                profileData: profile.profileData,
-              };
+              profileData = profile.profileData;
+              hasProfile = !!profileData;
             } catch (e) {
-              // Ignore missing profile errors (e.g. 404)
-              return { ...a, userId: uid };
+              // Profile doesn't exist (404)
+              hasProfile = false;
             }
+            
+            // Check quiz data
+            try {
+              const eventUserData = await apis.events.getEventUserData({
+                eventId,
+                userId: uid,
+              });
+              quizData = eventUserData?.userData;
+              hasQuiz = !!(quizData as any)?.myQuiz;
+            } catch (e) {
+              // Quiz data doesn't exist (404)
+              hasQuiz = false;
+            }
+            
+            return {
+              ...a,
+              userId: uid,
+              displayName: profileData?.displayName,
+              profileData,
+              hasProfile,
+              hasQuiz,
+            };
           })
         );
         return enriched;
@@ -89,6 +113,11 @@ function EventLobbyContent() {
   }
 
   const isCreator = (eventData as any).initiatorId === me.id;
+
+  // Check if all attendees have both profile and quiz data
+  const attendeesWithoutProfile = (attendees ?? []).filter((a: any) => !a.hasProfile);
+  const attendeesWithoutQuiz = (attendees ?? []).filter((a: any) => !a.hasQuiz);
+  const allAttendeesReady = attendeesWithoutProfile.length === 0 && attendeesWithoutQuiz.length === 0;
 
   const handleOpenEditModal = () => {
     setEditName((eventData as any).meta?.name || "");
@@ -222,6 +251,25 @@ function EventLobbyContent() {
 
       <EventInvitationPanel invitationCode={(eventData as any).invitationCode} />
 
+      {!allAttendeesReady && (
+        <Alert color="yellow" title="クイズを開始できません">
+          <Stack gap="xs">
+            <Text size="sm">
+              全員がプロフィールとクイズを作成してからクイズに挑戦できます。
+            </Text>
+            {attendeesWithoutProfile.length > 0 && (
+              <Text size="sm">
+                プロフィール未作成: {attendeesWithoutProfile.map((a: any) => a.displayName || `ユーザー ${a.userId}`).join(", ")}
+              </Text>
+            )}
+            {attendeesWithoutQuiz.length > 0 && (
+              <Text size="sm">
+                クイズ未作成: {attendeesWithoutQuiz.map((a: any) => a.displayName || `ユーザー ${a.userId}`).join(", ")}
+              </Text>
+            )}
+          </Stack>
+        </Alert>
+      )}
 
       <EventAttendeesList
         attendees={(attendees ?? []).map((a: any) => ({
@@ -242,14 +290,15 @@ function EventLobbyContent() {
           自分のクイズを編集
         </Button>
         <Button 
-          component={Link} 
-          to={`/events/${eventId}/quiz/challenges`} 
+          component={allAttendeesReady ? Link : undefined}
+          to={allAttendeesReady ? `/events/${eventId}/quiz/sequence` : undefined}
           fullWidth 
           variant="light"
-          onClick={() => {
-            // Reset quiz progress when starting
-            sessionStorage.removeItem(`quiz_${eventId}_answers`);
-          }}
+          disabled={!allAttendeesReady}
+          onClick={allAttendeesReady ? () => {
+            // Reset quiz sequence progress when starting
+            sessionStorage.removeItem(`quiz_sequence_${eventId}`);
+          } : undefined}
         >
           クイズに挑戦
         </Button>

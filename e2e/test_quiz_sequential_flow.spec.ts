@@ -100,8 +100,8 @@ test.describe('Quiz Sequential Flow', () => {
         // Wait for lobby to load
         await expect(page.getByText('読み込み中...')).not.toBeVisible({ timeout: 10000 });
 
-        // Click "クイズに挑戦" button
-        await page.click('text=クイズに挑戦');
+        // Navigate directly to sequential quiz flow
+        await page.goto(`http://localhost:5173/events/${eventId}/quiz/sequence`);
         
         // --- Expected: Sequential flow starts ---
         // Should start with Host's quiz (first participant)

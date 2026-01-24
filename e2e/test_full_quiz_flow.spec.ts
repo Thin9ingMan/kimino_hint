@@ -45,8 +45,12 @@ test.describe('Full User Journey', () => {
         data: { 
             userData: { 
                 myQuiz: {
-                    items: [
-                        { type: 'NAME', question: 'Who am I?', correctAnswer: 'User A', distractors: ['X', 'Y', 'Z'] }
+                    questions: [
+                        { 
+                            question: 'Who am I?', 
+                            choices: ['User A', 'X', 'Y', 'Z'], 
+                            correctIndex: 0 
+                        }
                     ]
                 }
             } 
@@ -155,8 +159,8 @@ test.describe('Full User Journey', () => {
     // User A should be listed
     await expect(page.getByText('User A (Host)')).toBeVisible();
     
-    // Click User A to answer
-    await page.click('text=User A (Host)');
+    // Click the Start button for User A's quiz
+    await page.locator('.mantine-Card-root', { hasText: 'User A (Host)' }).getByText('開始').click();
     
     // Answer Question
     await expect(page.getByText('Who am I?')).toBeVisible();

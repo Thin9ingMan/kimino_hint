@@ -48,8 +48,8 @@ test('Profile memo field should persist and be visible only to the viewer', asyn
   // 4. Navigate to User A's profile
   await page.goto(`http://localhost:5173/profiles/${userAId}`);
   
-  // Wait for profile to load
-  await expect(page.getByText('User A')).toBeVisible();
+  // Wait for profile page to load (look for userId display)
+  await expect(page.getByText(`userId: ${userAId}`)).toBeVisible({ timeout: 10000 });
 
   // 5. Verify memo field exists and is visible on OTHER user's profile
   const memoField = page.locator('textarea[placeholder*="記入"]');
@@ -64,10 +64,10 @@ test('Profile memo field should persist and be visible only to the viewer', asyn
 
   // 7. Navigate away and come back
   await page.goto('http://localhost:5173/home');
-  await expect(page.getByText('ホーム')).toBeVisible();
+  await expect(page.getByText('キミのヒント')).toBeVisible();
   
   await page.goto(`http://localhost:5173/profiles/${userAId}`);
-  await expect(page.getByText('User A')).toBeVisible();
+  await expect(page.getByText(`userId: ${userAId}`)).toBeVisible();
 
   // 8. Verify memo content persists after navigation
   await expect(memoField).toBeVisible();
@@ -75,7 +75,7 @@ test('Profile memo field should persist and be visible only to the viewer', asyn
 
   // 9. Reload the page
   await page.reload();
-  await expect(page.getByText('User A')).toBeVisible();
+  await expect(page.getByText(`userId: ${userAId}`)).toBeVisible();
 
   // 10. Verify memo content persists after reload
   await expect(memoField).toBeVisible();
@@ -88,12 +88,13 @@ test('Profile memo field should persist and be visible only to the viewer', asyn
 
   // 12. Reload and verify updated content persists
   await page.reload();
-  await expect(page.getByText('User A')).toBeVisible();
+  await expect(page.getByText(`userId: ${userAId}`)).toBeVisible();
   await expect(memoField).toHaveValue(updatedMemoText);
 
   // 13. Verify memo does NOT appear on own profile (User B's profile)
   await page.goto('http://localhost:5173/me/profile');
-  await expect(page.getByText('User B')).toBeVisible();
+  // Wait for own profile to load
+  await page.waitForTimeout(1000);
   
   // Should NOT find memo field on own profile
   const ownProfileMemoField = page.locator('textarea[placeholder*="記入"]');

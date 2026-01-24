@@ -17,7 +17,8 @@ export function MemoField({ userId }: MemoFieldProps) {
   const [memoValue, setMemoValue] = useState<string>(() => {
     try {
       return localStorage.getItem(storageKey) || "";
-    } catch {
+    } catch (error) {
+      console.error("Failed to read memo from localStorage:", error);
       return "";
     }
   });
@@ -37,7 +38,8 @@ export function MemoField({ userId }: MemoFieldProps) {
     try {
       const savedMemo = localStorage.getItem(storageKey) || "";
       setMemoValue(savedMemo);
-    } catch {
+    } catch (error) {
+      console.error("Failed to reload memo from localStorage:", error);
       setMemoValue("");
     }
   }, [storageKey]);

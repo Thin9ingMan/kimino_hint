@@ -54,8 +54,8 @@ test('Profile memo field should persist and be visible only to the viewer', asyn
   const memoText = 'Met at tech conference 2024. Interested in React.';
   await memoField.fill(memoText);
   
-  // Wait a bit for any auto-save or debounce
-  await page.waitForTimeout(500);
+  // Wait for debounce and save to complete (500ms debounce + save time)
+  await page.waitForTimeout(1500);
 
   // 7. Navigate away and come back
   await page.goto(`${APP_URL}/home`);
@@ -65,26 +65,30 @@ test('Profile memo field should persist and be visible only to the viewer', asyn
   await expect(page.getByText(`userId: ${userA.userId}`)).toBeVisible();
 
   // 8. Verify memo content persists after navigation
-  await expect(memoField).toBeVisible();
-  await expect(memoField).toHaveValue(memoText);
+  const memoFieldAfterNav = page.locator('textarea[placeholder*="記入"]');
+  await expect(memoFieldAfterNav).toBeVisible();
+  await expect(memoFieldAfterNav).toHaveValue(memoText);
 
   // 9. Reload the page
   await page.reload();
   await expect(page.getByText(`userId: ${userA.userId}`)).toBeVisible();
 
   // 10. Verify memo content persists after reload
-  await expect(memoField).toBeVisible();
-  await expect(memoField).toHaveValue(memoText);
+  const memoFieldAfterReload = page.locator('textarea[placeholder*="記入"]');
+  await expect(memoFieldAfterReload).toBeVisible();
+  await expect(memoFieldAfterReload).toHaveValue(memoText);
 
   // 11. Edit the memo
   const updatedMemoText = 'Met at tech conference 2024. Interested in React and TypeScript.';
-  await memoField.fill(updatedMemoText);
-  await page.waitForTimeout(500);
+  await memoFieldAfterReload.fill(updatedMemoText);
+  // Wait for debounce and save
+  await page.waitForTimeout(1500);
 
   // 12. Reload and verify updated content persists
   await page.reload();
   await expect(page.getByText(`userId: ${userA.userId}`)).toBeVisible();
-  await expect(memoField).toHaveValue(updatedMemoText);
+  const memoFieldFinal = page.locator('textarea[placeholder*="記入"]');
+  await expect(memoFieldFinal).toHaveValue(updatedMemoText);
 
   // 13. Verify memo does NOT appear on own profile (User B's profile)
   await page.goto(`${APP_URL}/me/profile`);

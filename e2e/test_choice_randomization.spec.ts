@@ -127,7 +127,7 @@ test.describe('Choice Randomization Verification', () => {
 
     // Select User A's quiz and start it
     // Find the button/link for User A's quiz
-    await page.locator('.mantine-Paper-root', { hasText: '田中 太郎' }).getByText('開始').click();
+    await page.locator('.mantine-Card-root', { hasText: '田中 太郎' }).getByText('開始').click();
     await page.waitForTimeout(2000);
 
     // Now we should be on the first question

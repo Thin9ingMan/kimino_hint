@@ -122,8 +122,8 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await page.goto(`http://localhost:5173/events/${eventId}/quiz/challenges`);
   await page.waitForLoadState('networkidle');
 
-  // 12. Click on first user's quiz
-  await page.click('text=補足テストユーザー');
+  // 12. Click on first user's quiz - find the card and click the Start button
+  await page.locator('.mantine-Card-root', { hasText: '補足テストユーザー' }).getByText('開始').click();
   
   // 13. Wait for first question
   await page.waitForURL(`**/quiz/challenge/**/1`, { timeout: 10000 });

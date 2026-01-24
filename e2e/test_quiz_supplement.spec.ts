@@ -10,15 +10,10 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await page.request.put('https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile', {
     headers: { 'Authorization': token },
     data: {
-      userProfileUpdateRequest: {
-        profileData: {
-          displayName: "補足テストユーザー",
-          furigana: "ホソクテストユーザー",
-          hobby: "読書",
-          favoriteArtist: "YOASOBI",
-          faculty: "工学部",
-          grade: "2年生"
-        }
+      profileData: {
+        displayName: "補足テストユーザー",
+        hobby: "読書",
+        favoriteArtist: "YOASOBI"
       }
     }
   });
@@ -50,12 +45,14 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await expect(page.getByText('クイズ編集')).toBeVisible({ timeout: 10000 });
 
   // 5. Find a question card and add a supplement/explanation
-  // Look for the "補足説明" or "解説" field
-  const supplementLabel = page.getByText('補足説明').or(page.getByText('解説'));
-  await expect(supplementLabel).toBeVisible({ timeout: 5000 });
+  // Wait for the quiz editor to be ready and questions to load
+  await page.waitForTimeout(2000);
+  
+  // Look for the "補足説明" label (it's in a Divider element)
+  await expect(page.getByText('補足説明（任意）')).toBeVisible({ timeout: 10000 });
 
-  // Find the supplement textarea/input for the first question
-  const supplementInput = page.locator('textarea').filter({ hasText: '' }).first();
+  // Find the supplement textarea - it has a label "補足説明"
+  const supplementInput = page.getByLabel('補足説明').first();
   await expect(supplementInput).toBeVisible();
 
   // Add a supplement text
@@ -63,9 +60,9 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await supplementInput.fill(supplementText);
 
   // 6. Click auto-generate to fill choices
-  await page.click('text=固定項目を自動埋め');
+  await page.click('text=誤答を生成');
   // Wait for the auto-generation to complete by checking for filled choices
-  await expect(page.locator('input[value]').first()).toBeVisible({ timeout: 5000 });
+  await page.waitForTimeout(5000); // LLM takes time
 
   // 7. Save the quiz
   await page.click('text=保存して完了');

@@ -160,6 +160,17 @@ function EventLobbyContent() {
     }
   };
 
+  const handleRefreshAttendees = async () => {
+    try {
+      await queryClient.refetchQueries({
+        queryKey: ["events.listEventAttendees", { eventId }],
+        exact: true,
+      });
+    } catch (error) {
+      console.error(`Failed to refresh attendees for event ${eventId}:`, error);
+    }
+  };
+
   return (
     <Stack gap="md">
       <Paper withBorder p="md" radius="md">
@@ -271,6 +282,7 @@ function EventLobbyContent() {
         title="参加者"
         linkToProfile
         showJoinTime
+        onRefresh={handleRefreshAttendees}
       />
 
       <Stack gap="sm">

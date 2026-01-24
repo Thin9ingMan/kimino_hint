@@ -40,11 +40,9 @@ test.describe('Choice Randomization Verification', () => {
     const createEventRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events', {
       headers: { 'Authorization': tokenA },
       data: { 
-        eventCreateRequest: { 
-          meta: { 
-            name: "Choice Randomization Test",
-            description: "Testing choice order randomization" 
-          } 
+        meta: { 
+          name: "Choice Randomization Test",
+          description: "Testing choice order randomization" 
         } 
       }
     });
@@ -55,11 +53,7 @@ test.describe('Choice Randomization Verification', () => {
 
     console.log(`Event Created: ID=${eventId}, Code=${invitationCode}, CreatorID=${creatorUserId}`);
 
-    // User A joins the event
-    await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
-      headers: { 'Authorization': tokenA },
-      data: { invitationCode }
-    });
+    // User A doesn't need to join - already joined as creator
 
     // --- User A: Create quiz ---
     await page.goto('http://localhost:5173/');
@@ -131,13 +125,9 @@ test.describe('Choice Randomization Verification', () => {
     await page.click('text=クイズに挑戦');
     await page.waitForTimeout(1000);
 
-    // Select User A's quiz
+    // Select User A's quiz and start it
     // Find the button/link for User A's quiz
-    await page.click(`text=田中 太郎`);
-    await page.waitForTimeout(1000);
-
-    // Start the quiz
-    await page.click('text=クイズを始める');
+    await page.locator('.mantine-Card-root', { hasText: '田中 太郎' }).getByText('開始').click();
     await page.waitForTimeout(2000);
 
     // Now we should be on the first question

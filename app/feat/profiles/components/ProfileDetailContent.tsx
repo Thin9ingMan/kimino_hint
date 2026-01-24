@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import { apis } from "@/shared/api";
 import { ProfileCard } from "@/shared/ui/ProfileCard";
+import { MemoField } from "@/shared/ui/MemoField";
 import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { mapProfileDataToUiProfile } from "@/shared/profile/profileUi";
@@ -111,6 +112,12 @@ export function ProfileDetailContent() {
         profile={profile}
         title={profile.displayName || `ユーザー ${userId}`}
         subtitle={`userId: ${userId}`}
+      />
+
+      <MemoField 
+        userId={userId} 
+        disabled={!isExchanged}
+        disabledMessage="プロフィール交換後に入力できます"
       />
 
       <Stack gap="sm">

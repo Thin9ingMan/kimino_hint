@@ -13,12 +13,10 @@ test('Quiz Creation Flow', async ({ page }) => {
 
     headers: { 'Authorization': token },
     data: {
-      updateRequest: {
-        profileData: {
-          displayName: "Test User",
-          hobby: "Coding",
-          favoriteArtist: "AI"
-        }
+      profileData: {
+        displayName: "Test User",
+        hobby: "Coding",
+        favoriteArtist: "AI"
       }
     }
   });
@@ -28,10 +26,10 @@ test('Quiz Creation Flow', async ({ page }) => {
 
     headers: { 'Authorization': token },
     data: {
-      eventCreateRequest: {
+      meta: {
         name: "E2E Test Event",
         description: "Testing Quiz Flow",
-        capacity: 10
+        maxParticipants: 10
       }
     }
   });
@@ -43,6 +41,7 @@ test('Quiz Creation Flow', async ({ page }) => {
   await page.evaluate((t) => {
     localStorage.setItem('jwtToken', t.replace('Bearer ', ''));
   }, token);
+  await page.reload();
 
   
   // 3. Go to Event Lobby
@@ -60,34 +59,24 @@ test('Quiz Creation Flow', async ({ page }) => {
 
   // 5. Fill Quiz Form
   // Check if profile data is loaded (Correct Answer: Test User)
-  await expect(page.getByText('正解: Test User')).toBeVisible();
+  // The correct answer is displayed in the first input (cyan background)
+  await expect(page.locator('input[value="Test User"]').first()).toBeVisible();
 
-  // Click Auto Generate for Names (using our random fallback logic if LLM fails, or LLM)
-  // Since real LLM API might be slow or fail, we can manual fill or try button.
-  // Let's manually fill to ensure test robustness, but verify button exists
-  await expect(page.getByText('名前を自動生成')).toBeVisible();
+  // Check that the generate button exists
+  await expect(page.getByText('誤答を生成')).toBeVisible();
 
-  await page.fill('input[placeholder="例: 田中 太郎"]', 'Fake Name 1');
-  await page.fill('input[placeholder="例: 鈴木 花子"]', 'Fake Name 2');
-  await page.fill('input[placeholder="例: 佐藤 健"]', 'Fake Name 3');
+  // Manually fill the wrong answer choices for all visible questions
+  // There are multiple questions, so we need to fill all of them
+  const wrongChoices = page.locator('input[placeholder="間違いの選択肢..."]');
+  const count = await wrongChoices.count();
+  
+  // Fill all wrong answer inputs
+  for (let i = 0; i < count; i++) {
+    await wrongChoices.nth(i).fill(`Choice ${i + 1}`);
+  }
 
-  // Hobbies
-  await expect(page.getByText('正解: Coding')).toBeVisible();
-  // Try auto-gen button for hobbies (should be faster as it uses local array)
-  await page.click('text=趣味の選択肢を自動生成');
-  // Verify inputs are filled
-  // Note: Mantine Input might behave differently, checking value
-  const hobbyVal = await page.inputValue('input[placeholder="例: 読書"]');
-  expect(hobbyVal).toBeTruthy();
-
-  // Artists
-  await expect(page.getByText('正解: AI')).toBeVisible();
-  await page.click('text=アーティストの選択肢を自動生成');
-  const artistVal = await page.inputValue('input[placeholder="例: YOASOBI"]');
-  expect(artistVal).toBeTruthy();
-
-  // 6. Save
-  await page.click('text=保存してロビーへ戻る');
+  // Save the quiz
+  await page.click('text=保存して完了');
   
   // 7. Verify return to lobby
   await page.waitForURL(`**/events/${eventId}`);

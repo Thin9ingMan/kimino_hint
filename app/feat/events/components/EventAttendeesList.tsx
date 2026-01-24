@@ -157,6 +157,7 @@ export function EventAttendeesList({
               onClick={onRefresh}
               loading={isRefreshing}
               aria-label="参加者リストを更新"
+              title="参加者リストを更新"
             >
               <IconRefresh size={16} />
             </ActionIcon>

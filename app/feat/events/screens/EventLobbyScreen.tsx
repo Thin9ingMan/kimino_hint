@@ -138,6 +138,10 @@ function EventLobbyContent() {
       await queryClient.invalidateQueries({
         queryKey: ["events.listEventAttendees", { eventId }],
       });
+    } catch (error) {
+      console.error("Failed to refresh attendees:", error);
+      // Query invalidation rarely fails, but if it does, we still want to reset the loading state
+      // The UI will show the last known state, which is acceptable
     } finally {
       setIsRefreshingAttendees(false);
     }

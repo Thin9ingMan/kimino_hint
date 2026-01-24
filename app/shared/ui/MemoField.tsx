@@ -27,12 +27,18 @@ export function MemoField({ userId }: MemoFieldProps) {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved">("idle");
   const [debouncedMemoValue] = useDebouncedValue(memoValue, 500);
   const hasUserInteracted = useRef(false);
+  const saveIndicatorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // メモの変更時に状態を更新
   const handleMemoChange = useCallback((value: string) => {
     setMemoValue(value);
     hasUserInteracted.current = true;
     setSaveStatus("idle"); // Reset save status when user types
+    // Clear any existing save indicator timer
+    if (saveIndicatorTimer.current) {
+      clearTimeout(saveIndicatorTimer.current);
+      saveIndicatorTimer.current = null;
+    }
   }, []);
 
   // デバウンスされた値が変更されたときにlocalStorageに保存
@@ -45,13 +51,27 @@ export function MemoField({ userId }: MemoFieldProps) {
     try {
       localStorage.setItem(storageKey, debouncedMemoValue);
       setSaveStatus("saved");
+      // Clear any existing timer before creating a new one
+      if (saveIndicatorTimer.current) {
+        clearTimeout(saveIndicatorTimer.current);
+      }
       // 2秒後に保存済み表示を消す
-      const timer = setTimeout(() => setSaveStatus("idle"), 2000);
-      return () => clearTimeout(timer);
+      saveIndicatorTimer.current = setTimeout(() => {
+        setSaveStatus("idle");
+        saveIndicatorTimer.current = null;
+      }, 2000);
     } catch (error) {
       console.error("Failed to save memo to localStorage:", error);
       setSaveStatus("idle");
     }
+
+    // Cleanup function to clear timer on unmount or when dependencies change
+    return () => {
+      if (saveIndicatorTimer.current) {
+        clearTimeout(saveIndicatorTimer.current);
+        saveIndicatorTimer.current = null;
+      }
+    };
   }, [debouncedMemoValue, storageKey]);
 
   // userIdが変更された時にメモをリロード

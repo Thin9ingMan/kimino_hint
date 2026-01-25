@@ -121,7 +121,7 @@ test.describe("Profile List Screen", () => {
     await expect(page.getByText("Sender User")).toBeVisible({ timeout: 10000 });
 
     // 7. Click on the sender's profile
-    await page.click('text=Sender User');
+    await page.getByText('Sender User').click();
 
     // 8. Verify navigation to profile detail
     await expect(page).toHaveURL(new RegExp(`.*/profiles/${userAId}$`));
@@ -156,7 +156,7 @@ test.describe("Profile List Screen", () => {
     await expect(page.getByText("キミのヒント")).toBeVisible();
 
     // 3. Click on profiles button (labeled as "みんなのプロフィール")
-    await page.click('a:has-text("みんなのプロフィール")');
+    await page.getByRole("link", { name: "みんなのプロフィール" }).click();
 
     // 4. Verify navigation to Profile List
     await expect(page).toHaveURL(/.*\/profiles$/);
@@ -193,7 +193,7 @@ test.describe("Profile List Screen", () => {
     await expect(page.getByText("受け取ったプロフィール")).toBeVisible();
 
     // 3. Click on back to Me Hub button
-    await page.click('a:has-text("マイページへ")');
+    await page.getByRole("link", { name: "マイページへ" }).click();
 
     // 4. Verify navigation to Me Hub
     await expect(page).toHaveURL(/.*\/me$/);

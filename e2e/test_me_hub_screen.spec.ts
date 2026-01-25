@@ -77,7 +77,7 @@ test.describe("Me Hub Screen", () => {
     await page.goto(`${APP_URL}/me`);
 
     // 3. Click on My Profile button
-    await page.click('a:has-text("自分のプロフィール")');
+    await page.getByRole("link", { name: "自分のプロフィール" }).click();
 
     // 4. Verify navigation to My Profile screen
     await expect(page).toHaveURL(/.*\/me\/profile$/);
@@ -112,7 +112,7 @@ test.describe("Me Hub Screen", () => {
     await page.goto(`${APP_URL}/me`);
 
     // 3. Click on Edit Profile button
-    await page.click('a:has-text("プロフィールを編集")');
+    await page.getByRole("link", { name: "プロフィールを編集" }).click();
 
     // 4. Verify navigation to Edit Profile screen
     await expect(page).toHaveURL(/.*\/me\/profile\/edit$/);
@@ -148,7 +148,7 @@ test.describe("Me Hub Screen", () => {
     await expect(page.getByText("キミのヒント")).toBeVisible();
 
     // 3. Click on My Page button
-    await page.click('a:has-text("マイページ")');
+    await page.getByRole("link", { name: "マイページ" }).click();
 
     // 4. Verify navigation to Me Hub
     await expect(page).toHaveURL(/.*\/me$/);

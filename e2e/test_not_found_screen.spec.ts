@@ -54,7 +54,7 @@ test.describe("Not Found Screen", () => {
     await expect(page.getByText("404 Not Found")).toBeVisible();
 
     // 4. Click Home button
-    await page.click('a:has-text("ホームへ")');
+    await page.getByRole("link", { name: "ホームへ" }).click();
 
     // 5. Verify navigation to Home
     await expect(page).toHaveURL(/.*\/home$/);
@@ -82,7 +82,7 @@ test.describe("Not Found Screen", () => {
     await expect(page.getByText("404 Not Found")).toBeVisible();
 
     // 4. Click Help button
-    await page.click('a:has-text("使い方")');
+    await page.getByRole("link", { name: "使い方" }).click();
 
     // 5. Verify navigation to Help
     await expect(page).toHaveURL(/.*\/help$/);

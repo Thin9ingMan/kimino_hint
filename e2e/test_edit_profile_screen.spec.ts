@@ -85,7 +85,7 @@ test.describe("Edit My Profile Screen", () => {
     await expect(page.getByText("Updated Hobby")).toBeVisible();
 
     // 7. Save the profile
-    await page.click('button:has-text("保存")');
+    await page.getByRole("button", { name: "保存" }).click();
 
     // 8. Verify navigation back to profile view
     await expect(page).toHaveURL(/.*\/me\/profile$/);
@@ -125,7 +125,7 @@ test.describe("Edit My Profile Screen", () => {
       await dialog.accept();
     });
 
-    await page.click('button:has-text("保存")');
+    await page.getByRole("button", { name: "保存" }).click();
 
     console.log("Profile form validation test completed successfully");
   });
@@ -165,7 +165,7 @@ test.describe("Edit My Profile Screen", () => {
     await hobbyInput.fill("Changed Hobby");
 
     // 4. Click cancel
-    await page.click('button:has-text("キャンセル")');
+    await page.getByRole("button", { name: "キャンセル" }).click();
 
     // 5. Verify navigation to profile view
     await expect(page).toHaveURL(/.*\/me\/profile$/);

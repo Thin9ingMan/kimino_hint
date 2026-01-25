@@ -103,7 +103,7 @@ test.describe("Event Live Screen", () => {
     await expect(page.getByText("ライブ更新")).toBeVisible();
 
     // 5. Click back to lobby button
-    await page.click('a:has-text("ロビーに戻る")');
+    await page.getByRole("link", { name: "ロビーに戻る" }).click();
 
     // 6. Verify navigation back to lobby
     await expect(page).toHaveURL(new RegExp(`.*/events/${eventId}$`));

@@ -84,7 +84,7 @@ test.describe("My Profile Screen", () => {
     await page.goto(`${APP_URL}/me/profile`);
 
     // 3. Click share button to open modal
-    await page.click('button:has-text("共有する")');
+    await page.getByRole("button", { name: "共有する" }).click();
 
     // 4. Verify modal is displayed
     await expect(page.getByText("プロフィール交換QR")).toBeVisible();
@@ -108,7 +108,7 @@ test.describe("My Profile Screen", () => {
     await expect(page.getByRole("button", { name: "閉じる" })).toBeVisible();
 
     // 7. Close the modal
-    await page.click('button:has-text("閉じる")');
+    await page.getByRole("button", { name: "閉じる" }).click();
     await expect(page.getByText("プロフィール交換QR")).not.toBeVisible();
 
     console.log("My Profile share modal test completed successfully");
@@ -141,7 +141,7 @@ test.describe("My Profile Screen", () => {
     await page.goto(`${APP_URL}/me/profile`);
 
     // 3. Click edit button
-    await page.click('button:has-text("編集する")');
+    await page.getByRole("button", { name: "編集する" }).click();
 
     // 4. Verify navigation to edit screen
     await expect(page).toHaveURL(/.*\/me\/profile\/edit$/);
@@ -209,7 +209,7 @@ test.describe("My Profile Screen", () => {
     await page.goto(`${APP_URL}/me`);
 
     // 3. Click on My Profile link
-    await page.click('a:has-text("自分のプロフィール")');
+    await page.getByRole("link", { name: "自分のプロフィール" }).click();
 
     // 4. Verify navigation to My Profile
     await expect(page).toHaveURL(/.*\/me\/profile$/);

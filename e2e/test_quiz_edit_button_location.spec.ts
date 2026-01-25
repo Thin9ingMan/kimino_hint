@@ -79,8 +79,8 @@ test.describe("Quiz Edit Screen - Button Location", () => {
     await page.goto(`http://localhost:5173/events/${eventId}/quiz/edit`);
     await page.waitForTimeout(2000);
 
-    // Verify we're on the quiz edit screen
-    await expect(page.getByText("クイズエディタ")).toBeVisible({
+    // Verify we're on the quiz edit screen. The heading text is "クイズ編集" in the current UI.
+    await expect(page.getByText("クイズ編集")).toBeVisible({
       timeout: 10000,
     });
 

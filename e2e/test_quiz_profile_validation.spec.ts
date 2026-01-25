@@ -69,7 +69,7 @@ test.describe("Quiz Profile Validation", () => {
               questions: [
                 {
                   id: "q1",
-                  question: "Who am I?",
+                  question: "私の「名前」はどれ？",
                   choices: [
                     { id: "c1", text: "User A", isCorrect: true },
                     { id: "c2", text: "User B", isCorrect: false },

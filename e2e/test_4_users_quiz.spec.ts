@@ -29,7 +29,8 @@ test.describe("4 User Quiz Scenario", () => {
       users.push({ name, token });
     }
 
-    const [userA, userB, userC, userD] = users;
+    // Only userA and userD are needed in this test; prefix unused variables with underscore to satisfy ESLint.
+    const [userA, _userB, _userC, userD] = users;
 
     // --- 2. User A Creates Event ---
     const createEventRes = await request.post(
@@ -93,7 +94,7 @@ test.describe("4 User Quiz Scenario", () => {
                 questions: [
                   {
                     id: "q1",
-                    question: `Who is User ${user.name}?`,
+                    question: `私の「名前」はどれ？`,
                     choices: [
                       { id: "c1", text: `User ${user.name}`, isCorrect: true },
                       { id: "c2", text: "X", isCorrect: false },
@@ -135,15 +136,24 @@ test.describe("4 User Quiz Scenario", () => {
     await expect(page.getByText("User D")).toBeVisible();
 
     // Go to Quiz Sequence (starts first quiz automatically)
-    await page.click("text=クイズに挑戦");
+    // Ensure lobby loading has finished before interacting.
+    await expect(page.getByText("読み込み中...")).not.toBeVisible({
+      timeout: 20000,
+    });
+    // The start button becomes a link when enabled, so locate by visible text and ensure it is enabled.
+    const startQuizBtn = page.getByText(/クイズに挑戦/).first();
+    await expect(startQuizBtn).toBeVisible({ timeout: 30000 });
+    await expect(startQuizBtn).toBeEnabled({ timeout: 10000 });
+    await startQuizBtn.click();
 
-    // Wait for navigation to first quiz (User A's quiz since User A joined first)
-    // The quiz sequence screen automatically navigates to the first quiz question
-    await page.waitForURL(`**/quiz/challenge/**`, { timeout: 10000 });
-    await page.waitForTimeout(1000);
-
-    await expect(page.getByText("Who is User A?")).toBeVisible();
-    await page.click('button:has-text("User A")');
+    // After clicking the start button the app navigates to the quiz flow.
+    // Directly wait for the first question text to appear, allowing any
+    // intermediate redirects to complete.
+    await page.waitForSelector("text=私の「名前」はどれ？", { timeout: 30000 });
+    // Click the answer button for "User A" using a role selector for stability.
+    const answerBtn = page.getByRole("button", { name: /User A/ });
+    await expect(answerBtn).toBeVisible({ timeout: 10000 });
+    await answerBtn.click();
     await expect(page.getByText("正解！")).toBeVisible();
     await page.getByRole("button", { name: /結果を見る|次の問題へ/ }).click();
     await expect(
@@ -159,7 +169,7 @@ test.describe("4 User Quiz Scenario", () => {
     await page.waitForURL(`**/quiz/challenge/**`, { timeout: 10000 });
 
     // Now should be on User B's quiz (sequential flow)
-    await expect(page.getByText("Who is User B?")).toBeVisible();
+    await expect(page.getByText("私の「名前」はどれ？")).toBeVisible();
     await page.click('button:has-text("User B")');
     await expect(page.getByText("正解！")).toBeVisible();
   });

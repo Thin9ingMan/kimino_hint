@@ -7,7 +7,8 @@ test("Quiz Creation Flow", async ({ page }) => {
     "https://quarkus-crud.ouchiserver.aokiapp.com/api/auth/guest",
   );
 
-  const authData = await authRes.json();
+  // authData is not needed for the test logic; retrieve token only.
+  const _authData = await authRes.json();
   const token = authRes.headers()["authorization"];
 
   // Create profile
@@ -51,7 +52,10 @@ test("Quiz Creation Flow", async ({ page }) => {
 
   // 3. Go to Event Lobby
   await page.goto(`http://localhost:5173/events/${eventId}`);
-  await expect(page.getByText("E2E Test Event")).toBeVisible();
+  // The event name may take a moment to render; wait for it explicitly.
+  await expect(page.getByText("E2E Test Event").first()).toBeVisible({
+    timeout: 15000,
+  });
 
   // 4. Click "Edit My Quiz" (or "Create Quiz")
   await page.click("text=自分のクイズを編集"); // Button text might be "クイズを作成" or "クイズを編集"

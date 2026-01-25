@@ -25,6 +25,10 @@ function QuizQuestionContent() {
   const questionNo = useNumericParam("questionNo") ?? 1;
   const navigate = useNavigate();
 
+  // State hooks must be called before any conditional returns to comply with Rules of Hooks
+  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
+  const [showResult, setShowResult] = useState(false);
+
   if (!eventId || !targetUserId) {
     throw new Error("パラメータが不正です");
   }
@@ -62,34 +66,14 @@ function QuizQuestionContent() {
 
   const questionIndex = questionNo - 1;
 
-  if (!quiz || !quiz.questions?.length) {
-    return (
-      <Stack gap="md">
-        <Alert color="yellow" title="クイズが見つかりません">
-          <Text size="sm">このユーザーはまだクイズを作成していません。</Text>
-        </Alert>
-        <Button
-          onClick={() => navigate(`/events/${eventId}/quiz/challenges`)}
-          fullWidth
-        >
-          一覧へ戻る
-        </Button>
-      </Stack>
-    );
-  }
+  // Get current question (may be undefined if quiz is invalid)
+  const question = quiz?.questions?.[questionIndex];
 
-  if (questionIndex >= quiz.questions.length) {
-    // All questions answered - redirect to result
-    navigate(`/events/${eventId}/quiz/challenge/${targetUserId}/result`);
-    return <Text>結果画面へ移動中...</Text>;
-  }
-
-  const question = quiz.questions[questionIndex];
-  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
-
+  // Memoize handlers that depend on question - they will be no-ops if question is undefined
   const handleAnswer = useCallback(
     (choiceId: string) => {
+      if (!question || !eventId || !targetUserId) return;
+
       setSelectedChoiceId(choiceId);
       setShowResult(true);
 
@@ -120,10 +104,12 @@ function QuizQuestionContent() {
         sessionStorage.setItem(scoreKey, String(currentScore + 1));
       }
     },
-    [eventId, targetUserId, questionIndex, question.id, question.choices],
+    [eventId, targetUserId, questionIndex, question],
   );
 
   const handleNext = useCallback(() => {
+    if (!quiz || !eventId || !targetUserId) return;
+
     if (questionIndex + 1 < quiz.questions.length) {
       // Go to next question
       navigate(
@@ -138,9 +124,33 @@ function QuizQuestionContent() {
     targetUserId,
     questionNo,
     questionIndex,
-    quiz.questions.length,
+    quiz,
     navigate,
   ]);
+
+  // Early return for missing quiz
+  if (!quiz || !quiz.questions?.length) {
+    return (
+      <Stack gap="md">
+        <Alert color="yellow" title="クイズが見つかりません">
+          <Text size="sm">このユーザーはまだクイズを作成していません。</Text>
+        </Alert>
+        <Button
+          onClick={() => navigate(`/events/${eventId}/quiz/challenges`)}
+          fullWidth
+        >
+          一覧へ戻る
+        </Button>
+      </Stack>
+    );
+  }
+
+  // Early return for out of bounds question index
+  if (questionIndex >= quiz.questions.length || !question) {
+    // All questions answered - redirect to result
+    navigate(`/events/${eventId}/quiz/challenge/${targetUserId}/result`);
+    return <Text>結果画面へ移動中...</Text>;
+  }
 
   const selectedChoice = question.choices.find(
     (c) => c.id === selectedChoiceId,

@@ -60,7 +60,7 @@ test('Edit Event Name and Description from Lobby', async ({ page }) => {
   await page.screenshot({ path: '/tmp/event_edit_modal_filled.png', fullPage: true });
 
   // 5. Save changes
-  const saveButton = page.locator('.mantine-Modal-content').getByRole('button', { name: '保存', exact: true });
+  const saveButton = page.getByRole('button', { name: '保存' });
   await expect(saveButton).toBeVisible();
   await saveButton.click();
 

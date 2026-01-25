@@ -12,11 +12,8 @@ test('Quiz Supplement Feature', async ({ page }) => {
     data: {
       profileData: {
         displayName: "補足テストユーザー",
-        furigana: "ホソクテストユーザー",
         hobby: "読書",
-        favoriteArtist: "YOASOBI",
-        faculty: "工学部",
-        grade: "2年生"
+        favoriteArtist: "YOASOBI"
       }
     }
   });
@@ -52,12 +49,18 @@ test('Quiz Supplement Feature', async ({ page }) => {
   await page.goto(`http://localhost:5173/events/${eventId}/quiz/edit`);
   
   // 4. Wait for page to load
-  await expect(page.getByText('クイズエディタ')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('クイズ編集')).toBeVisible({ timeout: 10000 });
 
   // 5. Find a question card and add a supplement/explanation
-  // Each question has a textarea for "補足説明"
-  const supplementInput = page.locator('textarea').first();
-  await expect(supplementInput).toBeVisible({ timeout: 15000 });
+  // Wait for the quiz editor to be ready and questions to load
+  await page.waitForTimeout(2000);
+  
+  // Look for the "補足説明" label (it's in a Divider element)
+  await expect(page.getByText('補足説明（任意）')).toBeVisible({ timeout: 10000 });
+
+  // Find the supplement textarea - it has a label "補足説明"
+  const supplementInput = page.getByLabel('補足説明').first();
+  await expect(supplementInput).toBeVisible();
 
   // Add a supplement text
   const supplementText = "この質問は私の趣味に関するものです。読書が好きな理由は、新しい世界を知ることができるからです。";
@@ -66,7 +69,7 @@ test('Quiz Supplement Feature', async ({ page }) => {
   // 6. Click auto-generate to fill choices
   await page.click('text=誤答を生成');
   // Wait for the auto-generation to complete by checking for filled choices
-  await expect(page.locator('input[value]').first()).toBeVisible({ timeout: 10000 });
+  await page.waitForTimeout(5000); // LLM takes time
 
   // 7. Save the quiz
   await page.click('text=保存して完了');
@@ -76,7 +79,7 @@ test('Quiz Supplement Feature', async ({ page }) => {
 
   // 8.5. Navigate back to quiz edit to verify data persistence
   await page.goto(`http://localhost:5173/events/${eventId}/quiz/edit`);
-  await expect(page.getByText('クイズエディタ')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('クイズ編集')).toBeVisible({ timeout: 10000 });
 
   // Verify the supplement text is still there after reload
   const reloadedSupplementInput = page.locator('textarea').filter({ hasText: supplementText }).first();

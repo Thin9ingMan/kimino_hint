@@ -108,9 +108,29 @@ test.describe('Choice Randomization Verification', () => {
     });
 
     // User B joins the event
-    await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
+    const joinRes = await request.post('https://quarkus-crud.ouchiserver.aokiapp.com/api/events/join-by-code', {
       headers: { 'Authorization': tokenB },
       data: { invitationCode }
+    });
+    const joinData = await joinRes.json();
+    const userBId = joinData.attendeeUserId || joinData.userId;
+
+    // User B needs to create a quiz too (required for quiz challenge to be enabled)
+    await request.put(`https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}/users/${userBId}`, {
+      headers: { 'Authorization': tokenB },
+      data: { 
+        userData: { 
+          myQuiz: {
+            questions: [
+              { 
+                question: "Who is User B?", 
+                choices: ["佐藤 花子", "X", "Y", "Z"], 
+                correctIndex: 0
+              }
+            ]
+          }
+        } 
+      }
     });
 
     // User B needs a quiz too for allAttendeesReady to be true
@@ -164,13 +184,14 @@ test.describe('Choice Randomization Verification', () => {
         console.log(`Lobby not ready (attempt ${i + 1}), retrying...`);
     }
 
-    // Click "クイズに挑戦"
-    const quizButton = page.locator('text=クイズに挑戦').first();
-    await expect(quizButton).toBeVisible({ timeout: 15000 });
-    await quizButton.click();
-    
-    // Start the quiz
-    await expect(page).toHaveURL(/.*\/quiz\/challenge\/.*/, { timeout: 15000 });
+    // Click "クイズに挑戦" - this will start the sequential quiz flow
+    await page.click('text=クイズに挑戦');
+    await page.waitForTimeout(1000);
+
+    // The quiz sequence screen will auto-navigate to the first quiz
+    // Since User A joined first, User B will see User A's quiz first
+    // Wait for navigation to quiz question screen
+    await page.waitForURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
     await page.waitForTimeout(2000);
 
     // Now we should be on the first question

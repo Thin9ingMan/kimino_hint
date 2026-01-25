@@ -163,15 +163,14 @@ test.describe('Quiz Result Details', () => {
     await page.reload(); // Ensure fresh data
     await page.waitForTimeout(2000);
 
-    // Click "クイズに挑戦" (Goes to sequence)
+    // Click "クイズに挑戦" - starts sequential quiz flow
     await page.click('text=クイズに挑戦');
     
     // Start the quiz (automatic redirect in sequence)
     await expect(page).toHaveURL(/.*\/quiz\/challenge\/.*/, { timeout: 15000 });
 
-    // Start the quiz
-    // Note: EventLobby's "クイズに挑戦" now goes to QuizSequenceScreen which redirects to the first question
-    await expect(page).toHaveURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
+    // The quiz sequence will auto-navigate to first quiz (User A/Quiz Creator's quiz)
+    await page.waitForURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
     await page.waitForTimeout(1000);
 
     // --- Question 1: Answer correctly ---

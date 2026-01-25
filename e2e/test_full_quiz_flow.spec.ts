@@ -179,7 +179,7 @@ test.describe("Full User Journey", () => {
     // Wait for lobby to be ready (all attendees have profile and quiz)
     // The "クイズに挑戦" button is disabled when not all attendees are ready
     let lobbyReady = false;
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
       await page.reload();
       await page.waitForTimeout(2000);
       // Check if the "cannot start quiz" alert is NOT visible

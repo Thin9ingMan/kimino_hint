@@ -5,12 +5,15 @@ import { test, expect } from "@playwright/test";
  * This test verifies that the quiz result screen shows a detailed table
  * with each question, the correct answer, and the user's answer.
  */
-test.describe("Quiz Result Details", () => {
+test.describe.serial("Quiz Result Details", () => {
   test("Quiz result screen displays detailed results table with questions and answers", async ({
     page,
     request,
   }) => {
     test.setTimeout(90000);
+
+    // Generate unique prefix for this test run to avoid conflicts with parallel tests
+    const testRunId = `result-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
     // --- Setup: Create 2 Users and Event with Multi-Question Quiz ---
 
@@ -41,7 +44,7 @@ test.describe("Quiz Result Details", () => {
         headers: { Authorization: tokenA },
         data: {
           meta: {
-            name: "Result Details Test Event",
+            name: `Result Details Test Event ${testRunId}`,
             description: "Testing quiz result details display",
           },
         },
@@ -67,39 +70,41 @@ test.describe("Quiz Result Details", () => {
 
     // Create a quiz with 3 questions for User A
     // Mix correct and incorrect answers to test both cases
+    // Use unique IDs with testRunId to avoid conflicts in parallel test runs
     const testQuiz = {
       questions: [
         {
-          id: "q1",
+          id: `q1-${testRunId}`,
           question: "私の名前は？",
           choices: [
-            { id: "q1_c1", text: "田所浩治", isCorrect: true },
-            { id: "q1_c2", text: "野獣先輩", isCorrect: false },
-            { id: "q1_c3", text: "遠野", isCorrect: false },
-            { id: "q1_c4", text: "KMR", isCorrect: false },
+            { id: `q1_c1-${testRunId}`, text: "田所浩治", isCorrect: true },
+            { id: `q1_c2-${testRunId}`, text: "野獣先輩", isCorrect: false },
+            { id: `q1_c3-${testRunId}`, text: "遠野", isCorrect: false },
+            { id: `q1_c4-${testRunId}`, text: "KMR", isCorrect: false },
           ],
         },
         {
-          id: "q2",
+          id: `q2-${testRunId}`,
           question: "好きなYouTuberは？",
           choices: [
-            { id: "q2_c1", text: "れてんジャダム", isCorrect: true },
-            { id: "q2_c2", text: "ヒカキン", isCorrect: false },
-            { id: "q2_c3", text: "はじめしゃちょー", isCorrect: false },
-            { id: "q2_c4", text: "Fischer's", isCorrect: false },
+            { id: `q2_c1-${testRunId}`, text: "れてんジャダム", isCorrect: true },
+            { id: `q2_c2-${testRunId}`, text: "ヒカキン", isCorrect: false },
+            { id: `q2_c3-${testRunId}`, text: "はじめしゃちょー", isCorrect: false },
+            { id: `q2_c4-${testRunId}`, text: "Fischer's", isCorrect: false },
           ],
         },
         {
-          id: "q3",
+          id: `q3-${testRunId}`,
           question: "好みのエディタは？",
           choices: [
-            { id: "q3_c1", text: "Vim", isCorrect: true },
-            { id: "q3_c2", text: "Emacs", isCorrect: false },
-            { id: "q3_c3", text: "VSCode", isCorrect: false },
-            { id: "q3_c4", text: "Nano", isCorrect: false },
+            { id: `q3_c1-${testRunId}`, text: "Vim", isCorrect: true },
+            { id: `q3_c2-${testRunId}`, text: "Emacs", isCorrect: false },
+            { id: `q3_c3-${testRunId}`, text: "VSCode", isCorrect: false },
+            { id: `q3_c4-${testRunId}`, text: "Nano", isCorrect: false },
           ],
         },
       ],
+      updatedAt: new Date().toISOString(),
     };
 
     const quizRes = await request.put(
@@ -170,13 +175,13 @@ test.describe("Quiz Result Details", () => {
             myQuiz: {
               questions: [
                 {
-                  id: "qb1",
+                  id: `qb1-${testRunId}`,
                   question: "User B Hobby?",
                   choices: [
-                    { id: "qb1_c1", text: "Taking Tests", isCorrect: true },
-                    { id: "qb1_c2", text: "X", isCorrect: false },
-                    { id: "qb1_c3", text: "Y", isCorrect: false },
-                    { id: "qb1_c4", text: "Z", isCorrect: false },
+                    { id: `qb1_c1-${testRunId}`, text: "Taking Tests", isCorrect: true },
+                    { id: `qb1_c2-${testRunId}`, text: "X", isCorrect: false },
+                    { id: `qb1_c3-${testRunId}`, text: "Y", isCorrect: false },
+                    { id: `qb1_c4-${testRunId}`, text: "Z", isCorrect: false },
                   ],
                 },
               ],

@@ -3,6 +3,7 @@
 ## テスト環境準備
 
 ### 前提条件
+
 - ステージング環境: https://quarkus-crud.ouchiserver.aokiapp.com
 - 2人以上のユーザーアカウント（ゲスト認証）
 - プロフィール情報が入力済み
@@ -10,6 +11,7 @@
 ## シナリオ1: イベント作成からクイズ完了まで（シングルユーザー）
 
 ### 1.1 プロフィール作成
+
 ```
 URL: /me/profile/edit
 操作:
@@ -26,6 +28,7 @@ URL: /me/profile/edit
 ```
 
 ### 1.2 イベント作成
+
 ```
 URL: /events/new
 操作:
@@ -40,6 +43,7 @@ URL: /events/new
 ```
 
 ### 1.3 クイズ編集画面へ遷移
+
 ```
 URL: /events/:eventId
 操作:
@@ -52,6 +56,7 @@ URL: /events/:eventId
 ```
 
 ### 1.4 間違い選択肢の生成
+
 ```
 URL: /events/:eventId/quiz/edit
 操作:
@@ -90,6 +95,7 @@ PUT /api/events/:eventId/users/:userId
 ```
 
 ### 1.5 クイズステータス確認
+
 ```
 URL: /events/:eventId/quiz
 操作:
@@ -103,6 +109,7 @@ URL: /events/:eventId/quiz
 ## シナリオ2: 2人目のユーザーがクイズに挑戦
 
 ### 2.1 イベント参加
+
 ```
 URL: /qr/join?code=XXXXX または /events/join
 操作:
@@ -116,6 +123,7 @@ URL: /qr/join?code=XXXXX または /events/join
 ```
 
 ### 2.2 自分のクイズ作成
+
 ```
 URL: /events/:eventId/quiz/edit
 操作:
@@ -126,6 +134,7 @@ URL: /events/:eventId/quiz/edit
 ```
 
 ### 2.3 クイズ挑戦一覧
+
 ```
 URL: /events/:eventId/quiz/challenges
 操作:
@@ -137,6 +146,7 @@ URL: /events/:eventId/quiz/challenges
 ```
 
 ### 2.4 クイズ問題に回答
+
 ```
 URL: /events/:eventId/quiz/challenge/:targetUserId/1
 操作:
@@ -177,6 +187,7 @@ URL: /events/:eventId/quiz/challenge/:targetUserId/1
 ```
 
 ### 2.5 結果表示
+
 ```
 URL: /events/:eventId/quiz/challenge/:targetUserId/result
 操作:
@@ -198,6 +209,7 @@ URL: /events/:eventId/quiz/challenge/:targetUserId/result
 ## シナリオ3: エラーハンドリング
 
 ### 3.1 プロフィール未作成でクイズ編集
+
 ```
 URL: /events/:eventId/quiz/edit
 前提: プロフィールが未作成または情報不足
@@ -209,6 +221,7 @@ URL: /events/:eventId/quiz/edit
 ```
 
 ### 3.2 fake Answers未作成でクイズ挑戦
+
 ```
 URL: /events/:eventId/quiz/challenge/:targetUserId/1
 前提: 対象ユーザーがfakeAnswersを未作成
@@ -220,6 +233,7 @@ URL: /events/:eventId/quiz/challenge/:targetUserId/1
 ```
 
 ### 3.3 LLM API呼び出し失敗
+
 ```
 URL: /events/:eventId/quiz/edit
 操作:
@@ -233,6 +247,7 @@ URL: /events/:eventId/quiz/edit
 ```
 
 ### 3.4 クイズ保存失敗
+
 ```
 URL: /events/:eventId/quiz/edit
 操作:
@@ -249,6 +264,7 @@ URL: /events/:eventId/quiz/edit
 ## シナリオ4: セッションストレージ管理
 
 ### 4.1 クイズ途中でブラウザ更新
+
 ```
 URL: /events/:eventId/quiz/challenge/:targetUserId/3
 操作:
@@ -261,6 +277,7 @@ URL: /events/:eventId/quiz/challenge/:targetUserId/3
 ```
 
 ### 4.2 別のクイズに挑戦
+
 ```
 URL: /events/:eventId/quiz/challenges
 操作:
@@ -281,6 +298,7 @@ URL: /events/:eventId/quiz/challenges
 ## 性能テスト
 
 ### レスポンスタイム目標
+
 - LLM API呼び出し: < 5秒
 - fakeAnswers保存: < 1秒
 - クイズ生成（クライアント側）: < 100ms
@@ -289,11 +307,13 @@ URL: /events/:eventId/quiz/challenges
 ## アクセシビリティチェック
 
 ### キーボード操作
+
 - Tabキーで全ての入力フィールドとボタンにフォーカス可能
 - Enterキーでボタン押下可能
 - Escキーでモーダル/Alert閉じる可能
 
 ### スクリーンリーダー
+
 - Alertにrole="alert"が設定されている
 - ボタンに適切なaria-labelが設定されている
 - フォームフィールドにlabelが関連付けられている

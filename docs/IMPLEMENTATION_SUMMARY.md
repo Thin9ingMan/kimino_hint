@@ -1,14 +1,17 @@
 # Implementation Summary: Quiz Question Supplement Feature
 
 ## Issue Resolution
+
 Fixed issue: クイズ問題の補足機能が動いてない (Quiz Question Supplement Feature Not Working)
 
 ## Problem
+
 - Quiz creators could not add supplementary explanations to their quiz questions
 - No UI existed to input supplements/explanations
 - Supplements were not displayed when users answered questions
 
 ## Solution
+
 Implemented a complete supplement/explanation feature for quiz questions:
 
 ### Files Changed (3 files, 303 additions)
@@ -34,6 +37,7 @@ Implemented a complete supplement/explanation feature for quiz questions:
 ## Key Changes
 
 ### UI Changes
+
 ```
 QuizEditScreen now includes for each question:
 
@@ -51,6 +55,7 @@ QuizEditScreen now includes for each question:
 ```
 
 ### Code Changes
+
 ```typescript
 // QuestionState interface
 interface QuestionState {
@@ -91,17 +96,19 @@ const myQuiz = {
 ✅ Build: Successful  
 ✅ Code review: Completed (minor nitpicks addressed)  
 ✅ CodeQL security scan: No issues found  
-✅ E2E test: Created (test_quiz_supplement.spec.ts)  
+✅ E2E test: Created (test_quiz_supplement.spec.ts)
 
 ## How to Use
 
 ### For Quiz Creators
+
 1. Navigate to quiz edit screen (`/events/:eventId/quiz/edit`)
 2. For each question, scroll down to "補足説明（任意）"
 3. Enter your supplementary explanation
 4. Click "保存して完了" to save
 
 ### For Quiz Takers
+
 1. Answer a quiz question
 2. After submitting the answer, see:
    - Whether the answer was correct
@@ -141,6 +148,7 @@ When a user answers this question, they will see the supplement text along with 
 ## Future Enhancements
 
 Potential improvements:
+
 - Rich text formatting for supplements
 - Image/GIF support
 - Character limit recommendations

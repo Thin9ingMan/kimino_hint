@@ -1,7 +1,7 @@
 /**
  * Shuffle an array using Fisher-Yates algorithm
  * This creates a new array with elements in random order
- * 
+ *
  * @param array - The array to shuffle
  * @returns A new shuffled array
  */

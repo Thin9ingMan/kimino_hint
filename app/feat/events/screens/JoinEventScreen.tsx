@@ -1,10 +1,4 @@
-import {
-  Alert,
-  Button,
-  Stack,
-  Text,
-  TextInput,
-} from "@mantine/core";
+import { Alert, Button, Stack, Text, TextInput } from "@mantine/core";
 import { Suspense, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -73,7 +67,12 @@ function JoinEventContent() {
       </Alert>
 
       {error && (
-        <Alert color="red" title="エラー" onClose={() => setError(null)} withCloseButton>
+        <Alert
+          color="red"
+          title="エラー"
+          onClose={() => setError(null)}
+          withCloseButton
+        >
           <Text size="sm">{error}</Text>
         </Alert>
       )}
@@ -97,11 +96,7 @@ function JoinEventContent() {
         >
           参加する
         </Button>
-        <Button
-          onClick={() => navigate("/events")}
-          variant="default"
-          fullWidth
-        >
+        <Button onClick={() => navigate("/events")} variant="default" fullWidth>
           キャンセル
         </Button>
       </Stack>
@@ -125,7 +120,11 @@ export function JoinEventScreen() {
         )}
       >
         <Suspense
-          fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
         >
           <JoinEventContent />
         </Suspense>

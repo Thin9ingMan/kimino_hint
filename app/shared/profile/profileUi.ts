@@ -16,7 +16,7 @@ function getString(v: unknown): string {
  * Unknown/missing fields become empty strings.
  */
 export function mapProfileDataToUiProfile(
-  profileData: Record<string, unknown> | null | undefined
+  profileData: Record<string, unknown> | null | undefined,
 ): UiProfile {
   const pd = profileData ?? {};
 

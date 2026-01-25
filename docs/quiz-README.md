@@ -14,23 +14,28 @@
 ## クイック スタート
 
 ### 1. プロフィール作成
+
 まず、自分のプロフィールを作成します：
+
 - 表示名
 - 趣味
 - 好きなアーティスト
 - 学部・学年（オプション）
 
 ### 2. イベント参加
+
 - 新規イベント作成、または
 - 招待コード/QRコードでイベント参加
 
 ### 3. クイズ作成
+
 1. イベントロビーで「自分のクイズを編集」をクリック
 2. クイズ編集画面で「名前を自動生成」をクリック（AI使用）
 3. 趣味とアーティストの間違い選択肢を手動入力
 4. 保存
 
 ### 4. クイズ挑戦
+
 1. イベントロビーで「クイズに挑戦」をクリック
 2. 挑戦したい参加者を選択
 3. 6問の4択クイズに回答
@@ -57,6 +62,7 @@
 ## 技術仕様
 
 ### フロントエンド
+
 - **フレームワーク**: React 18 + TypeScript
 - **UIライブラリ**: Mantine v7
 - **ルーティング**: React Router v6
@@ -64,6 +70,7 @@
 - **ビルドツール**: Vite
 
 ### APIエンドポイント
+
 - `POST /api/llm/fake-names` - AI名前生成
 - `GET /api/events/{eventId}/users/{userId}` - クイズデータ取得
 - `PUT /api/events/{eventId}/users/{userId}` - クイズデータ保存
@@ -71,12 +78,13 @@
 - `GET /api/profiles/{userId}` - プロフィール取得
 
 ### データモデル
+
 ```typescript
 interface FakeAnswers {
-  username: string[];              // 間違いの名前 × 3
-  hobby: string[];                 // 間違いの趣味 × 3
-  artist: string[];                // 間違いのアーティスト × 3
-  verySimilarUsername: string[];   // 似ている名前 × 3
+  username: string[]; // 間違いの名前 × 3
+  hobby: string[]; // 間違いの趣味 × 3
+  artist: string[]; // 間違いのアーティスト × 3
+  verySimilarUsername: string[]; // 似ている名前 × 3
 }
 ```
 
@@ -113,6 +121,7 @@ app/feat/quiz/
 ## 開発
 
 ### セットアップ
+
 ```bash
 # 依存関係インストール
 npm install
@@ -128,6 +137,7 @@ npm run lint
 ```
 
 ### テスト
+
 ```bash
 # 単体テスト（未実装）
 npm test
@@ -137,6 +147,7 @@ npm run test:e2e
 ```
 
 ### ビルド
+
 ```bash
 # プロダクションビルド
 npm run build
@@ -148,16 +159,19 @@ npm run preview
 ## アーキテクチャの決定事項
 
 ### なぜクライアント側でクイズ生成？
+
 - サーバー負荷削減
 - リアルタイムなユーザー体験
 - ネットワーク通信の最小化
 
 ### なぜSessionStorageを使用？
+
 - クイズ進行中の一時データ保存
 - タブ間の独立性確保
 - LocalStorageよりライフサイクルが適切
 
 ### なぜ Fisher-Yatesアルゴリズム？
+
 - 効率的なO(n)時間複雑度
 - 公平なランダム化
 - 業界標準のシャッフルアルゴリズム
@@ -165,12 +179,14 @@ npm run preview
 ## パフォーマンス
 
 ### 目標値
+
 - 初回読み込み: < 1.5秒
 - クイズ生成: < 100ms
 - LLM API: < 5秒
 - ページ遷移: < 300ms
 
 ### 最適化手法
+
 - React Queryによるキャッシング
 - useMemo/useCallbackによる再レンダリング防止
 - Code Splittingによる初期バンドルサイズ削減
@@ -220,6 +236,7 @@ npm run preview
 ## サポート
 
 問題が発生した場合:
+
 1. [トラブルシューティングガイド](./quiz-troubleshooting.md)を確認
 2. GitHubのIssueを検索
 3. 新しいIssueを作成

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
-import { ApiError, ensureGuestAuth } from '@/shared/api';
+import { ApiError, ensureGuestAuth } from "@/shared/api";
 
 export function useGuestAuth() {
   const [ready, setReady] = useState(false);

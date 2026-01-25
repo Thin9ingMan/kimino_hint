@@ -7,15 +7,18 @@
 **Updated recommendation**: Use `/api/me/attended-events` endpoint that only returns attended events for the **authenticated user**. This prevents privacy leaks while serving the frontend use case.
 
 ## Issue Summary
+
 There is no API endpoint to retrieve the list of events that a user has joined (as an attendee), only events they have created. This forces the frontend to use localStorage as a workaround.
 
 ## Current State
 
 ### Available API
+
 - `GET /api/users/{userId}/events` - Returns events **created** by the user (via `listEventsByUser`)
 - `GET /api/events/{eventId}/attendees` - Returns attendees for a specific event
 
 ### Missing API
+
 - `GET /api/users/{userId}/attended-events` or similar - Should return events where the user is an **attendee**
 
 ## Backend Implementation Evidence
@@ -35,9 +38,11 @@ This means the data layer is ready, but the API layer is missing.
 **CRITICAL**: This endpoint must enforce access control to prevent privacy leaks.
 
 ### Privacy Analysis
+
 Currently, `/api/users/{userId}/events` allows ANY authenticated user to see events **created** by any other user (but not their invitation codes). This may be acceptable since created events are somewhat "public" as the creator.
 
 However, events a user has **attended** could be considered private information:
+
 - Users may not want others to know which events they've joined
 - This could reveal social connections or interests
 - Different from "created events" which are inherently visible to attendees
@@ -45,38 +50,40 @@ However, events a user has **attended** could be considered private information:
 ### Recommended Access Control Policy
 
 **Option A: Self-Only Access (Most Restrictive)**
+
 ```java
 public List<Event> listAttendedEventsByUser(Long userId, Long requesterId) {
     // SECURITY: Only allow users to query their own attended events
     if (!userId.equals(requesterId)) {
         throw new SecurityException("Not authorized to view other users' attended events");
     }
-    
+
     if (userService.findById(userId).isEmpty()) {
         throw new IllegalArgumentException("User not found");
     }
-    
+
     List<EventAttendee> attendees = eventAttendeeMapper.findByAttendeeUserId(userId);
-    
+
     List<Event> events = new ArrayList<>();
     for (EventAttendee attendee : attendees) {
         eventMapper.findById(attendee.getEventId()).ifPresent(events::add);
     }
-    
+
     return events;
 }
 ```
 
 **Option B: Match Existing Pattern (Public with Limited Info)**
 Allow any user to query, but like `listEventsByUser`, hide sensitive information:
+
 ```java
 public List<Event> listAttendedEventsByUser(Long userId, Long requesterId) {
     if (userService.findById(userId).isEmpty()) {
         throw new IllegalArgumentException("User not found");
     }
-    
+
     List<EventAttendee> attendees = eventAttendeeMapper.findByAttendeeUserId(userId);
-    
+
     return attendees.stream()
         .map(attendee -> eventMapper.findById(attendee.getEventId()))
         .filter(Optional::isPresent)
@@ -92,6 +99,7 @@ public List<Event> listAttendedEventsByUser(Long userId, Long requesterId) {
 
 **Option C: Use /me Endpoint (Recommended) ✅**
 Instead of `/api/users/{userId}/attended-events`, use `/api/me/attended-events`:
+
 ```java
 @Override
 @Authenticated
@@ -113,6 +121,7 @@ public Response listMyAttendedEvents() {
 ```
 
 Add to `EventUseCase.java`:
+
 ```java
 /**
  * Lists all events attended by the current user.
@@ -127,9 +136,9 @@ public List<app.aoki.quarkuscrud.generated.model.Event> listMyAttendedEvents(Lon
     if (userService.findById(userId).isEmpty()) {
         throw new IllegalArgumentException("User not found");
     }
-    
+
     List<EventAttendee> attendees = eventAttendeeMapper.findByAttendeeUserId(userId);
-    
+
     return attendees.stream()
         .map(attendee -> eventMapper.findById(attendee.getEventId()))
         .filter(Optional::isPresent)
@@ -144,7 +153,9 @@ public List<app.aoki.quarkuscrud.generated.model.Event> listMyAttendedEvents(Lon
 ```
 
 ### Recommendation
+
 **Use Option C** (`/api/me/attended-events`) because:
+
 1. ✅ Clear that it's for the current user only
 2. ✅ No privacy concerns - users can only see their own data
 3. ✅ Follows existing pattern (backend has `/api/me` for current user)
@@ -152,7 +163,9 @@ public List<app.aoki.quarkuscrud.generated.model.Event> listMyAttendedEvents(Lon
 5. ✅ Simpler implementation with no access control edge cases
 
 ### Option 2: Extend Existing Endpoint
+
 Add query parameter to `/api/users/{userId}/events`:
+
 - `/api/users/{userId}/events?type=created` - Events created by user (default)
 - `/api/users/{userId}/events?type=attended` - Events attended by user
 - `/api/users/{userId}/events?type=all` - Both created and attended
@@ -187,18 +200,21 @@ Add to `openapi.yaml` (using recommended `/api/me/attended-events` endpoint):
 ## Use Case / User Story
 
 **As a user**, when I join an event via invitation code or QR code:
+
 - I want to see that event in my events list
 - I want to easily return to that event later
 - I don't want to re-enter the invitation code (which gives "already joined" error)
 - I don't want to manually enter the event URL
 
 **Current workaround**: The frontend stores joined event IDs in localStorage, which:
+
 - ❌ Only works per browser/device (not synced)
 - ❌ Lost when browser data is cleared
 - ❌ Requires N additional API calls to fetch event details
 - ❌ Cannot show join timestamps or other metadata
 
 **With backend API**:
+
 - ✅ Data synced across devices
 - ✅ Persistent and reliable
 - ✅ Single API call to get all attended events
@@ -207,6 +223,7 @@ Add to `openapi.yaml` (using recommended `/api/me/attended-events` endpoint):
 ## Related Frontend Issue
 
 Frontend Issue: "参加したイベントの履歴がない" (No history of joined events)
+
 - Repository: Thin9ingMan/kimino_hint
 - PR: #[number] (Add joined events history with localStorage tracking)
 
@@ -217,6 +234,7 @@ Frontend Issue: "参加したイベントの履歴がない" (No history of join
 ## Estimated Effort
 
 **Small** - The data layer (`findByAttendeeUserId`) already exists. Only need to:
+
 1. Add method to `EventUseCase` (~10-15 lines)
 2. Add endpoint to `EventsApiImpl` (~20-30 lines)
 3. Update OpenAPI spec (~20 lines)
@@ -235,6 +253,7 @@ Total: ~1-2 hours of development work
 ## Migration Plan
 
 Once this API is available, the frontend can:
+
 1. Replace localStorage reads with API calls
 2. Keep localStorage writes as a cache for offline support
 3. Sync localStorage with backend on app load

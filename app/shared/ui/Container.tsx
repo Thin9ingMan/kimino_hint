@@ -24,10 +24,18 @@ export function Container({
   isHome = false,
 }: Props) {
   return (
-    <MantineContainer size={size} py={{ base: "xl", sm: 60 }} style={{ position: 'relative', zIndex: 1 }}>
+    <MantineContainer
+      size={size}
+      py={{ base: "xl", sm: 60 }}
+      style={{ position: "relative", zIndex: 1 }}
+    >
       <Box>
         {/* Header */}
-        <Group mb={40} align="center" justify={isHome ? "center" : "space-between"}>
+        <Group
+          mb={40}
+          align="center"
+          justify={isHome ? "center" : "space-between"}
+        >
           {!isHome ? (
             <Link to="/" style={{ textDecoration: "none" }}>
               <ActionIcon
@@ -41,24 +49,27 @@ export function Container({
               </ActionIcon>
             </Link>
           ) : (
-             <Box /> 
+            <Box />
           )}
 
           {title && (
-            <Title 
-              order={1} 
-              ta="center" 
-              size={28} 
-              fw={800} 
-              style={{ letterSpacing: '0.05em', color: 'var(--mantine-color-slate-8)' }}
+            <Title
+              order={1}
+              ta="center"
+              size={28}
+              fw={800}
+              style={{
+                letterSpacing: "0.05em",
+                color: "var(--mantine-color-slate-8)",
+              }}
             >
               {title}
             </Title>
           )}
 
-           {/* Spacer to balance the header if back button exists */}
-           {!isHome && <Box w={44} />} 
-           {isHome && <Box />}
+          {/* Spacer to balance the header if back button exists */}
+          {!isHome && <Box w={44} />}
+          {isHome && <Box />}
         </Group>
 
         {children}

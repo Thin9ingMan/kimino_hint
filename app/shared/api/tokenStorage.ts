@@ -1,6 +1,6 @@
 type Listener = (token: string | null) => void;
 
-const TOKEN_KEY = 'jwtToken';
+const TOKEN_KEY = "jwtToken";
 
 let memoryToken: string | null = null;
 const listeners = new Set<Listener>();

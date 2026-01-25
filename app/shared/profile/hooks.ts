@@ -38,6 +38,8 @@ export function useMyProfile() {
  */
 export function useMyUiProfile() {
   const data = useMyProfile();
-  return useMemo(() => mapProfileDataToUiProfile(data?.profileData as any), [data]);
+  return useMemo(
+    () => mapProfileDataToUiProfile(data?.profileData as any),
+    [data],
+  );
 }
-

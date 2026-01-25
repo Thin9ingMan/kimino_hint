@@ -41,7 +41,7 @@ export function QrGenerator({
     if (!raw) return "";
     const n = Number(raw);
     if (!Number.isFinite(n)) return "";
-    
+
     const path = pathTemplate.replace("{userId}", String(n));
     return `${window.location.origin}${base}${path.startsWith("/") ? path.slice(1) : path}`;
   }, [base, userIdText, pathTemplate]);
@@ -77,7 +77,7 @@ export function QrGenerator({
           <Text size="sm" style={{ wordBreak: "break-all" }}>
             {shareUrl}
           </Text>
-          
+
           <Box style={{ textAlign: "center" }}>
             <Image
               src={imageUrl}

@@ -12,10 +12,10 @@
 
 ```typescript
 interface QuizUserData {
-  myQuiz?: Quiz;           // ユーザーが作成したクイズ
-  results?: QuizResult[];  // 他のクイズに挑戦した結果
-  totalScore?: number;     // 累計スコア
-  badges?: string[];       // 獲得バッジ
+  myQuiz?: Quiz; // ユーザーが作成したクイズ
+  results?: QuizResult[]; // 他のクイズに挑戦した結果
+  totalScore?: number; // 累計スコア
+  badges?: string[]; // 獲得バッジ
 }
 
 interface Quiz {
@@ -24,9 +24,9 @@ interface Quiz {
 }
 
 interface QuizQuestion {
-  question: string;                          // 問題文
+  question: string; // 問題文
   choices: [string, string, string, string]; // 4つの選択肢（既にランダム化済み）
-  correctIndex: number;                      // 正解の位置 (0-3)
+  correctIndex: number; // 正解の位置 (0-3)
 }
 ```
 
@@ -57,15 +57,19 @@ interface QuizQuestion {
 ## 実装ファイル
 
 ### 型定義
+
 - `app/feat/quiz/types.ts` - クイズ関連の型定義
 
 ### ユーティリティ
+
 - `app/feat/quiz/utils/quizGenerator.ts` - プロフィールからクイズを自動生成
 
 ### フック
+
 - `app/feat/quiz/hooks/useQuizData.ts` - クイズデータ取得フック
 
 ### 画面コンポーネント
+
 - `app/feat/quiz/screens/QuizIntroScreen.tsx` - クイズ編集画面
 - `app/feat/quiz/screens/QuizChallengeListScreen.tsx` - クイズ挑戦一覧
 - `app/feat/quiz/screens/QuizQuestionScreen.tsx` - クイズ問題画面
@@ -74,6 +78,7 @@ interface QuizQuestion {
 ## API使用
 
 ### クイズデータの取得
+
 ```typescript
 const userData = await apis.events.getEventUserData({
   eventId,
@@ -83,6 +88,7 @@ const quiz = userData.userData.myQuiz as Quiz;
 ```
 
 ### クイズデータの保存
+
 ```typescript
 await apis.events.updateEventUserData({
   eventId,

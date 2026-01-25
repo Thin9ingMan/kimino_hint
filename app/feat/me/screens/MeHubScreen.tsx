@@ -28,8 +28,6 @@ export function MeHubScreen() {
         <Button component={Link} to="/profiles" variant="subtle" fullWidth>
           受け取ったプロフィール一覧
         </Button>
-
-        
       </Stack>
     </Container>
   );

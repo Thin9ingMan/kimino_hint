@@ -1,11 +1,13 @@
 # Quiz Result Details Feature
 
 ## Overview
+
 This feature adds a detailed results table to the quiz result screen, showing each question, the correct answer, and the user's answer with visual indicators.
 
 ## Implementation
 
 ### Location
+
 `app/feat/quiz/screens/QuizResultScreen.tsx`
 
 ### Visual Layout
@@ -57,6 +59,7 @@ This feature adds a detailed results table to the quiz result screen, showing ea
 ## Features
 
 ### Table Columns
+
 1. **問題** (Question): The question text
 2. **正解** (Correct Answer): The correct answer text
 3. **あなたの回答** (Your Answer): Visual indicator and incorrect answer if applicable
@@ -65,6 +68,7 @@ This feature adds a detailed results table to the quiz result screen, showing ea
    - For incorrect answers, shows the user's selected choice in parentheses (dimmed)
 
 ### Data Flow
+
 1. Answers are stored in `sessionStorage` as they are selected in `QuizQuestionScreen`
 2. Each answer includes:
    - `questionId`: The question being answered
@@ -97,6 +101,7 @@ const answers = useMemo<QuizAnswer[]>(() => {
 ```
 
 ## Benefits
+
 - Provides clear feedback on quiz performance
 - Shows exactly which questions were answered correctly or incorrectly
 - Helps users learn from their mistakes by showing the correct answer

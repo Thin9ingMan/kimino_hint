@@ -84,12 +84,12 @@ export default function MakeFalseSelectionScreen() {
     // @ts-ignore
     const randomHobbies = randomMakeSelection(
       options.FALSE_HOBBIES,
-      answers.hobby
+      answers.hobby,
     );
     // @ts-ignore
     const randomArtists = randomMakeSelection(
       options.FALSE_ARTISTS,
-      answers.favoriteArtist
+      answers.favoriteArtist,
     );
 
     setFalseName1(randomNames[0] || "");
@@ -127,7 +127,7 @@ export default function MakeFalseSelectionScreen() {
       falseArtist2,
       falseArtist3,
       navigate,
-    ]
+    ],
   );
 
   return (

@@ -22,7 +22,13 @@ export type FormField = {
 };
 
 export const FORM_FIELDS: FormField[] = [
-  { id: "name", label: "名前", placeholder: "名前", required: true, autoFocus: true },
+  {
+    id: "name",
+    label: "名前",
+    placeholder: "名前",
+    required: true,
+    autoFocus: true,
+  },
   { id: "furigana", label: "フリガナ", placeholder: "フリガナ" },
   { id: "faculty", label: "学部", type: "select", options: FACULTY_OPTIONS },
   { id: "facultyDetail", label: "具体的な学部" },

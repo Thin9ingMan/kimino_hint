@@ -37,10 +37,10 @@ function CreateEventContent() {
           meta: {
             name: title.trim(),
             description: description.trim() || undefined,
-            maxParticipants: typeof maxParticipants === 'number' ? maxParticipants : undefined,
+            maxParticipants:
+              typeof maxParticipants === "number" ? maxParticipants : undefined,
           },
         },
-
       });
 
       // Navigate to the event lobby
@@ -63,7 +63,12 @@ function CreateEventContent() {
       </Alert>
 
       {error && (
-        <Alert color="red" title="エラー" onClose={() => setError(null)} withCloseButton>
+        <Alert
+          color="red"
+          title="エラー"
+          onClose={() => setError(null)}
+          withCloseButton
+        >
           <Text size="sm">{error}</Text>
         </Alert>
       )}
@@ -105,11 +110,7 @@ function CreateEventContent() {
         >
           イベントを作成
         </Button>
-        <Button
-          onClick={() => navigate("/events")}
-          variant="default"
-          fullWidth
-        >
+        <Button onClick={() => navigate("/events")} variant="default" fullWidth>
           キャンセル
         </Button>
       </Stack>
@@ -133,7 +134,11 @@ export function CreateEventScreen() {
         )}
       >
         <Suspense
-          fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
         >
           <CreateEventContent />
         </Suspense>

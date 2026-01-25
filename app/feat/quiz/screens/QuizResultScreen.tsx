@@ -16,9 +16,7 @@ import { Link } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import {
-  useSuspenseQueries,
-} from "@/shared/hooks/useSuspenseQuery";
+import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import type { Quiz, QuizAnswer } from "../types";
 import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
@@ -52,7 +50,7 @@ function QuizResultContent() {
   const quiz = useMemo(() => {
     // 1. Try myQuiz (New Standard)
     if (quizData?.userData?.myQuiz) {
-        return quizData.userData.myQuiz;
+      return quizData.userData.myQuiz;
     }
 
     // 2. Legacy / Fallback
@@ -66,25 +64,31 @@ function QuizResultContent() {
   // TODO: Get actual score from session/state
   // For now, using placeholder
   const score = useMemo(() => {
-    const stored = sessionStorage.getItem(`quiz_${eventId}_${targetUserId}_score`);
+    const stored = sessionStorage.getItem(
+      `quiz_${eventId}_${targetUserId}_score`,
+    );
     return stored ? parseInt(stored, 10) : 0;
   }, [eventId, targetUserId]);
 
   // Retrieve stored answers from sessionStorage
   const answers = useMemo<QuizAnswer[]>(() => {
-    const stored = sessionStorage.getItem(`quiz_${eventId}_${targetUserId}_answers`);
+    const stored = sessionStorage.getItem(
+      `quiz_${eventId}_${targetUserId}_answers`,
+    );
     return stored ? JSON.parse(stored) : [];
   }, [eventId, targetUserId]);
 
   const totalQuestions = quiz?.questions?.length ?? 0;
-  const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+  const percentage =
+    totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
   const performanceRating = getPerformanceRating(percentage);
 
   return (
     <Stack gap="md">
       <Alert color="blue" title="クイズ完了">
         <Text size="sm">
-          {targetUser.profileSummary?.displayName || `ユーザー ${targetUserId}`}のクイズが完了しました！
+          {targetUser.profileSummary?.displayName || `ユーザー ${targetUserId}`}
+          のクイズが完了しました！
         </Text>
       </Alert>
 
@@ -113,9 +117,7 @@ function QuizResultContent() {
           </Center>
 
           <Stack gap={4} align="center">
-            <Text size="xl">
-              {performanceRating.emoji}
-            </Text>
+            <Text size="xl">{performanceRating.emoji}</Text>
             <Text size="lg" fw={600}>
               {performanceRating.label}
             </Text>
@@ -147,21 +149,23 @@ function QuizResultContent() {
               <Table.Tbody>
                 {quiz.questions.map((question, index) => {
                   const answer = answers[index];
-                  const correctChoice = question.choices.find(c => c.isCorrect);
-                  const userChoice = answer 
-                    ? question.choices.find(c => c.id === answer.selectedChoiceId) 
+                  const correctChoice = question.choices.find(
+                    (c) => c.isCorrect,
+                  );
+                  const userChoice = answer
+                    ? question.choices.find(
+                        (c) => c.id === answer.selectedChoiceId,
+                      )
                     : null;
-                  
+
                   return (
                     <Table.Tr key={question.id}>
                       <Table.Td>{question.question}</Table.Td>
-                      <Table.Td>{correctChoice?.text || '不明'}</Table.Td>
+                      <Table.Td>{correctChoice?.text || "不明"}</Table.Td>
                       <Table.Td>
                         {answer ? (
                           <Group gap="xs">
-                            <Text>
-                              {answer.isCorrect ? '⭕' : '✖'}
-                            </Text>
+                            <Text>{answer.isCorrect ? "⭕" : "✖"}</Text>
                             {!answer.isCorrect && userChoice && (
                               <Text size="sm" c="dimmed">
                                 ({userChoice.text})
@@ -182,7 +186,11 @@ function QuizResultContent() {
       )}
 
       <Stack gap="sm">
-        <Button component={Link} to={`/events/${eventId}/quiz/challenge/${targetUserId}/rewards`} fullWidth>
+        <Button
+          component={Link}
+          to={`/events/${eventId}/quiz/challenge/${targetUserId}/rewards`}
+          fullWidth
+        >
           プロフィールを取得
         </Button>
       </Stack>
@@ -206,7 +214,11 @@ export function QuizResultScreen() {
         )}
       >
         <Suspense
-          fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
         >
           <QuizResultContent />
         </Suspense>

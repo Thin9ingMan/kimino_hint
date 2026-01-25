@@ -1,7 +1,10 @@
 import { Alert, List, Text } from "@mantine/core";
 import { ProfileFormState } from "./ProfileFormFields";
 
-export const REQUIRED_FIELDS: Array<{ key: keyof ProfileFormState; label: string }> = [
+export const REQUIRED_FIELDS: Array<{
+  key: keyof ProfileFormState;
+  label: string;
+}> = [
   { key: "name", label: "名前" },
   { key: "faculty", label: "学部" },
   { key: "grade", label: "学年" },
@@ -18,10 +21,12 @@ export interface ValidationResult {
 /**
  * プロフィールフォームのバリデーション関数
  */
-export function validateProfileForm(profile: ProfileFormState): ValidationResult {
-  const emptyFields = REQUIRED_FIELDS.filter(({ key }) => !profile[key]?.trim()).map(
-    ({ label }) => label
-  );
+export function validateProfileForm(
+  profile: ProfileFormState,
+): ValidationResult {
+  const emptyFields = REQUIRED_FIELDS.filter(
+    ({ key }) => !profile[key]?.trim(),
+  ).map(({ label }) => label);
 
   return emptyFields.length === 0
     ? { valid: true }
@@ -48,7 +53,7 @@ export function ProfileValidationDisplay({
 }: ProfileValidationDisplayProps) {
   if (validation.valid) {
     if (!showSuccess) return null;
-    
+
     if (variant === "alert") {
       return (
         <Alert color="green" title="入力完了">
@@ -56,7 +61,7 @@ export function ProfileValidationDisplay({
         </Alert>
       );
     }
-    
+
     return (
       <Text size="sm" c="green">
         ✓ すべての必須項目が入力済み

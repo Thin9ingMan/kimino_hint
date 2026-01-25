@@ -1,5 +1,4 @@
-JavaScript Fetch Client ガイド
-=============================
+# JavaScript Fetch Client ガイド
 
 OpenAPI から生成した `@yuki-js/quarkus-crud-js-fetch-client` の導入方法と使い方を、初心者でも迷わないように整理しました。設定 → インストール → 呼び出し → エラー対処の順で追えば、そのまま自分のプロジェクトに組み込めます。
 
@@ -40,7 +39,11 @@ TypeScript／JavaScript どちらでもOKです。API クラスは `@yuki-js/qua
 
 ```ts
 // src/lib/aokiClient.ts
-import { Configuration, AuthenticationApi, EventsApi } from '@yuki-js/quarkus-crud-js-fetch-client';
+import {
+  Configuration,
+  AuthenticationApi,
+  EventsApi,
+} from "@yuki-js/quarkus-crud-js-fetch-client";
 
 let jwtToken: string | null = null;
 
@@ -49,7 +52,7 @@ export function setJwtToken(token: string | null) {
 }
 
 const config = new Configuration({
-  basePath: 'https://quarkus-crud.ouchiserver.aokiapp.com', // バックエンドの本番URL
+  basePath: "https://quarkus-crud.ouchiserver.aokiapp.com", // バックエンドの本番URL
   accessToken: () => jwtToken ?? undefined, // 設定済みトークンをそのまま流用
 });
 
@@ -58,12 +61,12 @@ export const eventsApi = new EventsApi(config);
 
 export async function createGuestUser() {
   const response = await authApi.createGuestUserRaw();
-  const authorization = response.raw.headers.get('authorization');
+  const authorization = response.raw.headers.get("authorization");
   let token: string | null = null;
 
   if (authorization) {
-    token = authorization.startsWith('Bearer ')
-      ? authorization.slice('Bearer '.length)
+    token = authorization.startsWith("Bearer ")
+      ? authorization.slice("Bearer ".length)
       : authorization;
   }
 
@@ -81,32 +84,36 @@ export async function fetchCurrentUser() {
 たとえば React で「ゲストとして参加」ボタンから呼びたい場合は次のように書けます。
 
 ```tsx
-import { useState } from 'react';
-import { createGuestUser } from './lib/aokiClient';
+import { useState } from "react";
+import { createGuestUser } from "./lib/aokiClient";
 
 export function GuestLoginButton() {
-  const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
+    "idle",
+  );
   const [user, setUser] = useState(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setStatus('loading');
+    setStatus("loading");
     try {
       const result = await createGuestUser();
       setUser(result.user);
-      setStatus('done');
+      setStatus("done");
     } catch (error) {
       console.error(error);
-      setStatus('error');
+      setStatus("error");
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <button type="submit" disabled={status === 'loading'}>
-        {status === 'loading' ? '作成中...' : 'ゲストとして参加'}
+      <button type="submit" disabled={status === "loading"}>
+        {status === "loading" ? "作成中..." : "ゲストとして参加"}
       </button>
-      {status === 'done' && user && <p>{user.displayName} として参加しました</p>}
+      {status === "done" && user && (
+        <p>{user.displayName} として参加しました</p>
+      )}
     </form>
   );
 }
@@ -116,27 +123,27 @@ export function GuestLoginButton() {
 
 1. **ゲストを作成し、トークン＋ユーザー情報を取得する**
 
-    ```ts
-    export async function createGuestUser() {
-      const response = await authApi.createGuestUserRaw();
-      const authorization = response.raw.headers.get('authorization');
-      let token: string | null = null;
+   ```ts
+   export async function createGuestUser() {
+     const response = await authApi.createGuestUserRaw();
+     const authorization = response.raw.headers.get("authorization");
+     let token: string | null = null;
 
-      if (authorization) {
-        token = authorization.startsWith('Bearer ')
-          ? authorization.slice('Bearer '.length)
-          : authorization;
-      }
+     if (authorization) {
+       token = authorization.startsWith("Bearer ")
+         ? authorization.slice("Bearer ".length)
+         : authorization;
+     }
 
-      setJwtToken(token ?? null);
-      if (token) {
-        localStorage.setItem('jwt', token);
-      }
+     setJwtToken(token ?? null);
+     if (token) {
+       localStorage.setItem("jwt", token);
+     }
 
-      const user = await response.value();
-      return { user, token };
-    }
-    ```
+     const user = await response.value();
+     return { user, token };
+   }
+   ```
 
 2. **取得したユーザー情報を UI に反映する**  
    上の返り値 `user` をそのまま React state に突っ込んで表示すれば OK（例: `setUser(result.user)`）。
@@ -146,24 +153,24 @@ export function GuestLoginButton() {
 
 4. **ページ再読込後にトークンを復元する**
 
-    ```ts
-    export async function bootstrapAuth() {
-      const savedToken = localStorage.getItem('jwt');
-      if (!savedToken) {
-        return null;
-      }
+   ```ts
+   export async function bootstrapAuth() {
+     const savedToken = localStorage.getItem("jwt");
+     if (!savedToken) {
+       return null;
+     }
 
-      setJwtToken(savedToken);
-      try {
-        return await fetchCurrentUser();
-      } catch (error) {
-        console.warn('保存していたトークンが無効でした', error);
-        setJwtToken(null);
-        localStorage.removeItem('jwt');
-        return null;
-      }
-    }
-    ```
+     setJwtToken(savedToken);
+     try {
+       return await fetchCurrentUser();
+     } catch (error) {
+       console.warn("保存していたトークンが無効でした", error);
+       setJwtToken(null);
+       localStorage.removeItem("jwt");
+       return null;
+     }
+   }
+   ```
 
    アプリ起動時（例: `App.tsx`）でこの関数を一度呼ぶだけで、前回のログイン状態を復元できます。
 
@@ -171,18 +178,21 @@ export function GuestLoginButton() {
 
 このクライアントには OpenAPI の各タグごとにクラスが用意されています。代表的な使い方をまとめました。必要な引数は型定義 (`.d.ts`) に全部書いてあるので、エディタの入力補完に頼ってOKです。
 
-| クラス | 主なメソッド | 例 |
-|-------|-------------|----|
-| `AuthenticationApi` | `createGuestUser`, `getCurrentUser` | ゲスト作成、現在のユーザー確認 |
-| `EventsApi` | `createEvent`, `getEventById`, `joinEventByCode`, `listEventsByUser` | イベント作成・参加 |
-| `FriendshipsApi` | `createFriendship`, `listReceivedFriendships` | フレンド関連 |
-| `ProfilesApi` | `getLatestProfile`, `updateProfile` | プロフィール取得・更新 |
-| `UsersApi` | `listUsers`, `getUserById` | ユーザー検索 |
+| クラス              | 主なメソッド                                                         | 例                             |
+| ------------------- | -------------------------------------------------------------------- | ------------------------------ |
+| `AuthenticationApi` | `createGuestUser`, `getCurrentUser`                                  | ゲスト作成、現在のユーザー確認 |
+| `EventsApi`         | `createEvent`, `getEventById`, `joinEventByCode`, `listEventsByUser` | イベント作成・参加             |
+| `FriendshipsApi`    | `createFriendship`, `listReceivedFriendships`                        | フレンド関連                   |
+| `ProfilesApi`       | `getLatestProfile`, `updateProfile`                                  | プロフィール取得・更新         |
+| `UsersApi`          | `listUsers`, `getUserById`                                           | ユーザー検索                   |
 
 ### 呼び出しパターン
 
 ```ts
-import { Configuration, EventsApi } from '@yuki-js/quarkus-crud-js-fetch-client';
+import {
+  Configuration,
+  EventsApi,
+} from "@yuki-js/quarkus-crud-js-fetch-client";
 
 let currentToken: string | null = null;
 
@@ -191,7 +201,7 @@ export function updateToken(token: string | null) {
 }
 
 const config = new Configuration({
-  basePath: 'https://quarkus-crud.ouchiserver.aokiapp.com',
+  basePath: "https://quarkus-crud.ouchiserver.aokiapp.com",
   accessToken: () => currentToken ?? undefined,
 });
 
@@ -236,12 +246,12 @@ try {
 ## 6. React Query / TanStack Query と組み合わせる例
 
 ```ts
-import { useQuery } from '@tanstack/react-query';
-import { eventsApi } from './lib/aokiClient';
+import { useQuery } from "@tanstack/react-query";
+import { eventsApi } from "./lib/aokiClient";
 
 export function useMyEvents(userId: number) {
   return useQuery({
-    queryKey: ['events', userId],
+    queryKey: ["events", userId],
     queryFn: () => eventsApi.listEventsByUser({ userId }),
   });
 }

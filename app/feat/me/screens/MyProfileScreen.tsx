@@ -17,9 +17,7 @@ import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useCurrentUser } from "@/shared/auth/hooks";
 import { useMyUiProfile } from "@/shared/profile/hooks";
 import { apis } from "@/shared/api";
-import {
-  isUiProfileEmpty,
-} from "@/shared/profile/profileUi";
+import { isUiProfileEmpty } from "@/shared/profile/profileUi";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 function normalizeBaseUrlPath(): string {
@@ -76,12 +74,12 @@ function MyProfileContent() {
 
   const shareUrl = useMemo(
     () => (myUserId ? getProfileShareUrl(myUserId) : ""),
-    [myUserId]
+    [myUserId],
   );
   const qrSize = 220;
   const qrImageUrl = useMemo(
     () => (shareUrl ? getQrImageUrl(shareUrl, qrSize) : ""),
-    [shareUrl]
+    [shareUrl],
   );
 
   const [showQr, setShowQr] = useState(false);

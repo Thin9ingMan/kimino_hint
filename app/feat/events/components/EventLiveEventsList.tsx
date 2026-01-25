@@ -1,4 +1,13 @@
-import { Badge, Code, Group, Paper, ScrollArea, Stack, Text, Title } from "@mantine/core";
+import {
+  Badge,
+  Code,
+  Group,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { LiveEvent } from "./EventConnectionStatus";
 
 interface EventLiveEventsListProps {
@@ -15,13 +24,13 @@ interface EventLiveEventsListProps {
 
 function formatTimestamp(timestamp?: string): string {
   if (!timestamp) return "";
-  
+
   try {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString("ja-JP", { 
-      hour: "2-digit", 
+    return date.toLocaleTimeString("ja-JP", {
+      hour: "2-digit",
       minute: "2-digit",
-      second: "2-digit"
+      second: "2-digit",
     });
   } catch {
     return timestamp;
@@ -72,15 +81,15 @@ export function EventLiveEventsList({
   emptyMessage = "まだイベントがありません",
   variant = "detailed",
 }: EventLiveEventsListProps) {
-  const displayEvents = maxEvents 
-    ? events.slice(0, maxEvents)
-    : events;
+  const displayEvents = maxEvents ? events.slice(0, maxEvents) : events;
 
   if (events.length === 0) {
     return (
       <Stack gap="sm">
         {title && <Title order={4}>{title}</Title>}
-        <Text size="sm" c="dimmed">{emptyMessage}</Text>
+        <Text size="sm" c="dimmed">
+          {emptyMessage}
+        </Text>
       </Stack>
     );
   }
@@ -89,22 +98,22 @@ export function EventLiveEventsList({
     const timestamp = formatTimestamp(event.timestamp);
     const eventData = formatEventData(event.data);
     const isCompact = variant === "compact" || variant === "minimal";
-    
+
     return (
-      <Paper 
+      <Paper
         key={`event-${index}-${event.timestamp}`}
-        p={isCompact ? "xs" : "sm"} 
+        p={isCompact ? "xs" : "sm"}
         withBorder
-        style={{ 
-          borderLeft: `3px solid var(--mantine-color-${getEventTypeColor(event.eventType)}-6)` 
+        style={{
+          borderLeft: `3px solid var(--mantine-color-${getEventTypeColor(event.eventType)}-6)`,
         }}
       >
         <Stack gap={isCompact ? "xs" : "sm"}>
           <Group justify="space-between" wrap="nowrap">
             <Group gap="xs" wrap="nowrap">
               {showEventType && event.eventType && (
-                <Badge 
-                  size="xs" 
+                <Badge
+                  size="xs"
                   color={getEventTypeColor(event.eventType)}
                   variant="light"
                 >
@@ -117,14 +126,14 @@ export function EventLiveEventsList({
                 </Badge>
               )}
             </Group>
-            
+
             {showTimestamp && timestamp && (
               <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
                 {timestamp}
               </Text>
             )}
           </Group>
-          
+
           {variant !== "minimal" && eventData && (
             <Code
               block={variant === "detailed"}
@@ -132,7 +141,7 @@ export function EventLiveEventsList({
                 wordBreak: "break-word",
                 maxHeight: variant === "detailed" ? "none" : "60px",
                 overflow: variant === "detailed" ? "visible" : "hidden",
-                fontSize: "0.75rem"
+                fontSize: "0.75rem",
               }}
             >
               {eventData}
@@ -153,11 +162,9 @@ export function EventLiveEventsList({
           </Badge>
         </Group>
       )}
-      
+
       <ScrollArea h={maxHeight} type="auto">
-        <Stack gap="xs">
-          {displayEvents.map(renderEvent)}
-        </Stack>
+        <Stack gap="xs">{displayEvents.map(renderEvent)}</Stack>
       </ScrollArea>
     </Stack>
   );

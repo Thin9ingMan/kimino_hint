@@ -5,12 +5,14 @@
 ### 1. クイズが表示されない
 
 #### 症状
+
 - クイズ挑戦画面で「クイズが見つかりません」と表示される
 - 参加者一覧に表示されるが、クイズを開始できない
 
 #### 原因と解決方法
 
 **原因A: fakeAnswersが未作成**
+
 ```
 確認方法:
 1. ブラウザのDevToolsを開く
@@ -23,6 +25,7 @@
 ```
 
 **原因B: プロフィールデータ不足**
+
 ```
 確認方法:
 1. GET /api/profiles/{userId} のレスポンスを確認
@@ -33,6 +36,7 @@
 ```
 
 **原因C: API認証エラー**
+
 ```
 確認方法:
 1. Network タブで 401 Unauthorized エラーを確認
@@ -46,12 +50,14 @@
 ### 2. LLM による名前生成が失敗する
 
 #### 症状
+
 - 「名前を自動生成」ボタンをクリックしてもエラーになる
 - タイムアウトエラーが表示される
 
 #### 原因と解決方法
 
 **原因A: LLM APIサーバーの問題**
+
 ```
 確認方法:
 1. Network タブで POST /api/llm/fake-names の Status を確認
@@ -64,6 +70,7 @@
 ```
 
 **原因B: タイムアウト**
+
 ```
 確認方法:
 1. リクエストが30秒以上かかっている
@@ -76,6 +83,7 @@
 ```
 
 **原因C: 不正な入力**
+
 ```
 確認方法:
 1. displayName に特殊文字が含まれている
@@ -89,12 +97,14 @@
 ### 3. スコアが正しく表示されない
 
 #### 症状
+
 - 結果画面で 0/6 と表示される
 - 正解したはずなのにスコアが増えない
 
 #### 原因と解決方法
 
 **原因A: セッションストレージのクリア**
+
 ```
 確認方法:
 1. DevTools > Application > Session Storage を確認
@@ -105,6 +115,7 @@
 ```
 
 **原因B: 別タブで開いている**
+
 ```
 原因:
 セッションストレージはタブごとに独立しているため、
@@ -115,6 +126,7 @@
 ```
 
 **原因C: ページリロード**
+
 ```
 原因:
 クイズ途中でF5を押すと、一部のスコアがリセットされる可能性
@@ -126,12 +138,14 @@
 ### 4. クイズの保存に失敗する
 
 #### 症状
+
 - 「保存してロビーへ戻る」をクリックしてもエラーになる
 - ロビーに戻れない
 
 #### 原因と解決方法
 
 **原因A: ネットワークエラー**
+
 ```
 確認方法:
 1. Network タブで PUT /api/events/{eventId}/users/{userId} のステータス
@@ -144,6 +158,7 @@
 ```
 
 **原因B: バリデーションエラー**
+
 ```
 確認方法:
 1. 必須項目（名前の間違い選択肢3つ）が未入力
@@ -154,6 +169,7 @@
 ```
 
 **原因C: サーバーエラー**
+
 ```
 確認方法:
 1. Status が 500 の場合
@@ -167,12 +183,14 @@
 ### 5. 選択肢が正しくシャッフルされていない
 
 #### 症状
+
 - 毎回同じ順序で選択肢が表示される
 - 正解が常に同じ位置にある
 
 #### 原因と解決方法
 
 **原因A: ブラウザキャッシュ**
+
 ```
 解決方法:
 1. Ctrl+Shift+R（またはCmd+Shift+R）でハードリロード
@@ -180,6 +198,7 @@
 ```
 
 **原因B: クイズデータの再生成が必要**
+
 ```
 確認方法:
 quizGenerator.tsのshuffleArrayが呼ばれているか確認
@@ -194,6 +213,7 @@ quizGenerator.tsのshuffleArrayが呼ばれているか確認
 ### ブラウザDevTools使用
 
 #### 1. NetworkタブでAPIリクエスト確認
+
 ```
 手順:
 1. DevTools > Network タブを開く
@@ -204,6 +224,7 @@ quizGenerator.tsのshuffleArrayが呼ばれているか確認
 ```
 
 #### 2. Consoleでエラーログ確認
+
 ```
 手順:
 1. DevTools > Console タブを開く
@@ -212,6 +233,7 @@ quizGenerator.tsのshuffleArrayが呼ばれているか確認
 ```
 
 #### 3. Application タブでストレージ確認
+
 ```
 手順:
 1. DevTools > Application タブ
@@ -222,6 +244,7 @@ quizGenerator.tsのshuffleArrayが呼ばれているか確認
 ### React DevTools使用
 
 #### コンポーネント状態確認
+
 ```
 手順:
 1. React DevTools インストール
@@ -231,6 +254,7 @@ quizGenerator.tsのshuffleArrayが呼ばれているか確認
 ```
 
 #### Props確認
+
 ```
 手順:
 1. QuizQuestionScreen を選択
@@ -243,6 +267,7 @@ quizGenerator.tsのshuffleArrayが呼ばれているか確認
 ### 1. クイズ読み込みが遅い
 
 #### 確認方法
+
 ```
 Performance API を使用:
 1. console.time('quiz-load')
@@ -252,6 +277,7 @@ Performance API を使用:
 ```
 
 #### 解決方法
+
 ```
 1. React Query のキャッシュ確認
 2. 不要な再レンダリングを useMemo/useCallback で防止
@@ -262,6 +288,7 @@ Performance API を使用:
 ### 2. メモリリーク
 
 #### 確認方法
+
 ```
 1. DevTools > Performance > Memory にチェック
 2. クイズを複数回実行
@@ -269,6 +296,7 @@ Performance API を使用:
 ```
 
 #### 解決方法
+
 ```
 1. useEffect のクリーンアップ関数を確認
 2. EventListener の削除を確認
@@ -277,17 +305,17 @@ Performance API を使用:
 
 ## エラーコード一覧
 
-| コード | 意味 | 対処方法 |
-|--------|------|----------|
-| PROFILE_NOT_FOUND | プロフィール未作成 | プロフィール作成 |
-| FAKE_ANSWERS_NOT_FOUND | クイズ未作成 | クイズ作成画面へ |
-| LLM_GENERATION_FAILED | AI生成失敗 | 手動入力 |
-| QUIZ_SAVE_FAILED | 保存失敗 | 再試行 |
-| INVALID_QUIZ_DATA | データ不正 | データ確認・修正 |
-| NETWORK_ERROR | ネットワークエラー | 接続確認 |
-| AUTH_ERROR | 認証エラー | 再ログイン |
-| NOT_FOUND | データなし | データ作成 |
-| SERVER_ERROR | サーバーエラー | 待機・再試行 |
+| コード                 | 意味               | 対処方法         |
+| ---------------------- | ------------------ | ---------------- |
+| PROFILE_NOT_FOUND      | プロフィール未作成 | プロフィール作成 |
+| FAKE_ANSWERS_NOT_FOUND | クイズ未作成       | クイズ作成画面へ |
+| LLM_GENERATION_FAILED  | AI生成失敗         | 手動入力         |
+| QUIZ_SAVE_FAILED       | 保存失敗           | 再試行           |
+| INVALID_QUIZ_DATA      | データ不正         | データ確認・修正 |
+| NETWORK_ERROR          | ネットワークエラー | 接続確認         |
+| AUTH_ERROR             | 認証エラー         | 再ログイン       |
+| NOT_FOUND              | データなし         | データ作成       |
+| SERVER_ERROR           | サーバーエラー     | 待機・再試行     |
 
 ## サポート連絡時の情報
 
@@ -319,6 +347,7 @@ Performance API を使用:
 ## 緊急時の回避策
 
 ### 全てのデータをクリアして初期状態に戻す
+
 ```javascript
 // ブラウザコンソールで実行
 localStorage.clear();
@@ -327,6 +356,7 @@ location.reload();
 ```
 
 ### クイズデータのみリセット
+
 ```javascript
 // 特定のクイズデータを削除
 const eventId = 123;
@@ -336,6 +366,7 @@ sessionStorage.removeItem(`quiz_${eventId}_${userId}_answers`);
 ```
 
 ### キャッシュクリア
+
 ```javascript
 // React Queryのキャッシュをクリア
 // (React DevTools から queryClient にアクセス可能)

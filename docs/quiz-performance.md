@@ -10,10 +10,10 @@ const myProfile = useSuspenseQuery(
   ["quiz", "edit", "profile"],
   async () => apis.profiles.getMyProfile(),
   {
-    staleTime: 5 * 60 * 1000,  // 5分
+    staleTime: 5 * 60 * 1000, // 5分
     cacheTime: 10 * 60 * 1000, // 10分
     refetchOnWindowFocus: false,
-  }
+  },
 );
 ```
 
@@ -39,7 +39,7 @@ const prefetchQuizData = useCallback(async (userId: number) => {
     ["quiz", "challenge", "profile", eventId, userId],
     () => apis.profiles.getUserProfile({ userId })
   );
-  
+
   await queryClient.prefetchQuery(
     ["quiz", "challenge", "data", eventId, userId],
     () => apis.events.getEventUserData({ eventId, userId })
@@ -107,10 +107,10 @@ const handleAnswer = useCallback(
   (choiceIndex: number) => {
     setSelectedIndex(choiceIndex);
     setShowResult(true);
-    
+
     // スコア更新ロジック...
   },
-  [eventId, targetUserId, questionIndex, question.correctIndex]
+  [eventId, targetUserId, questionIndex, question.correctIndex],
 );
 ```
 
@@ -170,7 +170,7 @@ const debouncedSave = useDebouncedCallback(
 ```typescript
 useEffect(() => {
   const controller = new AbortController();
-  
+
   const fetchData = async () => {
     try {
       const data = await apis.llm.generateFakeNames(
@@ -184,9 +184,9 @@ useEffect(() => {
       }
     }
   };
-  
+
   fetchData();
-  
+
   return () => controller.abort();
 }, [displayName]);
 ```
@@ -197,11 +197,15 @@ useEffect(() => {
 
 ```typescript
 // ❌ 毎回パースするのは非効率
-const score = parseInt(sessionStorage.getItem(`quiz_${eventId}_${targetUserId}_score`) || "0");
+const score = parseInt(
+  sessionStorage.getItem(`quiz_${eventId}_${targetUserId}_score`) || "0",
+);
 
 // ✅ メモ化して再利用
 const getQuizScore = useMemo(() => {
-  const stored = sessionStorage.getItem(`quiz_${eventId}_${targetUserId}_score`);
+  const stored = sessionStorage.getItem(
+    `quiz_${eventId}_${targetUserId}_score`,
+  );
   return stored ? parseInt(stored, 10) : 0;
 }, [eventId, targetUserId]);
 ```
@@ -210,9 +214,9 @@ const getQuizScore = useMemo(() => {
 
 ```typescript
 // ❌ 個別に保存
-sessionStorage.setItem('score', score);
-sessionStorage.setItem('answers', answers);
-sessionStorage.setItem('progress', progress);
+sessionStorage.setItem("score", score);
+sessionStorage.setItem("answers", answers);
+sessionStorage.setItem("progress", progress);
 
 // ✅ まとめて保存
 const quizState = {
@@ -221,7 +225,10 @@ const quizState = {
   progress,
   timestamp: Date.now(),
 };
-sessionStorage.setItem(`quiz_${eventId}_${targetUserId}`, JSON.stringify(quizState));
+sessionStorage.setItem(
+  `quiz_${eventId}_${targetUserId}`,
+  JSON.stringify(quizState),
+);
 ```
 
 ## Fisher-Yates Shuffle 最適化
@@ -230,17 +237,17 @@ sessionStorage.setItem(`quiz_${eventId}_${targetUserId}`, JSON.stringify(quizSta
 // 最適化されたシャッフル関数
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
-  
+
   // 現代的なFisher-Yatesアルゴリズム
   for (let i = shuffled.length - 1; i > 0; i--) {
     // crypto.getRandomValuesを使用してより良い乱数生成
     const randomBuffer = new Uint32Array(1);
     crypto.getRandomValues(randomBuffer);
     const j = randomBuffer[0] % (i + 1);
-    
+
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  
+
   return shuffled;
 }
 ```
@@ -251,10 +258,10 @@ function shuffleArray<T>(array: T[]): T[] {
 
 ```typescript
 // ❌ 全体をインポート
-import * as apis from '@/shared/api';
+import * as apis from "@/shared/api";
 
 // ✅ 必要なものだけインポート
-import { eventsApi, profilesApi, llmApi } from '@/shared/api';
+import { eventsApi, profilesApi, llmApi } from "@/shared/api";
 ```
 
 ### 2. Dynamic Imports
@@ -287,7 +294,7 @@ import { Profiler } from 'react';
 ### 2. Web Vitals
 
 ```typescript
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from "web-vitals";
 
 getCLS(console.log);
 getFID(console.log);
@@ -300,34 +307,34 @@ getTTFB(console.log);
 
 ```typescript
 const measureQuizGeneration = () => {
-  performance.mark('quiz-generation-start');
-  
+  performance.mark("quiz-generation-start");
+
   const quiz = generateQuizFromProfileAndFakes(profile, fakeAnswers);
-  
-  performance.mark('quiz-generation-end');
+
+  performance.mark("quiz-generation-end");
   performance.measure(
-    'quiz-generation',
-    'quiz-generation-start',
-    'quiz-generation-end'
+    "quiz-generation",
+    "quiz-generation-start",
+    "quiz-generation-end",
   );
-  
-  const measure = performance.getEntriesByName('quiz-generation')[0];
+
+  const measure = performance.getEntriesByName("quiz-generation")[0];
   console.log(`Quiz generation took ${measure.duration}ms`);
-  
+
   return quiz;
 };
 ```
 
 ## パフォーマンス目標
 
-| 指標 | 目標 | 現状 |
-|------|------|------|
-| 初回読み込み (FCP) | < 1.5s | 測定中 |
-| インタラクティブまで (TTI) | < 3.5s | 測定中 |
-| クイズ生成時間 | < 100ms | ~50ms ✅ |
-| LLM API呼び出し | < 5s | ~3s ✅ |
-| ページ遷移 | < 300ms | ~200ms ✅ |
-| 問題表示 | < 500ms | ~100ms ✅ |
+| 指標                       | 目標    | 現状      |
+| -------------------------- | ------- | --------- |
+| 初回読み込み (FCP)         | < 1.5s  | 測定中    |
+| インタラクティブまで (TTI) | < 3.5s  | 測定中    |
+| クイズ生成時間             | < 100ms | ~50ms ✅  |
+| LLM API呼び出し            | < 5s    | ~3s ✅    |
+| ページ遷移                 | < 300ms | ~200ms ✅ |
+| 問題表示                   | < 500ms | ~100ms ✅ |
 
 ## チェックリスト
 
@@ -345,6 +352,7 @@ const measureQuizGeneration = () => {
 ## トラブルシューティング
 
 ### メモリリーク
+
 ```typescript
 // ❌ クリーンアップなし
 useEffect(() => {
@@ -359,11 +367,12 @@ useEffect(() => {
 ```
 
 ### 無限再レンダリング
+
 ```typescript
 // ❌ 依存配列にオブジェクト
 useEffect(() => {
   fetchData(filters);
-}, [filters]);  // filtersは毎回新しいオブジェクト
+}, [filters]); // filtersは毎回新しいオブジェクト
 
 // ✅ 必要な値だけを依存に
 useEffect(() => {
@@ -372,6 +381,7 @@ useEffect(() => {
 ```
 
 ### 大量のデータ処理
+
 ```typescript
 // 仮想スクロールを使用（react-window）
 import { FixedSizeList } from 'react-window';

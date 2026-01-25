@@ -12,11 +12,11 @@ interface InfoAlertProps {
  * 説明用のAlert統一コンポーネント
  * 各画面で使われている情報提供用のAlertを統一
  */
-export function InfoAlert({ 
-  title, 
-  children, 
-  color = "blue", 
-  size = "sm" 
+export function InfoAlert({
+  title,
+  children,
+  color = "blue",
+  size = "sm",
 }: InfoAlertProps) {
   return (
     <Alert color={color} title={title}>

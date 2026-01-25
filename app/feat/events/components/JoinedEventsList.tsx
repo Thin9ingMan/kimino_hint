@@ -9,11 +9,12 @@ export function JoinedEventsList() {
   const me = useCurrentUser();
   const allJoinedEvents = useSuspenseQuery(
     ["events.listMyAttendedEvents", me.id],
-    () => apis.events.listMyAttendedEvents()
+    () => apis.events.listMyAttendedEvents(),
   );
 
   // Filter out deleted events
-  const joinedEvents = allJoinedEvents?.filter((event: any) => event.status !== 'deleted') || [];
+  const joinedEvents =
+    allJoinedEvents?.filter((event: any) => event.status !== "deleted") || [];
 
   if (!joinedEvents || joinedEvents.length === 0) {
     return (
@@ -28,12 +29,17 @@ export function JoinedEventsList() {
       <Title order={5}>参加したイベント</Title>
       {joinedEvents.map((event: any) => (
         <Card key={event.id} withBorder padding="sm" radius="md">
-          <Link to={`/events/${event.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link
+            to={`/events/${event.id}`}
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
             <Stack gap="xs">
               <Group justify="space-between">
-                <Text fw={500} truncate>{event.meta?.name || "（名前未設定）"}</Text>
-                <Badge color={event.status === 'closed' ? 'gray' : 'blue'}>
-                  {event.status === 'closed' ? '終了' : '参加中'}
+                <Text fw={500} truncate>
+                  {event.meta?.name || "（名前未設定）"}
+                </Text>
+                <Badge color={event.status === "closed" ? "gray" : "blue"}>
+                  {event.status === "closed" ? "終了" : "参加中"}
                 </Badge>
               </Group>
               <Text size="xs" c="dimmed">

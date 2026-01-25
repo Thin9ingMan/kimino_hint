@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
  */
 export function useNumericParam(paramName: string): number | null {
   const params = useParams();
-  
+
   return useMemo(() => {
     const raw = params[paramName] ?? "";
     const n = Number(raw);
@@ -22,7 +22,7 @@ export function useNumericParams(
   ...paramNames: string[]
 ): Record<string, number | null> {
   const params = useParams();
-  
+
   return useMemo(() => {
     const result: Record<string, number | null> = {};
     for (const paramName of paramNames) {

@@ -3,11 +3,13 @@
 ## Bug: State Persistence Between Questions
 
 ### The Problem
+
 After answering the first quiz question, subsequent questions immediately show "不正解" (incorrect) without the user selecting any answer.
 
 ### Root Cause
 
 #### Before Fix (Buggy Behavior):
+
 ```
 User Flow:
 1. Navigate to Question 1: /quiz/challenge/123/1
@@ -18,7 +20,7 @@ User Flow:
    └─> State: { selectedChoiceId: "A", showResult: true }
    └─> UI shows: "正解！" or "不正解"
 
-3. User clicks "次の問題へ" 
+3. User clicks "次の問題へ"
    └─> Navigate to Question 2: /quiz/challenge/123/2
    └─> React reuses SAME QuizQuestionContent instance (no key prop)
        └─> State PERSISTS: { selectedChoiceId: "A", showResult: true }
@@ -27,11 +29,13 @@ User Flow:
 ```
 
 #### Why This Happens:
+
 React's reconciliation algorithm tries to reuse component instances when possible. Since the component tree structure didn't change (just the URL param), React kept the same instance and only updated the props/context, but **did not reset the useState values**.
 
 ### The Fix
 
 #### After Fix (Correct Behavior):
+
 ```
 1. Navigate to Question 1: /quiz/challenge/123/1
    └─> QuizQuestionContent instance created with key=1
@@ -57,7 +61,7 @@ React's reconciliation algorithm tries to reuse component instances when possibl
 ```typescript
 export function QuizQuestionScreen() {
   const questionNo = useNumericParam("questionNo") ?? 1;
-  
+
   return (
     <Container title="クイズ">
       <ErrorBoundary>
@@ -73,11 +77,13 @@ export function QuizQuestionScreen() {
 ### React's Key Behavior
 
 The `key` prop tells React:
+
 - If `key` is the same → reuse the component instance
 - If `key` changes → destroy old instance, create new instance
 - New instance → all state resets to initial values
 
 This is why:
+
 - `<Component key={1} />` is treated as completely different from
 - `<Component key={2} />`
 
@@ -89,17 +95,17 @@ The fix is validated by E2E test `test_multi_question_quiz.spec.ts`:
 
 ```typescript
 // Question 2 - verify no result shown initially
-await expect(page.getByText('私の趣味はどれ？')).toBeVisible();
+await expect(page.getByText("私の趣味はどれ？")).toBeVisible();
 
-const isResultShownImmediately = await page.getByText('不正解').isVisible();
+const isResultShownImmediately = await page.getByText("不正解").isVisible();
 
 if (isResultShownImmediately) {
-  throw new Error('Bug reproduced: Result shown immediately');
+  throw new Error("Bug reproduced: Result shown immediately");
 }
 
 // Only after user clicks an answer
 await page.click('button:has-text("Testing")');
-await expect(page.getByText('正解！')).toBeVisible();  // ✓ Now shown
+await expect(page.getByText("正解！")).toBeVisible(); // ✓ Now shown
 ```
 
 ### Lessons Learned

@@ -75,6 +75,7 @@ npm run preview
 ### 自動デプロイ（GitHub Actions）
 
 `.github/workflows/deploy.yml`:
+
 ```yaml
 name: Deploy to GitHub Pages
 
@@ -85,31 +86,31 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-      
+          node-version: "18"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Type check
         run: npm run typecheck
-      
+
       - name: Lint
         run: npm run lint
-      
+
       - name: Build
         run: npm run build
         env:
           VITE_API_BASE_URL: ${{ secrets.API_BASE_URL }}
           VITE_ENV: production
-      
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -205,8 +206,8 @@ server {
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript 
-               application/x-javascript application/xml+rss 
+    gzip_types text/plain text/css text/xml text/javascript
+               application/x-javascript application/xml+rss
                application/javascript application/json;
 }
 ```
@@ -214,7 +215,7 @@ server {
 ### Docker Compose
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -322,9 +323,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        assetFileNames: 'assets/[name]-[hash][extname]',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: "assets/[name]-[hash][extname]",
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
       },
     },
   },
@@ -344,10 +345,7 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
     dsn: import.meta.env.VITE_SENTRY_DSN,
     environment: import.meta.env.VITE_ENV,
     tracesSampleRate: 0.1,
-    integrations: [
-      new Sentry.BrowserTracing(),
-      new Sentry.Replay(),
-    ],
+    integrations: [new Sentry.BrowserTracing(), new Sentry.Replay()],
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
   });
@@ -368,6 +366,7 @@ if (import.meta.env.VITE_GA_TRACKING_ID) {
 ## デプロイチェックリスト
 
 ### ビルド前
+
 - [ ] TypeScriptエラーなし (`npm run typecheck`)
 - [ ] Lintエラーなし (`npm run lint`)
 - [ ] 全テスト通過
@@ -375,12 +374,14 @@ if (import.meta.env.VITE_GA_TRACKING_ID) {
 - [ ] API接続テスト
 
 ### ビルド
+
 - [ ] プロダクションビルド成功
 - [ ] バンドルサイズ確認（< 2MB推奨）
 - [ ] ソースマップ生成確認
 - [ ] アセット最適化確認
 
 ### デプロイ後
+
 - [ ] 本番環境でアクセス確認
 - [ ] 全ページ表示確認
 - [ ] クイズフロー動作確認
@@ -447,7 +448,7 @@ git push origin main
 
 ```typescript
 // Lazy loading
-const QuizEditScreen = lazy(() => import('./QuizEditScreen'));
+const QuizEditScreen = lazy(() => import("./QuizEditScreen"));
 ```
 
 ### 画像最適化
@@ -475,8 +476,8 @@ export default defineConfig({
 
 ```html
 <!-- index.html -->
-<link rel="preconnect" href="https://quarkus-crud.ouchiserver.aokiapp.com">
-<link rel="dns-prefetch" href="https://quarkus-crud.ouchiserver.aokiapp.com">
+<link rel="preconnect" href="https://quarkus-crud.ouchiserver.aokiapp.com" />
+<link rel="dns-prefetch" href="https://quarkus-crud.ouchiserver.aokiapp.com" />
 ```
 
 ## セキュリティ
@@ -485,12 +486,14 @@ export default defineConfig({
 
 ```html
 <!-- index.html -->
-<meta http-equiv="Content-Security-Policy" 
-      content="default-src 'self'; 
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self'; 
                script-src 'self' 'unsafe-inline'; 
                style-src 'self' 'unsafe-inline'; 
                img-src 'self' data: https:; 
-               connect-src 'self' https://quarkus-crud.ouchiserver.aokiapp.com;">
+               connect-src 'self' https://quarkus-crud.ouchiserver.aokiapp.com;"
+/>
 ```
 
 ### 環境変数の保護
@@ -506,6 +509,7 @@ echo ".env*" >> .gitignore
 ## サポート
 
 問題が発生した場合:
+
 1. ログを確認
 2. Sentryでエラーを確認
 3. GitHubのIssueを作成

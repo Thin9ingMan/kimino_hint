@@ -1,9 +1,9 @@
-import { Stack } from '@mantine/core';
-import { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Stack } from "@mantine/core";
+import { useMemo } from "react";
+import { useLocation } from "react-router-dom";
 
-import { LegacyPlaceholderBanner } from '@/shared/ui/LegacyPlaceholderBanner';
-import { Container } from '@/shared/ui/Container';
+import { LegacyPlaceholderBanner } from "@/shared/ui/LegacyPlaceholderBanner";
+import { Container } from "@/shared/ui/Container";
 
 /**
  * A single, explicit entry point for legacy URLs.

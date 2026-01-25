@@ -8,7 +8,7 @@ import type { QuizUserData } from "../types";
 export function useQuizData(eventId: number, userId: number) {
   const data = useSuspenseQuery(
     ["events.getEventUserData", eventId, userId],
-    () => apis.events.getEventUserData({ eventId, userId })
+    () => apis.events.getEventUserData({ eventId, userId }),
   );
 
   const quizData: QuizUserData = (data?.userData as QuizUserData) ?? {};

@@ -14,7 +14,7 @@
     // aliasing "@" to "src" folder
     "baseUrl": ".",
     "paths": {
-      "@/*": ["app/*"],
+      "@/*": ["app/*"]
     }
   },
   "include": ["app", "src"],

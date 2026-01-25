@@ -1,15 +1,19 @@
 # Quiz Supplement Feature Documentation
 
 ## Overview
+
 This document describes the quiz question supplement/explanation feature that allows quiz creators to add supplementary information to their quiz questions.
 
 ## Feature Description
 
 ### For Quiz Creators
+
 When creating or editing a quiz, users can now add optional supplementary explanations to each question. This allows them to provide additional context, interesting facts, or personal stories related to each quiz question.
 
 ### For Quiz Takers
+
 When answering a quiz question, after selecting an answer, users will see:
+
 1. Whether their answer was correct or incorrect
 2. The correct answer (if they got it wrong)
 3. **The supplementary explanation** provided by the quiz creator (if one was added)
@@ -46,6 +50,7 @@ Each question card now includes:
 After answering a question, users see:
 
 **If Correct:**
+
 ```
 ┌─────────────────────────────────────────┐
 │ ✓ 正解！                                 │
@@ -60,6 +65,7 @@ After answering a question, users see:
 ```
 
 **If Incorrect:**
+
 ```
 ┌─────────────────────────────────────────┐
 │ ✗ 不正解                                 │
@@ -76,6 +82,7 @@ After answering a question, users see:
 ## Technical Implementation
 
 ### Data Model
+
 The `QuizQuestion` interface already supported the `explanation` field:
 
 ```typescript
@@ -83,7 +90,7 @@ interface QuizQuestion {
   id: string;
   question: string;
   choices: QuizChoice[];
-  explanation?: string;  // Optional explanation field
+  explanation?: string; // Optional explanation field
   metadata?: Record<string, any>;
 }
 ```
@@ -117,6 +124,7 @@ interface QuizQuestion {
 ## Testing
 
 An E2E test has been created (`e2e/test_quiz_supplement.spec.ts`) that:
+
 1. Creates a quiz with a supplement
 2. Verifies the supplement is saved
 3. Answers the quiz as a different user
@@ -125,16 +133,19 @@ An E2E test has been created (`e2e/test_quiz_supplement.spec.ts`) that:
 ## Usage Examples
 
 ### Example 1: Hobby Question
+
 **Question:** "私の趣味は何でしょう？"  
 **Correct Answer:** "読書"  
 **Supplement:** "小説を読むのが好きで、特にミステリー小説にハマっています。月に5冊くらい読んでいます！"
 
 ### Example 2: Favorite Artist Question
+
 **Question:** "私の好きなアーティストはどれ？"  
 **Correct Answer:** "YOASOBI"  
 **Supplement:** "『夜に駆ける』を初めて聴いたときに衝撃を受けて、それ以来ずっとファンです。ライブにも行きました！"
 
 ### Example 3: Faculty Question
+
 **Question:** "私の学部はどれ？"  
 **Correct Answer:** "工学部"  
 **Supplement:** "プログラミングが好きで工学部を選びました。毎日コーディングを楽しんでいます。"
@@ -149,6 +160,7 @@ An E2E test has been created (`e2e/test_quiz_supplement.spec.ts`) that:
 ## Future Enhancements
 
 Potential improvements for the future:
+
 - Rich text formatting for supplements (bold, italic, links)
 - Image or GIF support in supplements
 - Character limit to keep supplements concise

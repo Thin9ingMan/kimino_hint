@@ -1,4 +1,4 @@
-import { createTheme } from '@mantine/core';
+import { createTheme } from "@mantine/core";
 
 /**
  * Mantine theme tuned for "Kimino Hint" - Warm, Friendly, Modern.
@@ -8,27 +8,27 @@ import { createTheme } from '@mantine/core';
  */
 export const theme = createTheme({
   fontFamily: '"Noto Sans JP", sans-serif',
-  primaryColor: 'cyan',
-  defaultRadius: 'md',
-  cursorType: 'pointer',
+  primaryColor: "cyan",
+  defaultRadius: "md",
+  cursorType: "pointer",
 
   components: {
     Title: {
       defaultProps: {
-        c: '#334155', // slate-700 for softer headings
+        c: "#334155", // slate-700 for softer headings
       },
     },
     Text: {
       defaultProps: {
-        c: '#475569', // slate-600 for softer body text
+        c: "#475569", // slate-600 for softer body text
       },
     },
     Button: {
       defaultProps: {
         // Pill-shaped buttons are friendlier
-        radius: 'xl',
-        size: 'md',
-        variant: 'filled',
+        radius: "xl",
+        size: "md",
+        variant: "filled",
       },
       styles: {
         root: {
@@ -38,38 +38,38 @@ export const theme = createTheme({
     },
     Card: {
       defaultProps: {
-        radius: 'lg',
-        padding: 'md',
+        radius: "lg",
+        padding: "md",
       },
     },
     Paper: {
       defaultProps: {
-        radius: 'lg',
-        p: 'md',
+        radius: "lg",
+        p: "md",
       },
     },
     TextInput: {
       defaultProps: {
-        radius: 'md',
-        size: 'md',
+        radius: "md",
+        size: "md",
       },
       styles: {
         input: {
-          backgroundColor: '#f8fafc', // slate-50
-          border: '1px solid #e2e8f0', // slate-200
-        }
-      }
+          backgroundColor: "#f8fafc", // slate-50
+          border: "1px solid #e2e8f0", // slate-200
+        },
+      },
     },
     Alert: {
       defaultProps: {
-        radius: 'md',
+        radius: "md",
       },
       styles: {
         root: {
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-          border: 'none',
-        }
-      }
-    }
+          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          border: "none",
+        },
+      },
+    },
   },
 });

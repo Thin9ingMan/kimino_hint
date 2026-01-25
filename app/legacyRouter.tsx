@@ -10,7 +10,6 @@ import { Navigate, Route } from "react-router-dom";
 //   LegacyResultRedirect,
 // } from "@/compat/legacyQuizRedirector";
 
-
 /**
  * Legacy URL compat routes.
  *
@@ -34,12 +33,14 @@ export const legacyRedirectRoutes: React.ReactElement[] = [
     element={<Navigate to="/events" replace />}
   />,
 
-
   <Route
     path="/profile_history"
     element={<Navigate to="/profiles" replace />}
   />,
-  <Route path="/make_question" element={<Navigate to="/events/new" replace />} />,
+  <Route
+    path="/make_question"
+    element={<Navigate to="/events/new" replace />}
+  />,
 
   <Route path="/my_profile" element={<Navigate to="/me/profile" replace />} />,
   <Route

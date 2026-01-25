@@ -14,7 +14,11 @@ interface MemoFieldProps {
  * 他人のプロフィールを見るときにのみ使用される
  * メモの内容はバックエンドAPIに保存され、ユーザーごとに個別管理される
  */
-export function MemoField({ userId, disabled = false, disabledMessage }: MemoFieldProps) {
+export function MemoField({
+  userId,
+  disabled = false,
+  disabledMessage,
+}: MemoFieldProps) {
   const [memoValue, setMemoValue] = useState<string>("");
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
@@ -33,7 +37,7 @@ export function MemoField({ userId, disabled = false, disabledMessage }: MemoFie
         const meta = await apis.friendships.getFriendshipMeta({
           otherUserId: userId,
         });
-        
+
         if (!isCancelled) {
           const memo = meta?.usermeta?.memo;
           setMemoValue(typeof memo === "string" ? memo : "");
@@ -68,7 +72,7 @@ export function MemoField({ userId, disabled = false, disabledMessage }: MemoFie
         },
       });
     },
-    [userId]
+    [userId],
   );
 
   const { status } = useDebouncedAction({
@@ -86,7 +90,14 @@ export function MemoField({ userId, disabled = false, disabledMessage }: MemoFie
 
   return (
     <Box mt="xs">
-      <Box style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+      <Box
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 5,
+        }}
+      >
         <Text fw={700} size="sm" style={{ color: "#065f46" }}>
           メモ
         </Text>
@@ -107,7 +118,11 @@ export function MemoField({ userId, disabled = false, disabledMessage }: MemoFie
         )}
       </Box>
       <Textarea
-        placeholder={disabled ? disabledMessage || "プロフィール交換後に入力できます" : "自由に記入してください"}
+        placeholder={
+          disabled
+            ? disabledMessage || "プロフィール交換後に入力できます"
+            : "自由に記入してください"
+        }
         value={memoValue}
         onChange={(event) => handleMemoChange(event.currentTarget.value)}
         disabled={disabled}

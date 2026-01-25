@@ -55,7 +55,13 @@ const FORM_FIELDS: FormField[] = [
 
   // 具体的な学部は、enPiTのレビューをかわすための措置。データは保存しているし残置。
   { id: "facultyDetail", label: "学科名" },
-  { id: "grade", label: "学年", type: "select", options: GRADE_OPTIONS, required: true },
+  {
+    id: "grade",
+    label: "学年",
+    type: "select",
+    options: GRADE_OPTIONS,
+    required: true,
+  },
   { id: "hobby", label: "趣味", placeholder: "趣味", required: true },
   {
     id: "favoriteArtist",
@@ -105,12 +111,12 @@ function EditProfileForm() {
   const setField = useCallback(
     (key: keyof ProfileFormState) => (value: string) =>
       setProfile((prev) => ({ ...prev, [key]: value })),
-    []
+    [],
   );
 
   const validateProfile = useCallback(() => {
     const emptyFields = REQUIRED_FIELDS.filter(
-      ({ key }) => !profile[key]?.trim()
+      ({ key }) => !profile[key]?.trim(),
     ).map(({ label }) => label);
 
     return emptyFields.length === 0
@@ -160,7 +166,7 @@ function EditProfileForm() {
         setSaving(false);
       }
     },
-    [navigate, profile, validateProfile]
+    [navigate, profile, validateProfile],
   );
 
   const previewRows = useMemo(
@@ -176,7 +182,7 @@ function EditProfileForm() {
       { label: "趣味", value: profile.hobby || "—" },
       { label: "好きなアーティスト", value: profile.favoriteArtist || "—" },
     ],
-    [profile]
+    [profile],
   );
 
   return (

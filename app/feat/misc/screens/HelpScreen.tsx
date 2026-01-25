@@ -96,7 +96,7 @@ function ParamModal({
   navigate: ReturnType<typeof useNavigate>;
 }) {
   const [values, setValues] = useState(() =>
-    Object.fromEntries(params.map((p) => [p, ""]))
+    Object.fromEntries(params.map((p) => [p, ""])),
   );
   const handleChange = (param: string, value: string) => {
     setValues((v) => ({ ...v, [param]: value }));
@@ -137,7 +137,7 @@ function ParamModal({
 
 export function HelpScreen() {
   const [modal, setModal] = useState<{ path: string; params: string[] } | null>(
-    null
+    null,
   );
   const [showDevList, setShowDevList] = useState(false);
   const navigate = useNavigate();
@@ -200,7 +200,7 @@ export function HelpScreen() {
                           {page.path}
                         </Pill>
                       </Button>
-                    )
+                    ),
                   )}
                 </Stack>
               </Accordion.Panel>
@@ -235,7 +235,7 @@ export function HelpScreen() {
                           {page.path}
                         </Pill>
                       </Button>
-                    )
+                    ),
                   )}
                 </Stack>
               </Accordion.Panel>

@@ -5,6 +5,7 @@
 ### 1. セマンティックHTML
 
 #### 適切な見出し階層
+
 ```tsx
 <h1>クイズ</h1>                      // メインタイトル
   <h2>間違いの選択肢を作成</h2>      // セクションタイトル
@@ -12,10 +13,15 @@
 ```
 
 実装例:
+
 ```tsx
-<Container title="クイズ編集">  {/* h1 */}
-  <Alert title="間違いの選択肢を作成">  {/* h2相当 */}
-    <Title order={5}>名前</Title>  {/* h3相当 */}
+<Container title="クイズ編集">
+  {" "}
+  {/* h1 */}
+  <Alert title="間違いの選択肢を作成">
+    {" "}
+    {/* h2相当 */}
+    <Title order={5}>名前</Title> {/* h3相当 */}
   </Alert>
 </Container>
 ```
@@ -23,6 +29,7 @@
 ### 2. フォームアクセシビリティ
 
 #### ラベルとinputの関連付け
+
 ```tsx
 <TextInput
   label="選択肢 1"
@@ -43,6 +50,7 @@
 ```
 
 #### フォーカス管理
+
 ```tsx
 const firstInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,6 +69,7 @@ useEffect(() => {
 ### 3. ボタンとアクション
 
 #### aria-label for clarity
+
 ```tsx
 <Button
   onClick={fetchFakeNames}
@@ -73,6 +82,7 @@ useEffect(() => {
 ```
 
 #### disabled state
+
 ```tsx
 <Button
   onClick={handleSave}
@@ -86,25 +96,17 @@ useEffect(() => {
 ### 4. アラートとエラーメッセージ
 
 #### role="alert" for important messages
+
 ```tsx
-<Alert 
-  color="red" 
-  title="エラー"
-  role="alert"
-  aria-live="assertive"
->
+<Alert color="red" title="エラー" role="alert" aria-live="assertive">
   <Text>{error}</Text>
 </Alert>
 ```
 
 #### role="status" for info
+
 ```tsx
-<Alert 
-  color="blue" 
-  title="情報"
-  role="status"
-  aria-live="polite"
->
+<Alert color="blue" title="情報" role="status" aria-live="polite">
   <Text>クイズの間違いの選択肢が設定されています</Text>
 </Alert>
 ```
@@ -112,9 +114,10 @@ useEffect(() => {
 ### 5. 進捗表示
 
 #### Progress component
+
 ```tsx
-<Progress 
-  value={progress} 
+<Progress
+  value={progress}
   aria-label={`クイズ進行状況: 問題${questionNo}/${totalQuestions}`}
   aria-valuenow={questionNo}
   aria-valuemin={1}
@@ -125,6 +128,7 @@ useEffect(() => {
 ### 6. クイズ問題のアクセシビリティ
 
 #### 選択肢ボタン
+
 ```tsx
 <Button
   onClick={() => handleAnswer(idx)}
@@ -134,18 +138,21 @@ useEffect(() => {
   aria-describedby={showResult ? `result-${idx}` : undefined}
 >
   {choice}
-</Button>
+</Button>;
 
-{showResult && idx === correctIndex && (
-  <span id={`result-${idx}`} role="status" aria-live="polite">
-    正解
-  </span>
-)}
+{
+  showResult && idx === correctIndex && (
+    <span id={`result-${idx}`} role="status" aria-live="polite">
+      正解
+    </span>
+  );
+}
 ```
 
 ## キーボードナビゲーション
 
 ### Tab順序
+
 1. メインコンテンツへスキップリンク
 2. ナビゲーション
 3. フォームフィールド（上から下）
@@ -153,49 +160,52 @@ useEffect(() => {
 5. 補助リンク
 
 ### ショートカットキー（推奨）
+
 ```tsx
 useEffect(() => {
   const handleKeyDown = (e: KeyboardEvent) => {
     // Ctrl+S: 保存
-    if (e.ctrlKey && e.key === 's') {
+    if (e.ctrlKey && e.key === "s") {
       e.preventDefault();
       handleSave();
     }
-    
+
     // Ctrl+G: 自動生成
-    if (e.ctrlKey && e.key === 'g') {
+    if (e.ctrlKey && e.key === "g") {
       e.preventDefault();
       fetchFakeNames();
     }
-    
+
     // 数字キー: 選択肢選択（クイズ中）
     if (!showResult && /^[1-4]$/.test(e.key)) {
       handleAnswer(parseInt(e.key) - 1);
     }
   };
 
-  window.addEventListener('keydown', handleKeyDown);
-  return () => window.removeEventListener('keydown', handleKeyDown);
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
 }, [handleSave, fetchFakeNames, handleAnswer, showResult]);
 ```
 
 ### Escapeキーでキャンセル
+
 ```tsx
 useEffect(() => {
   const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       navigate(`/events/${eventId}`);
     }
   };
-  
-  window.addEventListener('keydown', handleEscape);
-  return () => window.removeEventListener('keydown', handleEscape);
+
+  window.addEventListener("keydown", handleEscape);
+  return () => window.removeEventListener("keydown", handleEscape);
 }, [navigate, eventId]);
 ```
 
 ## スクリーンリーダー対応
 
 ### 読み上げ順序
+
 1. ページタイトル
 2. ナビゲーション状態（パンくずリスト）
 3. メインコンテンツ
@@ -203,6 +213,7 @@ useEffect(() => {
 5. エラーメッセージ（即座に読み上げ）
 
 ### ライブリージョン
+
 ```tsx
 // 動的更新を通知
 <div aria-live="polite" aria-atomic="true">
@@ -212,6 +223,7 @@ useEffect(() => {
 ```
 
 ### スキップリンク
+
 ```tsx
 <a href="#main-content" className="skip-link">
   メインコンテンツへスキップ
@@ -241,11 +253,13 @@ useEffect(() => {
 ## 色覚多様性対応
 
 ### コントラスト比
+
 - 通常テキスト: 4.5:1以上
 - 大きいテキスト: 3:1以上
 - アイコン・ボタン: 3:1以上
 
 ### 色だけに依存しない
+
 ```tsx
 // ❌ 色だけで正誤を表現
 <Button color={isCorrect ? "green" : "red"}>
@@ -253,7 +267,7 @@ useEffect(() => {
 </Button>
 
 // ✅ アイコンとテキストも追加
-<Button 
+<Button
   color={isCorrect ? "green" : "red"}
   leftSection={isCorrect ? <IconCheck /> : <IconX />}
 >
@@ -262,6 +276,7 @@ useEffect(() => {
 ```
 
 ### フォーカスインジケーター
+
 ```css
 button:focus-visible {
   outline: 3px solid #0066cc;
@@ -272,9 +287,10 @@ button:focus-visible {
 ## モバイルアクセシビリティ
 
 ### タッチターゲットサイズ
+
 ```tsx
 <Button
-  size="lg"  // 最小44x44px
+  size="lg" // 最小44x44px
   fullWidth
 >
   保存
@@ -282,6 +298,7 @@ button:focus-visible {
 ```
 
 ### スワイプジェスチャー
+
 ```tsx
 // 次の問題へスワイプ
 const handlers = useSwipeable({
@@ -291,14 +308,13 @@ const handlers = useSwipeable({
   trackMouse: true,
 });
 
-<div {...handlers}>
-  {/* クイズコンテンツ */}
-</div>
+<div {...handlers}>{/* クイズコンテンツ */}</div>;
 ```
 
 ## テスト方法
 
 ### 自動テスト
+
 ```bash
 # axe-core を使用
 npm install --save-dev @axe-core/react
@@ -316,18 +332,21 @@ test('Quiz edit screen is accessible', async () => {
 ### 手動テスト
 
 #### キーボードのみでの操作
+
 1. Tabキーで全要素にフォーカス可能か
 2. Enterキーでボタンを押せるか
 3. Escapeキーでモーダルを閉じられるか
 4. 矢印キーで選択肢を移動できるか（オプション）
 
 #### スクリーンリーダーテスト
+
 1. NVDA (Windows)
 2. JAWS (Windows)
 3. VoiceOver (Mac/iOS)
 4. TalkBack (Android)
 
 #### ズームテスト
+
 1. 200%ズーム: レイアウト崩れなし
 2. 400%ズーム: 横スクロールなし
 3. テキストサイズ変更: 読みやすさ維持
@@ -350,17 +369,17 @@ test('Quiz edit screen is accessible', async () => {
 
 ## WCAG 2.1 Level AA 準拠状況
 
-| 基準 | 状態 | 備考 |
-|------|------|------|
-| 1.1.1 非テキストコンテンツ | ✅ | alt属性、aria-label実装 |
-| 1.3.1 情報と関係性 | ✅ | セマンティックHTML使用 |
-| 1.4.3 最低限のコントラスト | ✅ | 4.5:1以上確保 |
-| 2.1.1 キーボード操作 | ✅ | 全機能キーボード対応 |
-| 2.4.3 フォーカス順序 | ✅ | 論理的な順序 |
-| 3.2.2 入力時の状態変化 | ✅ | 予期しない変化なし |
-| 3.3.1 エラー特定 | ✅ | エラーメッセージ明確 |
-| 3.3.2 ラベルまたは説明 | ✅ | 全入力にラベル |
-| 4.1.2 名前・役割・値 | ✅ | ARIA適切に使用 |
+| 基準                       | 状態 | 備考                    |
+| -------------------------- | ---- | ----------------------- |
+| 1.1.1 非テキストコンテンツ | ✅   | alt属性、aria-label実装 |
+| 1.3.1 情報と関係性         | ✅   | セマンティックHTML使用  |
+| 1.4.3 最低限のコントラスト | ✅   | 4.5:1以上確保           |
+| 2.1.1 キーボード操作       | ✅   | 全機能キーボード対応    |
+| 2.4.3 フォーカス順序       | ✅   | 論理的な順序            |
+| 3.2.2 入力時の状態変化     | ✅   | 予期しない変化なし      |
+| 3.3.1 エラー特定           | ✅   | エラーメッセージ明確    |
+| 3.3.2 ラベルまたは説明     | ✅   | 全入力にラベル          |
+| 4.1.2 名前・役割・値       | ✅   | ARIA適切に使用          |
 
 ## 今後の改善計画
 

@@ -10,7 +10,7 @@ import {
   Text,
   Title,
   Tooltip,
-  Center
+  Center,
 } from "@mantine/core";
 import { Copy, Check } from "tabler-icons-react";
 import QRCode from "react-qr-code";
@@ -45,8 +45,17 @@ export function EventInvitationPanel({ invitationCode }: Props) {
 
             <CopyButton value={invitationCode} timeout={2000}>
               {({ copied, copy }) => (
-                <Tooltip label={copied ? "コピーしました" : "招待コードをコピー"} withArrow>
-                  <ActionIcon color={copied ? "teal" : "blue"} variant="subtle" onClick={copy} size="lg" aria-label="招待コードをコピー">
+                <Tooltip
+                  label={copied ? "コピーしました" : "招待コードをコピー"}
+                  withArrow
+                >
+                  <ActionIcon
+                    color={copied ? "teal" : "blue"}
+                    variant="subtle"
+                    onClick={copy}
+                    size="lg"
+                    aria-label="招待コードをコピー"
+                  >
                     {copied ? <Check size={20} /> : <Copy size={20} />}
                   </ActionIcon>
                 </Tooltip>
@@ -54,16 +63,17 @@ export function EventInvitationPanel({ invitationCode }: Props) {
             </CopyButton>
           </Group>
         </Alert>
-        
-        <Center>
-            <Stack gap="xs" align="center">
-                <Box p="xs" bg="white" style={{ borderRadius: '8px' }}>
-                    <QRCode value={joinUrl} size={160} />
-                </Box>
-                <Text size="xs" c="dimmed">参加用QRコード</Text>
-            </Stack>
-        </Center>
 
+        <Center>
+          <Stack gap="xs" align="center">
+            <Box p="xs" bg="white" style={{ borderRadius: "8px" }}>
+              <QRCode value={joinUrl} size={160} />
+            </Box>
+            <Text size="xs" c="dimmed">
+              参加用QRコード
+            </Text>
+          </Stack>
+        </Center>
       </Stack>
     </Paper>
   );

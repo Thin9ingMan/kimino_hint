@@ -56,7 +56,7 @@ function QuizSequenceContent() {
             } catch {
               return { ...a, userId: uid, attendeeUserId: uid };
             }
-          })
+          }),
         );
         // Sort by ID to maintain join order
         return enriched.sort((a, b) => a.id - b.id);
@@ -76,7 +76,10 @@ function QuizSequenceContent() {
         }
       }
     } catch (error) {
-      console.error('Failed to parse quiz progress from sessionStorage:', error);
+      console.error(
+        "Failed to parse quiz progress from sessionStorage:",
+        error,
+      );
     }
     return { completedQuizzes: [] };
   }, [eventId, refreshKey]);
@@ -96,7 +99,8 @@ function QuizSequenceContent() {
         <Stack gap="xs" align="center">
           <Title order={2}>すべてのクイズが完了しました</Title>
           <Text c="dimmed" ta="center">
-            お疲れ様でした！<br/>
+            お疲れ様でした！
+            <br />
             イベントロビーに戻って他の参加者と交流しましょう。
           </Text>
         </Stack>
@@ -119,10 +123,13 @@ function QuizSequenceContent() {
         const newProgress = {
           completedQuizzes: [...completed, currentAttendee.attendeeUserId],
         };
-        sessionStorage.setItem(`quiz_sequence_${eventId}`, JSON.stringify(newProgress));
-        
+        sessionStorage.setItem(
+          `quiz_sequence_${eventId}`,
+          JSON.stringify(newProgress),
+        );
+
         // Trigger re-render by updating refreshKey
-        setRefreshKey(prev => prev + 1);
+        setRefreshKey((prev) => prev + 1);
       }
     };
 
@@ -139,7 +146,8 @@ function QuizSequenceContent() {
         </Stack>
         <Paper withBorder p="xl" radius="md" w="100%" maw={500}>
           <Text size="sm" c="dimmed">
-            他の参加者があなたのクイズに挑戦しています。<br/>
+            他の参加者があなたのクイズに挑戦しています。
+            <br />
             この時間を使って、クイズに関連するエピソードや思い出を共有しましょう。
           </Text>
         </Paper>
@@ -151,17 +159,24 @@ function QuizSequenceContent() {
   }
 
   // Otherwise, redirect to the quiz question screen
-  const displayName = currentAttendee.displayName || `ユーザー ${currentAttendee.attendeeUserId}`;
-  
+  const displayName =
+    currentAttendee.displayName || `ユーザー ${currentAttendee.attendeeUserId}`;
+
   useEffect(() => {
     // Clear previous quiz answers
-    sessionStorage.removeItem(`quiz_${eventId}_${currentAttendee.attendeeUserId}_answers`);
-    sessionStorage.removeItem(`quiz_${eventId}_${currentAttendee.attendeeUserId}_score`);
-    
+    sessionStorage.removeItem(
+      `quiz_${eventId}_${currentAttendee.attendeeUserId}_answers`,
+    );
+    sessionStorage.removeItem(
+      `quiz_${eventId}_${currentAttendee.attendeeUserId}_score`,
+    );
+
     // Redirect to first question
-    navigate(`/events/${eventId}/quiz/challenge/${currentAttendee.attendeeUserId}/1`);
+    navigate(
+      `/events/${eventId}/quiz/challenge/${currentAttendee.attendeeUserId}/1`,
+    );
   }, [eventId, currentAttendee.attendeeUserId, navigate]);
-  
+
   return (
     <Stack gap="md" align="center">
       <Text size="sm" c="dimmed">

@@ -16,15 +16,12 @@ import { Link } from "react-router-dom";
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import {
-  useSuspenseQueries,
-} from "@/shared/hooks/useSuspenseQuery";
+import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { EventAttendeesList } from "@/feat/events/components/EventAttendeesList";
 import { EventInvitationPanel } from "@/feat/events/components/EventInvitationPanel";
 import { useCurrentUser } from "@/shared/auth/hooks";
 import { useQueryClient } from "@tanstack/react-query";
-
 
 function EventLobbyContent() {
   const eventId = useNumericParam("eventId");
@@ -60,7 +57,7 @@ function EventLobbyContent() {
             let hasProfile = false;
             let quizData = null;
             let hasQuiz = false;
-            
+
             // Check profile
             try {
               const profile = await apis.profiles.getUserProfile({
@@ -72,7 +69,7 @@ function EventLobbyContent() {
               // Profile doesn't exist (404)
               hasProfile = false;
             }
-            
+
             // Check quiz data
             try {
               const eventUserData = await apis.events.getEventUserData({
@@ -85,7 +82,7 @@ function EventLobbyContent() {
               // Quiz data doesn't exist (404)
               hasQuiz = false;
             }
-            
+
             return {
               ...a,
               userId: uid,
@@ -94,13 +91,12 @@ function EventLobbyContent() {
               hasProfile,
               hasQuiz,
             };
-          })
+          }),
         );
         return enriched;
       },
     ],
   ]);
-
 
   if (!eventData) {
     return (
@@ -115,9 +111,12 @@ function EventLobbyContent() {
   const isCreator = (eventData as any).initiatorId === me.id;
 
   // Check if all attendees have both profile and quiz data
-  const attendeesWithoutProfile = (attendees ?? []).filter((a: any) => !a.hasProfile);
+  const attendeesWithoutProfile = (attendees ?? []).filter(
+    (a: any) => !a.hasProfile,
+  );
   const attendeesWithoutQuiz = (attendees ?? []).filter((a: any) => !a.hasQuiz);
-  const allAttendeesReady = attendeesWithoutProfile.length === 0 && attendeesWithoutQuiz.length === 0;
+  const allAttendeesReady =
+    attendeesWithoutProfile.length === 0 && attendeesWithoutQuiz.length === 0;
 
   const handleOpenEditModal = () => {
     setEditName((eventData as any).meta?.name || "");
@@ -178,11 +177,7 @@ function EventLobbyContent() {
           <Group justify="space-between" align="flex-start">
             <Title order={4}>イベント情報</Title>
             {isCreator && (
-              <Button
-                size="xs"
-                variant="light"
-                onClick={handleOpenEditModal}
-              >
+              <Button size="xs" variant="light" onClick={handleOpenEditModal}>
                 編集
               </Button>
             )}
@@ -195,7 +190,6 @@ function EventLobbyContent() {
               {(eventData as any).meta?.description}
             </Text>
           )}
-
         </Stack>
       </Paper>
 
@@ -207,7 +201,12 @@ function EventLobbyContent() {
       >
         <Stack gap="md">
           {error && (
-            <Alert color="red" title="エラー" onClose={() => setError(null)} withCloseButton>
+            <Alert
+              color="red"
+              title="エラー"
+              onClose={() => setError(null)}
+              withCloseButton
+            >
               <Text size="sm">{error}</Text>
             </Alert>
           )}
@@ -249,7 +248,9 @@ function EventLobbyContent() {
         </Stack>
       </Modal>
 
-      <EventInvitationPanel invitationCode={(eventData as any).invitationCode} />
+      <EventInvitationPanel
+        invitationCode={(eventData as any).invitationCode}
+      />
 
       {!allAttendeesReady && (
         <Alert color="yellow" title="クイズを開始できません">
@@ -259,12 +260,18 @@ function EventLobbyContent() {
             </Text>
             {attendeesWithoutProfile.length > 0 && (
               <Text size="sm">
-                プロフィール未作成: {attendeesWithoutProfile.map((a: any) => a.displayName || `ユーザー ${a.userId}`).join(", ")}
+                プロフィール未作成:{" "}
+                {attendeesWithoutProfile
+                  .map((a: any) => a.displayName || `ユーザー ${a.userId}`)
+                  .join(", ")}
               </Text>
             )}
             {attendeesWithoutQuiz.length > 0 && (
               <Text size="sm">
-                クイズ未作成: {attendeesWithoutQuiz.map((a: any) => a.displayName || `ユーザー ${a.userId}`).join(", ")}
+                クイズ未作成:{" "}
+                {attendeesWithoutQuiz
+                  .map((a: any) => a.displayName || `ユーザー ${a.userId}`)
+                  .join(", ")}
               </Text>
             )}
           </Stack>
@@ -289,16 +296,22 @@ function EventLobbyContent() {
         <Button component={Link} to={`/events/${eventId}/quiz`} fullWidth>
           自分のクイズを編集
         </Button>
-        <Button 
+        <Button
           component={allAttendeesReady ? Link : undefined}
-          to={allAttendeesReady ? `/events/${eventId}/quiz/sequence` : undefined}
-          fullWidth 
+          to={
+            allAttendeesReady ? `/events/${eventId}/quiz/sequence` : undefined
+          }
+          fullWidth
           variant="light"
           disabled={!allAttendeesReady}
-          onClick={allAttendeesReady ? () => {
-            // Reset quiz sequence progress when starting
-            sessionStorage.removeItem(`quiz_sequence_${eventId}`);
-          } : undefined}
+          onClick={
+            allAttendeesReady
+              ? () => {
+                  // Reset quiz sequence progress when starting
+                  sessionStorage.removeItem(`quiz_sequence_${eventId}`);
+                }
+              : undefined
+          }
         >
           クイズに挑戦
         </Button>
@@ -325,7 +338,13 @@ export function EventLobbyScreen() {
           </Alert>
         )}
       >
-        <Suspense fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}>
+        <Suspense
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
+        >
           <EventLobbyContent />
         </Suspense>
       </ErrorBoundary>

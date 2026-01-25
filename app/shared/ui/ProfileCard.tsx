@@ -1,11 +1,4 @@
-import {
-  Button,
-  Card,
-  Group,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Button, Card, Group, Stack, Text, Title } from "@mantine/core";
 import { ReactNode } from "react";
 import { UiProfile } from "@/shared/profile/profileUi";
 import { ProfileDisplayRows } from "./ProfileDisplayRows";

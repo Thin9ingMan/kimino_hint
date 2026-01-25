@@ -10,21 +10,26 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
   const profileData = profile.profileData || {};
   const questions: QuizQuestion[] = [];
 
-  const addQuestion = (title: string, correctValue: string, fakes: string[], fallback: string) => {
+  const addQuestion = (
+    title: string,
+    correctValue: string,
+    fakes: string[],
+    fallback: string,
+  ) => {
     const choiceTexts = [correctValue];
-    const filtered = fakes.filter(f => f !== correctValue);
+    const filtered = fakes.filter((f) => f !== correctValue);
     choiceTexts.push(...filtered.slice(0, 3));
-    
+
     while (choiceTexts.length < 4) {
       choiceTexts.push(`${fallback}${Math.floor(Math.random() * 100)}`);
     }
 
-    const choices: QuizChoice[] = choiceTexts.map(text => ({
+    const choices: QuizChoice[] = choiceTexts.map((text) => ({
       id: crypto.randomUUID(),
       text: text,
       isCorrect: text === correctValue,
     }));
-    
+
     const shuffledChoices = shuffleArray(choices);
 
     questions.push({
@@ -40,7 +45,7 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
       "この人の名前は何でしょう？",
       profileData.displayName as string,
       ["田中 太郎", "鈴木 花子", "佐藤 健", "高橋 美咲"],
-      "ユーザー"
+      "ユーザー",
     );
   }
 
@@ -50,7 +55,7 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
       "趣味は何でしょう？",
       profileData.hobby as string,
       ["読書", "サッカー", "料理", "音楽鑑賞"],
-      "趣味"
+      "趣味",
     );
   }
 
@@ -60,7 +65,7 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
       "好きなアーティストは誰でしょう？",
       profileData.favoriteArtist as string,
       ["YOASOBI", "ヨルシカ", "米津玄師", "あいみょん"],
-      "アーティスト"
+      "アーティスト",
     );
   }
 
@@ -70,7 +75,7 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
       "学年は何でしょう？",
       profileData.grade as string,
       ["1年生", "2年生", "3年生", "4年生"],
-      "年生"
+      "年生",
     );
   }
 
@@ -80,7 +85,7 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
       "学部は何でしょう？",
       profileData.faculty as string,
       ["工学部", "理学部", "文学部", "経済学部"],
-      "学部"
+      "学部",
     );
   }
 
@@ -94,14 +99,16 @@ export function generateQuizFromProfile(profile: UserProfile): Quiz {
  * Calculate quiz score
  */
 export function calculateScore(
-  answers: { questionId: string, selectedChoiceId: string }[],
-  quiz: Quiz
+  answers: { questionId: string; selectedChoiceId: string }[],
+  quiz: Quiz,
 ): number {
   let score = 0;
   answers.forEach((answer) => {
-    const question = quiz.questions.find(q => q.id === answer.questionId);
+    const question = quiz.questions.find((q) => q.id === answer.questionId);
     if (question) {
-      const selectedChoice = question.choices.find(c => c.id === answer.selectedChoiceId);
+      const selectedChoice = question.choices.find(
+        (c) => c.id === answer.selectedChoiceId,
+      );
       if (selectedChoice?.isCorrect) {
         score++;
       }

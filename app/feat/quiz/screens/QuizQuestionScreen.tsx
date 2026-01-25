@@ -14,9 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import {
-  useSuspenseQueries,
-} from "@/shared/hooks/useSuspenseQuery";
+import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import type { Quiz, QuizAnswer } from "../types";
 import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
@@ -51,7 +49,7 @@ function QuizQuestionContent() {
   const quiz = useMemo(() => {
     // 1. Try myQuiz (New Standard)
     if (quizData?.userData?.myQuiz) {
-        return quizData.userData.myQuiz;
+      return quizData.userData.myQuiz;
     }
 
     // 2. Legacy / Fallback
@@ -62,18 +60,18 @@ function QuizQuestionContent() {
     return generateQuizFromProfileAndFakes(targetProfile, fakeAnswers);
   }, [targetProfile, quizData]);
 
-
   const questionIndex = questionNo - 1;
 
   if (!quiz || !quiz.questions?.length) {
     return (
       <Stack gap="md">
         <Alert color="yellow" title="クイズが見つかりません">
-          <Text size="sm">
-            このユーザーはまだクイズを作成していません。
-          </Text>
+          <Text size="sm">このユーザーはまだクイズを作成していません。</Text>
         </Alert>
-        <Button onClick={() => navigate(`/events/${eventId}/quiz/challenges`)} fullWidth>
+        <Button
+          onClick={() => navigate(`/events/${eventId}/quiz/challenges`)}
+          fullWidth
+        >
           一覧へ戻る
         </Button>
       </Stack>
@@ -99,10 +97,10 @@ function QuizQuestionContent() {
       const storageKey = `quiz_${eventId}_${targetUserId}_answers`;
       const stored = sessionStorage.getItem(storageKey);
       const answers = stored ? JSON.parse(stored) : [];
-      
-      const selectedChoice = question.choices.find(c => c.id === choiceId);
+
+      const selectedChoice = question.choices.find((c) => c.id === choiceId);
       const isCorrect = !!selectedChoice?.isCorrect;
-      
+
       answers[questionIndex] = {
         questionId: question.id,
         selectedChoiceId: choiceId,
@@ -114,27 +112,41 @@ function QuizQuestionContent() {
 
       // Update score
       const scoreKey = `quiz_${eventId}_${targetUserId}_score`;
-      const currentScore = parseInt(sessionStorage.getItem(scoreKey) || "0", 10);
+      const currentScore = parseInt(
+        sessionStorage.getItem(scoreKey) || "0",
+        10,
+      );
       if (isCorrect) {
         sessionStorage.setItem(scoreKey, String(currentScore + 1));
       }
     },
-    [eventId, targetUserId, questionIndex, question.id, question.choices]
+    [eventId, targetUserId, questionIndex, question.id, question.choices],
   );
 
   const handleNext = useCallback(() => {
     if (questionIndex + 1 < quiz.questions.length) {
       // Go to next question
-      navigate(`/events/${eventId}/quiz/challenge/${targetUserId}/${questionNo + 1}`);
+      navigate(
+        `/events/${eventId}/quiz/challenge/${targetUserId}/${questionNo + 1}`,
+      );
     } else {
       // Go to result
       navigate(`/events/${eventId}/quiz/challenge/${targetUserId}/result`);
     }
-  }, [eventId, targetUserId, questionNo, questionIndex, quiz.questions.length, navigate]);
+  }, [
+    eventId,
+    targetUserId,
+    questionNo,
+    questionIndex,
+    quiz.questions.length,
+    navigate,
+  ]);
 
-  const selectedChoice = question.choices.find(c => c.id === selectedChoiceId);
+  const selectedChoice = question.choices.find(
+    (c) => c.id === selectedChoiceId,
+  );
   const isCorrect = !!selectedChoice?.isCorrect;
-  const progress = ((questionNo) / quiz.questions.length) * 100;
+  const progress = (questionNo / quiz.questions.length) * 100;
 
   return (
     <Stack gap="md">
@@ -143,7 +155,8 @@ function QuizQuestionContent() {
           問題 {questionNo} / {quiz.questions.length}
         </Text>
         <Text size="sm" fw={500}>
-          {targetUser.profileSummary?.displayName || `ユーザー ${targetUserId}`}のクイズ
+          {targetUser.profileSummary?.displayName || `ユーザー ${targetUserId}`}
+          のクイズ
         </Text>
       </Group>
 
@@ -207,7 +220,7 @@ function QuizQuestionContent() {
             <Text size="sm">
               {isCorrect
                 ? "よくできました！"
-                : `正解は「${question.choices.find(c => c.isCorrect)?.text}」でした。`}
+                : `正解は「${question.choices.find((c) => c.isCorrect)?.text}」でした。`}
             </Text>
             {question.explanation && (
               <Paper withBorder p="md" radius="md" bg="gray.0">
@@ -217,7 +230,9 @@ function QuizQuestionContent() {
               </Paper>
             )}
             <Button onClick={handleNext} fullWidth mt="sm">
-              {questionIndex + 1 < quiz.questions.length ? "次の問題へ" : "結果を見る"}
+              {questionIndex + 1 < quiz.questions.length
+                ? "次の問題へ"
+                : "結果を見る"}
             </Button>
           </Stack>
         </Alert>
@@ -228,7 +243,7 @@ function QuizQuestionContent() {
 
 export function QuizQuestionScreen() {
   const questionNo = useNumericParam("questionNo") ?? 1;
-  
+
   return (
     <Container title="クイズ">
       <ErrorBoundary
@@ -244,7 +259,11 @@ export function QuizQuestionScreen() {
         )}
       >
         <Suspense
-          fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
         >
           <QuizQuestionContent key={questionNo} />
         </Suspense>

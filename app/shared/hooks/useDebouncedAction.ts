@@ -19,12 +19,12 @@ interface UseDebouncedActionReturn {
 
 /**
  * Reusable hook for auto-executing actions with debounce and status management
- * 
+ *
  * Generic hook that can be used for any debounced async action (save, submit, update, etc.)
- * 
+ *
  * @param options Configuration options
  * @returns Action status and manual trigger function
- * 
+ *
  * @example
  * const { status } = useDebouncedAction({
  *   value: memoText,
@@ -110,7 +110,14 @@ export function useDebouncedAction<T>({
       isCancelled = true;
       clearStatusTimer();
     };
-  }, [debouncedValue, onExecute, enabled, successTimeout, errorTimeout, clearStatusTimer]);
+  }, [
+    debouncedValue,
+    onExecute,
+    enabled,
+    successTimeout,
+    errorTimeout,
+    clearStatusTimer,
+  ]);
 
   const triggerExecute = useCallback(async () => {
     setStatus("executing");

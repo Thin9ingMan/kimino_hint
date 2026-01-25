@@ -1,4 +1,15 @@
-import { Alert, Button, Card, Stack, Text, Title, Badge, Group, ActionIcon, Modal } from "@mantine/core";
+import {
+  Alert,
+  Button,
+  Card,
+  Stack,
+  Text,
+  Title,
+  Badge,
+  Group,
+  ActionIcon,
+  Modal,
+} from "@mantine/core";
 import { Link } from "react-router-dom";
 import { IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
@@ -15,13 +26,13 @@ import { useQueryClient } from "@tanstack/react-query";
 function EventsList() {
   const me = useCurrentUser();
   const queryClient = useQueryClient();
-  const allEvents = useSuspenseQuery(
-    ["events.listEventsByUser", me.id],
-    () => apis.events.listEventsByUser({ userId: me.id })
+  const allEvents = useSuspenseQuery(["events.listEventsByUser", me.id], () =>
+    apis.events.listEventsByUser({ userId: me.id }),
   );
 
   // Filter out deleted events (soft-deleted events have status: 'deleted')
-  const events = allEvents?.filter((event: any) => event.status !== 'deleted') || [];
+  const events =
+    allEvents?.filter((event: any) => event.status !== "deleted") || [];
 
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<any>(null);
@@ -49,7 +60,7 @@ function EventsList() {
       await queryClient.invalidateQueries({
         queryKey: ["events.listEventsByUser", me.id],
       });
-      
+
       // Also invalidate the joined events list since the user is a participant of their own created events
       await queryClient.invalidateQueries({
         queryKey: ["events.listMyAttendedEvents", me.id],
@@ -80,12 +91,17 @@ function EventsList() {
         {events.map((event: any) => (
           <Card key={event.id} withBorder padding="sm" radius="md">
             <Group justify="space-between" wrap="nowrap">
-              <Link to={`/events/${event.id}`} style={{ textDecoration: 'none', color: 'inherit', flex: 1 }}>
+              <Link
+                to={`/events/${event.id}`}
+                style={{ textDecoration: "none", color: "inherit", flex: 1 }}
+              >
                 <Stack gap="xs">
                   <Group justify="space-between">
-                    <Text fw={500} truncate>{event.meta?.name || "（名前未設定）"}</Text>
-                    <Badge color={event.status === 'closed' ? 'gray' : 'green'}>
-                      {event.status === 'closed' ? '終了' : '開催中'}
+                    <Text fw={500} truncate>
+                      {event.meta?.name || "（名前未設定）"}
+                    </Text>
+                    <Badge color={event.status === "closed" ? "gray" : "green"}>
+                      {event.status === "closed" ? "終了" : "開催中"}
                     </Badge>
                   </Group>
                   <Text size="xs" c="dimmed">
@@ -114,14 +130,19 @@ function EventsList() {
       >
         <Stack gap="md">
           {deleteError && (
-            <Alert color="red" title="エラー" onClose={() => setDeleteError(null)} withCloseButton>
+            <Alert
+              color="red"
+              title="エラー"
+              onClose={() => setDeleteError(null)}
+              withCloseButton
+            >
               <Text size="sm">{deleteError}</Text>
             </Alert>
           )}
 
           <Text size="sm">
-            本当に「{eventToDelete?.meta?.name || "（名前未設定）"}」を削除しますか？
-            この操作は取り消せません。
+            本当に「{eventToDelete?.meta?.name || "（名前未設定）"}
+            」を削除しますか？ この操作は取り消せません。
           </Text>
 
           <Group justify="flex-end" gap="sm">
@@ -169,21 +190,20 @@ export function EventsHubScreen() {
     <Container title="イベント">
       <Stack gap="md">
         <InfoAlert title="イベントって？">
-          イベント = クイズセッション（ルーム）です。参加者が集まってクイズを進めます。
+          イベント =
+          クイズセッション（ルーム）です。参加者が集まってクイズを進めます。
         </InfoAlert>
 
         <NavigationButtonList buttons={buttons} />
 
         <Stack gap="sm" mt="md">
-           <JoinedEventsList />
+          <JoinedEventsList />
         </Stack>
 
         <Stack gap="sm" mt="md">
-           <EventsList />
+          <EventsList />
         </Stack>
-
       </Stack>
     </Container>
   );
 }
-

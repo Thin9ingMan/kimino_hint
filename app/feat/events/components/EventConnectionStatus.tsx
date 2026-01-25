@@ -38,10 +38,13 @@ export function EventConnectionStatus({
   const [error, setError] = useState<string | null>(null);
   const esRef = useRef<EventSource | null>(null);
 
-  const updateStatus = useCallback((newStatus: ConnectionStatus) => {
-    setStatus(newStatus);
-    onStatusChange?.(newStatus);
-  }, [onStatusChange]);
+  const updateStatus = useCallback(
+    (newStatus: ConnectionStatus) => {
+      setStatus(newStatus);
+      onStatusChange?.(newStatus);
+    },
+    [onStatusChange],
+  );
 
   const connect = useCallback(() => {
     if (!eventId) {

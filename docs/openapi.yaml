@@ -2,37 +2,38 @@
 openapi: 3.0.3
 info:
   title: Quarkus CRUD API
-  description: "REST API for quiz events, user profiles, friendships, and authentication.\
+  description:
+    "REST API for quiz events, user profiles, friendships, and authentication.\
     \ Guests authenticate with JWT bearer tokens and interact with events in real\
     \ time via Server-Sent Events."
   contact:
     name: API Support
   version: 0.0.1
 servers:
-- url: http://localhost:8080
-  description: Local development server
-- url: https://quarkus-crud.ouchiserver.aokiapp.com
-  description: Production server
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://quarkus-crud.ouchiserver.aokiapp.com
+    description: Production server
 security:
-- bearerAuth: []
+  - bearerAuth: []
 tags:
-- name: Authentication
-  description: Guest user authentication and identity endpoints
-- name: Users
-  description: User lookups and self-service endpoints
-- name: Profiles
-  description: User profile retrieval and updates
-- name: Friendships
-  description: Profile card exchanges between users
-- name: Events
-  description: "Event management, attendees, and live updates"
-- name: LLM
-  description: LLM-powered features and endpoints
+  - name: Authentication
+    description: Guest user authentication and identity endpoints
+  - name: Users
+    description: User lookups and self-service endpoints
+  - name: Profiles
+    description: User profile retrieval and updates
+  - name: Friendships
+    description: Profile card exchanges between users
+  - name: Events
+    description: "Event management, attendees, and live updates"
+  - name: LLM
+    description: LLM-powered features and endpoints
 paths:
   /api/auth/guest:
     post:
       tags:
-      - Authentication
+        - Authentication
       summary: Create a guest user
       description: Create an anonymous guest user and return a JWT bearer token.
       operationId: createGuestUser
@@ -59,7 +60,7 @@ paths:
   /api/me:
     get:
       tags:
-      - Authentication
+        - Authentication
       summary: Get current user
       description: Retrieve the authenticated user associated with the bearer token.
       operationId: getCurrentUser
@@ -85,18 +86,18 @@ paths:
   /api/users/{userId}:
     get:
       tags:
-      - Users
+        - Users
       summary: Get user by ID
       description: Retrieve a public representation of the specified user.
       operationId: getUserById
       parameters:
-      - name: userId
-        in: path
-        description: Identifier of the user to fetch.
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: userId
+          in: path
+          description: Identifier of the user to fetch.
+          required: true
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           description: OK
@@ -125,18 +126,18 @@ paths:
   /api/users/{userId}/profile:
     get:
       tags:
-      - Profiles
+        - Profiles
       summary: Get user profile
       description: Retrieve the current profile card for the specified user.
       operationId: getUserProfile
       parameters:
-      - name: userId
-        in: path
-        description: Identifier of the user whose profile is requested.
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: userId
+          in: path
+          description: Identifier of the user whose profile is requested.
+          required: true
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           description: OK
@@ -145,7 +146,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/UserProfile"
         "404":
-          description: "The user exists but has not created a profile yet, or the\
+          description:
+            "The user exists but has not created a profile yet, or the\
             \ user does not exist."
           content:
             application/json:
@@ -172,7 +174,7 @@ paths:
   /api/me/profile:
     get:
       tags:
-      - Profiles
+        - Profiles
       summary: Get my profile
       description: Retrieve the current profile card for the authenticated user.
       operationId: getMyProfile
@@ -209,7 +211,7 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
     put:
       tags:
-      - Profiles
+        - Profiles
       summary: Update my profile
       description: Replace the authenticated user's current profile with a new revision.
       operationId: updateMyProfile
@@ -247,18 +249,18 @@ paths:
   /api/friendships/{friendshipId}:
     get:
       tags:
-      - Friendships
+        - Friendships
       summary: Get friendship by ID
       description: Retrieve a specific friendship record by its unique identifier.
       operationId: getFriendship
       parameters:
-      - name: friendshipId
-        in: path
-        description: Identifier of the friendship to fetch.
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: friendshipId
+          in: path
+          description: Identifier of the friendship to fetch.
+          required: true
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           description: OK
@@ -293,20 +295,21 @@ paths:
   /api/users/{userId}/friendship:
     post:
       tags:
-      - Friendships
+        - Friendships
       summary: Share my profile card with another user
-      description: "Record that the authenticated user has shared their profile card\
+      description:
+        "Record that the authenticated user has shared their profile card\
         \ with the specified user. This operation creates a mutual (bidirectional)\
         \ friendship, establishing both A→B and B→A relationships automatically."
       operationId: receiveFriendship
       parameters:
-      - name: userId
-        in: path
-        description: Identifier of the user whose card is being received.
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: userId
+          in: path
+          description: Identifier of the user whose card is being received.
+          required: true
+          schema:
+            format: int64
+            type: integer
       requestBody:
         description: Sender information for the exchange.
         content:
@@ -314,7 +317,7 @@ paths:
             schema:
               type: object
               allOf:
-              - $ref: "#/components/schemas/ReceiveFriendshipRequest"
+                - $ref: "#/components/schemas/ReceiveFriendshipRequest"
               properties:
                 meta:
                   description: Free-form metadata captured for the exchange.
@@ -359,7 +362,7 @@ paths:
   /api/me/friendships/received:
     get:
       tags:
-      - Friendships
+        - Friendships
       summary: List friendships received by me
       description: List profile cards received by the authenticated user.
       operationId: listReceivedFriendships
@@ -387,7 +390,7 @@ paths:
   /api/events:
     post:
       tags:
-      - Events
+        - Events
       summary: Create event
       description: Create a new event with the authenticated user as the initiator.
       operationId: createEvent
@@ -427,18 +430,18 @@ paths:
   /api/events/{eventId}:
     get:
       tags:
-      - Events
+        - Events
       summary: Get event by ID
       description: Fetch event details.
       operationId: getEventById
       parameters:
-      - name: eventId
-        in: path
-        description: Identifier of the event to fetch.
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: eventId
+          in: path
+          description: Identifier of the event to fetch.
+          required: true
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           description: OK
@@ -467,18 +470,18 @@ paths:
   /api/users/{userId}/events:
     get:
       tags:
-      - Events
+        - Events
       summary: List events initiated by a user
       description: Retrieve events created by the specified user.
       operationId: listEventsByUser
       parameters:
-      - name: userId
-        in: path
-        description: Identifier of the user.
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: userId
+          in: path
+          description: Identifier of the user.
+          required: true
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           description: OK
@@ -509,7 +512,7 @@ paths:
   /api/events/join-by-code:
     post:
       tags:
-      - Events
+        - Events
       summary: Join event by invitation code
       description: Join an event by providing a valid invitation code.
       operationId: joinEventByCode
@@ -561,18 +564,18 @@ paths:
   /api/events/{eventId}/attendees:
     get:
       tags:
-      - Events
+        - Events
       summary: List event attendees
       description: List attendees for the specified event.
       operationId: listEventAttendees
       parameters:
-      - name: eventId
-        in: path
-        description: Identifier of the event.
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: eventId
+          in: path
+          description: Identifier of the event.
+          required: true
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           description: OK
@@ -603,19 +606,20 @@ paths:
   /api/events/{eventId}/live:
     get:
       tags:
-      - Events
+        - Events
       summary: Subscribe to event live updates
-      description: Stream attendee updates for the specified event using Server-Sent
+      description:
+        Stream attendee updates for the specified event using Server-Sent
         Events.
       operationId: streamEventLive
       parameters:
-      - name: eventId
-        in: path
-        description: Identifier of the event.
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: eventId
+          in: path
+          description: Identifier of the event.
+          required: true
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           description: OK
@@ -657,27 +661,28 @@ paths:
   /api/events/{eventId}/users/{userId}:
     get:
       tags:
-      - Events
+        - Events
       summary: Get user data in event
-      description: Retrieve the current user data for a specific user in an event.
+      description:
+        Retrieve the current user data for a specific user in an event.
         Requires authentication and the requester must be an attendee of the same
         event.
       operationId: getEventUserData
       parameters:
-      - name: eventId
-        in: path
-        description: Identifier of the event.
-        required: true
-        schema:
-          format: int64
-          type: integer
-      - name: userId
-        in: path
-        description: Identifier of the user whose data is requested.
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: eventId
+          in: path
+          description: Identifier of the event.
+          required: true
+          schema:
+            format: int64
+            type: integer
+        - name: userId
+          in: path
+          description: Identifier of the user whose data is requested.
+          required: true
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           description: OK
@@ -711,26 +716,27 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
     put:
       tags:
-      - Events
+        - Events
       summary: Update user data in event
-      description: Update the user's event-specific data. Creates a new revision.
+      description:
+        Update the user's event-specific data. Creates a new revision.
         Requires authentication and the user can only update their own data.
       operationId: updateEventUserData
       parameters:
-      - name: eventId
-        in: path
-        description: Identifier of the event.
-        required: true
-        schema:
-          format: int64
-          type: integer
-      - name: userId
-        in: path
-        description: Identifier of the user whose data is being updated.
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: eventId
+          in: path
+          description: Identifier of the event.
+          required: true
+          schema:
+            format: int64
+            type: integer
+        - name: userId
+          in: path
+          description: Identifier of the user whose data is being updated.
+          required: true
+          schema:
+            format: int64
+            type: integer
       requestBody:
         content:
           application/json:
@@ -777,7 +783,7 @@ paths:
   /api/llm/fake-names:
     post:
       tags:
-      - LLM
+        - LLM
       summary: Generate fake names
       description: Generate fake names similar to the input name using LLM.
       operationId: generateFakeNames
@@ -821,26 +827,26 @@ paths:
   /api:
     get:
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          format: int64
-          type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            format: int64
+            type: integer
       responses:
         "200":
           description: OK
       summary: Get User By Id
       tags:
-      - Users Api Impl
+        - Users Api Impl
 components:
   schemas:
     User:
       description: Full representation of an authenticated user account.
       required:
-      - accountLifecycle
-      - createdAt
-      - id
+        - accountLifecycle
+        - createdAt
+        - id
       type: object
       properties:
         id:
@@ -851,11 +857,11 @@ components:
         accountLifecycle:
           description: Lifecycle state of the user account.
           enum:
-          - created
-          - provisioned
-          - active
-          - paused
-          - deleted
+            - created
+            - provisioned
+            - active
+            - paused
+            - deleted
           type: string
           example: active
         meta:
@@ -871,9 +877,9 @@ components:
     UserPublic:
       description: Public information available for any user lookup.
       required:
-      - accountLifecycle
-      - createdAt
-      - id
+        - accountLifecycle
+        - createdAt
+        - id
       type: object
       properties:
         id:
@@ -884,11 +890,11 @@ components:
         accountLifecycle:
           description: Lifecycle state of the user account.
           enum:
-          - created
-          - provisioned
-          - active
-          - paused
-          - deleted
+            - created
+            - provisioned
+            - active
+            - paused
+            - deleted
           type: string
           example: active
         createdAt:
@@ -902,10 +908,10 @@ components:
     UserProfile:
       description: Current profile card data for a user.
       required:
-      - createdAt
-      - id
-      - profileData
-      - userId
+        - createdAt
+        - id
+        - profileData
+        - userId
       type: object
       properties:
         id:
@@ -937,10 +943,11 @@ components:
         updatedAt:
           $ref: "#/components/schemas/LocalDateTime"
     UserProfileUpdateRequest:
-      description: Payload used to create a new profile revision for the authenticated
+      description:
+        Payload used to create a new profile revision for the authenticated
         user.
       required:
-      - profileData
+        - profileData
       type: object
       properties:
         profileData:
@@ -958,14 +965,15 @@ components:
             source: mobile-app
           nullable: true
     Friendship:
-      description: "Record of a profile card exchange between two users. When a friendship\
+      description:
+        "Record of a profile card exchange between two users. When a friendship\
         \ is created, both directions (sender→recipient and recipient→sender) are\
         \ established automatically, creating a mutual relationship."
       required:
-      - createdAt
-      - id
-      - recipientUserId
-      - senderUserId
+        - createdAt
+        - id
+        - recipientUserId
+        - senderUserId
       type: object
       properties:
         id:
@@ -988,20 +996,20 @@ components:
         updatedAt:
           description: Timestamp when the friendship was last updated.
           oneOf:
-          - $ref: "#/components/schemas/LocalDateTime"
-          - {}
+            - $ref: "#/components/schemas/LocalDateTime"
+            - {}
         senderProfile:
           description: Optional snapshot of the sender's profile at the time of exchange.
           oneOf:
-          - $ref: "#/components/schemas/UserProfile"
-          - {}
+            - $ref: "#/components/schemas/UserProfile"
+            - {}
     Event:
       description: Event lifecycle information for quiz sessions.
       required:
-      - createdAt
-      - id
-      - initiatorId
-      - status
+        - createdAt
+        - id
+        - initiatorId
+        - status
       type: object
       properties:
         id:
@@ -1017,11 +1025,11 @@ components:
         status:
           description: Current lifecycle state of the event.
           enum:
-          - created
-          - active
-          - ended
-          - expired
-          - deleted
+            - created
+            - active
+            - ended
+            - expired
+            - deleted
           type: string
           example: active
         meta:
@@ -1060,7 +1068,7 @@ components:
     EventJoinByCodeRequest:
       description: Request body for joining an event by invitation code.
       required:
-      - invitationCode
+        - invitationCode
       type: object
       properties:
         invitationCode:
@@ -1070,17 +1078,17 @@ components:
     EventLiveEvent:
       description: Server-Sent Event payload describing attendee changes.
       required:
-      - attendeeUserId
-      - eventId
-      - eventType
-      - timestamp
+        - attendeeUserId
+        - eventId
+        - eventType
+        - timestamp
       type: object
       properties:
         eventType:
           description: Type of attendee event.
           enum:
-          - ATTENDEE_JOINED
-          - ATTENDEE_LEFT
+            - ATTENDEE_JOINED
+            - ATTENDEE_LEFT
           type: string
           example: ATTENDEE_JOINED
         eventId:
@@ -1105,10 +1113,10 @@ components:
     EventAttendee:
       description: Representation of a user's participation in an event.
       required:
-      - attendeeUserId
-      - createdAt
-      - eventId
-      - id
+        - attendeeUserId
+        - createdAt
+        - eventId
+        - id
       type: object
       properties:
         id:
@@ -1137,14 +1145,15 @@ components:
         updatedAt:
           $ref: "#/components/schemas/LocalDateTime"
     EventUserData:
-      description: User-specific data stored for an event. Similar to profile but
+      description:
+        User-specific data stored for an event. Similar to profile but
         scoped to an event.
       required:
-      - createdAt
-      - eventId
-      - id
-      - userData
-      - userId
+        - createdAt
+        - eventId
+        - id
+        - userData
+        - userId
       type: object
       properties:
         id:
@@ -1183,7 +1192,7 @@ components:
     EventUserDataUpdateRequest:
       description: Payload used to create a new user data revision for an event.
       required:
-      - userData
+        - userData
       type: object
       properties:
         userData:
@@ -1201,11 +1210,12 @@ components:
             source: mobile-app
           nullable: true
     FakeNamesRequest:
-      description: Request payload for generating fake names similar to the input
+      description:
+        Request payload for generating fake names similar to the input
         name.
       required:
-      - inputName
-      - variance
+        - inputName
+        - variance
       type: object
       properties:
         inputName:
@@ -1217,32 +1227,33 @@ components:
         variance:
           description: Similarity level for name generation.
           enum:
-          - ほぼ違いがない名前
-          - とても良く似ている名前
-          - 結構似ている名前
-          - 多少似ているといえるくらいの名前
-          - かすかに類似性を感じられる名前
-          - 互いにまったく似ていない名前
+            - ほぼ違いがない名前
+            - とても良く似ている名前
+            - 結構似ている名前
+            - 多少似ているといえるくらいの名前
+            - かすかに類似性を感じられる名前
+            - 互いにまったく似ていない名前
           type: string
           allOf:
-          - $ref: "#/components/schemas/VarianceEnum"
+            - $ref: "#/components/schemas/VarianceEnum"
           example: とても良く似ている名前
           x-enum-varnames:
-          - ALMOST_SAME
-          - VERY_SIMILAR
-          - MODERATELY_SIMILAR
-          - SOMEWHAT_SIMILAR
-          - FAINTLY_SIMILAR
-          - COMPLETELY_DIFFERENT
+            - ALMOST_SAME
+            - VERY_SIMILAR
+            - MODERATELY_SIMILAR
+            - SOMEWHAT_SIMILAR
+            - FAINTLY_SIMILAR
+            - COMPLETELY_DIFFERENT
         customPrompt:
-          description: "Optional custom instructions for name generation (e.g., \"\
+          description:
+            "Optional custom instructions for name generation (e.g., \"\
             古風な名前にして\")."
           maxLength: 500
           type: string
     FakeNamesResponse:
       description: Response containing generated fake names.
       required:
-      - output
+        - output
       type: object
       properties:
         output:
@@ -1253,15 +1264,15 @@ components:
           items:
             type: string
           example:
-          - 青木 優香
-          - 青木 優空
-          - 青山 裕子
-          - 青木 雄
-          - 青木 悠斗
+            - 青木 優香
+            - 青木 優空
+            - 青山 裕子
+            - 青木 雄
+            - 青木 悠斗
     ErrorResponse:
       description: Error payload returned by the API.
       required:
-      - error
+        - error
       type: object
       properties:
         error:
@@ -1281,10 +1292,10 @@ components:
       description: |
         Semi-normal response indicating that a profile has not been created yet. This is not an error condition - the account exists but the profile is simply missing. Clients should treat this as a normal "profile not created" state (e.g., return null).
       required:
-      - code
-      - status
-      - title
-      - type
+        - code
+        - status
+        - title
+        - type
       type: object
       properties:
         type:
@@ -1300,10 +1311,11 @@ components:
           type: integer
           example: 404
         code:
-          description: Machine-readable code to distinguish semi-normal from error
+          description:
+            Machine-readable code to distinguish semi-normal from error
             cases.
           enum:
-          - PROFILE_MISSING
+            - PROFILE_MISSING
           type: string
           example: PROFILE_MISSING
         detail:
@@ -1322,12 +1334,12 @@ components:
           additionalProperties: {}
     VarianceEnum:
       enum:
-      - ほぼ違いがない名前
-      - とても良く似ている名前
-      - 結構似ている名前
-      - 多少似ているといえるくらいの名前
-      - かすかに類似性を感じられる名前
-      - 互いにまったく似ていない名前
+        - ほぼ違いがない名前
+        - とても良く似ている名前
+        - 結構似ている名前
+        - 多少似ているといえるくらいの名前
+        - かすかに類似性を感じられる名前
+        - 互いにまったく似ていない名前
       type: string
   securitySchemes:
     bearerAuth:

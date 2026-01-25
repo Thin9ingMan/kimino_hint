@@ -1,9 +1,4 @@
-import {
-  Alert,
-  Button,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { Alert, Button, Stack, Text } from "@mantine/core";
 import { Suspense, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -109,14 +104,14 @@ function QuizRewardsContent() {
       const progressKey = `quiz_sequence_${eventId}`;
       const stored = sessionStorage.getItem(progressKey);
       let progress = { completedQuizzes: [] };
-      
+
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed && Array.isArray(parsed.completedQuizzes)) {
           progress = parsed;
         }
       }
-      
+
       // Mark current quiz as completed (avoid duplicates)
       if (!progress.completedQuizzes.includes(targetUserId)) {
         const newProgress = {
@@ -124,11 +119,11 @@ function QuizRewardsContent() {
         };
         sessionStorage.setItem(progressKey, JSON.stringify(newProgress));
       }
-      
+
       // Navigate to sequence screen to continue
       navigate(`/events/${eventId}/quiz/sequence`);
     } catch (error) {
-      console.error('Failed to update quiz progress:', error);
+      console.error("Failed to update quiz progress:", error);
       // Navigate anyway to avoid blocking the user
       navigate(`/events/${eventId}/quiz/sequence`);
     }
@@ -146,9 +141,7 @@ function QuizRewardsContent() {
       )}
 
       <Alert color="blue" title="クイズクリア報酬">
-        <Text size="sm">
-          {displayName}のプロフィールカードを獲得しました！
-        </Text>
+        <Text size="sm">{displayName}のプロフィールカードを獲得しました！</Text>
       </Alert>
 
       <ProfileCard
@@ -182,7 +175,11 @@ export function QuizRewardsScreen() {
         )}
       >
         <Suspense
-          fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
         >
           <QuizRewardsContent />
         </Suspense>

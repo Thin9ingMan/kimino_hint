@@ -6,11 +6,11 @@ import { useLocation } from "react-router-dom";
  * パラメータが存在しない場合は defaultValue を返す
  */
 export function useQueryParam(
-  paramName: string, 
-  defaultValue: string = ""
+  paramName: string,
+  defaultValue: string = "",
 ): string {
   const location = useLocation();
-  
+
   return useMemo(() => {
     const params = new URLSearchParams(location.search);
     return params.get(paramName) ?? defaultValue;
@@ -21,10 +21,10 @@ export function useQueryParam(
  * 複数のクエリパラメータを一度に取得するhook
  */
 export function useQueryParams(
-  paramNames: string[]
+  paramNames: string[],
 ): Record<string, string | null> {
   const location = useLocation();
-  
+
   return useMemo(() => {
     const params = new URLSearchParams(location.search);
     const result: Record<string, string | null> = {};
@@ -40,7 +40,7 @@ export function useQueryParams(
  */
 export function useAllQueryParams(): Record<string, string> {
   const location = useLocation();
-  
+
   return useMemo(() => {
     const params = new URLSearchParams(location.search);
     const result: Record<string, string> = {};

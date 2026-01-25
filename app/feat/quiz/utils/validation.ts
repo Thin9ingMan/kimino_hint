@@ -41,19 +41,19 @@ export function validateQuizQuestion(question: QuizQuestion): ValidationResult {
     });
 
     // Check for duplicate choices
-    const uniqueChoices = new Set(question.choices.map(c => c.text.trim()));
+    const uniqueChoices = new Set(question.choices.map((c) => c.text.trim()));
     if (uniqueChoices.size !== question.choices.length) {
       errors.push("選択肢に重複があります");
     }
   }
 
   // Validate correct choice
-  const correctChoices = question.choices.filter(c => c.isCorrect);
+  const correctChoices = question.choices.filter((c) => c.isCorrect);
   if (correctChoices.length === 0) {
     errors.push("正解が設定されていません");
   } else if (correctChoices.length > 1) {
-    // Optional: Allow multiple correct answers? 
-    // For now, let's keep it to exactly one for strictness if desired, 
+    // Optional: Allow multiple correct answers?
+    // For now, let's keep it to exactly one for strictness if desired,
     // but the model supports more.
     errors.push("正解は1つだけ設定してください");
   }
@@ -104,7 +104,7 @@ export function validateQuiz(quiz: Quiz): ValidationResult {
 export function validateFakeAnswers(fakeAnswers: any): ValidationResult {
   const errors: string[] = [];
 
-  if (!fakeAnswers || typeof fakeAnswers !== 'object') {
+  if (!fakeAnswers || typeof fakeAnswers !== "object") {
     errors.push("間違い選択肢データが不正です");
     return { valid: false, errors };
   }
@@ -116,7 +116,7 @@ export function validateFakeAnswers(fakeAnswers: any): ValidationResult {
     errors.push("名前の間違い選択肢は3つ必要です");
   } else {
     fakeAnswers.username.forEach((name: any, index: number) => {
-      if (typeof name !== 'string' || name.trim().length === 0) {
+      if (typeof name !== "string" || name.trim().length === 0) {
         errors.push(`名前の選択肢${index + 1}が不正です`);
       }
     });
@@ -150,25 +150,28 @@ export function validateFakeAnswers(fakeAnswers: any): ValidationResult {
  * Sanitize user input to prevent XSS
  */
 export function sanitizeInput(input: string): string {
-  if (typeof input !== 'string') {
-    return '';
+  if (typeof input !== "string") {
+    return "";
   }
 
   return input
     .trim()
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;");
 }
 
 /**
  * Validate and sanitize quiz before saving
  */
-export function prepareQuizForSave(quiz: Quiz): { quiz: Quiz | null; errors: string[] } {
+export function prepareQuizForSave(quiz: Quiz): {
+  quiz: Quiz | null;
+  errors: string[];
+} {
   const validation = validateQuiz(quiz);
-  
+
   if (!validation.valid) {
     return { quiz: null, errors: validation.errors };
   }
@@ -176,12 +179,12 @@ export function prepareQuizForSave(quiz: Quiz): { quiz: Quiz | null; errors: str
   // Sanitize all text fields
   const sanitizedQuiz: Quiz = {
     ...quiz,
-    questions: quiz.questions.map(q => ({
+    questions: quiz.questions.map((q) => ({
       ...q,
       question: sanitizeInput(q.question),
-      choices: q.choices.map(c => ({
+      choices: q.choices.map((c) => ({
         ...c,
-        text: sanitizeInput(c.text)
+        text: sanitizeInput(c.text),
       })),
       explanation: q.explanation ? sanitizeInput(q.explanation) : undefined,
     })),
@@ -195,9 +198,9 @@ export function prepareQuizForSave(quiz: Quiz): { quiz: Quiz | null; errors: str
  */
 export function isAnswerCorrect(
   question: QuizQuestion,
-  selectedChoiceId: string
+  selectedChoiceId: string,
 ): boolean {
-  const choice = question.choices.find(c => c.id === selectedChoiceId);
+  const choice = question.choices.find((c) => c.id === selectedChoiceId);
   return !!choice?.isCorrect;
 }
 
@@ -206,14 +209,16 @@ export function isAnswerCorrect(
  */
 export function calculateScore(
   questions: QuizQuestion[],
-  answerChoiceIds: string[]
+  answerChoiceIds: string[],
 ): {
   score: number;
   total: number;
   percentage: number;
   correct: boolean[];
 } {
-  const correct = questions.map((q, i) => isAnswerCorrect(q, answerChoiceIds[i]));
+  const correct = questions.map((q, i) =>
+    isAnswerCorrect(q, answerChoiceIds[i]),
+  );
   const score = correct.filter(Boolean).length;
   const total = questions.length;
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;

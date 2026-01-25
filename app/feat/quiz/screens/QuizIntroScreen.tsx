@@ -30,7 +30,7 @@ function QuizIntroContent() {
       } catch {
         return null;
       }
-    }
+    },
   );
 
   const hasFakeAnswers = eventUserData?.userData?.fakeAnswers;

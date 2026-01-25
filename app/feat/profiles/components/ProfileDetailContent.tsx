@@ -24,7 +24,7 @@ export function ProfileDetailContent() {
   const profileData = useSuspenseQuery(
     ["profiles.getUserProfile", { userId }],
     () => apis.profiles.getUserProfile({ userId }),
-    false
+    false,
   );
 
   const isFriendshipExchanged = useSuspenseQuery(
@@ -49,7 +49,7 @@ export function ProfileDetailContent() {
         }
       }
     },
-    true
+    true,
   );
 
   let alreadyExchanged = isFriendshipExchanged;
@@ -114,8 +114,8 @@ export function ProfileDetailContent() {
         subtitle={`userId: ${userId}`}
       />
 
-      <MemoField 
-        userId={userId} 
+      <MemoField
+        userId={userId}
         disabled={!isExchanged}
         disabledMessage="プロフィール交換後に入力できます"
       />

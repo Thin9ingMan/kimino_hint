@@ -22,7 +22,14 @@ import {
   IconTrash,
   IconExclamationCircle,
 } from "@tabler/icons-react";
-import { Suspense, useCallback, useEffect, useState, useMemo, useRef } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+} from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
@@ -43,7 +50,14 @@ import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import type { Quiz } from "../types";
 import { shuffleArray } from "../utils/shuffle";
 
-type QuestionCategory = "names" | "verySimilarNames" | "hobbies" | "artists" | "faculty" | "grade" | "custom";
+type QuestionCategory =
+  | "names"
+  | "verySimilarNames"
+  | "hobbies"
+  | "artists"
+  | "faculty"
+  | "grade"
+  | "custom";
 
 interface ChoiceState {
   id: string;
@@ -100,9 +114,7 @@ function ChoiceInput({
             backgroundColor: isCorrect
               ? "var(--mantine-color-teal-0)"
               : "transparent",
-            borderColor: isCorrect
-              ? "var(--mantine-color-teal-2)"
-              : undefined,
+            borderColor: isCorrect ? "var(--mantine-color-teal-2)" : undefined,
             fontWeight: isCorrect ? 600 : 400,
             fontSize: theme.fontSizes.sm,
             height: 48,
@@ -156,7 +168,9 @@ function QuestionEditor({
               label="質問文"
               placeholder="例: 私の趣味は何でしょう？"
               value={question.title}
-              onChange={(e) => onChange({ ...question, title: e.currentTarget.value })}
+              onChange={(e) =>
+                onChange({ ...question, title: e.currentTarget.value })
+              }
               readOnly={isFixed}
               size="md"
               styles={{ label: { marginBottom: 8, fontWeight: 700 } }}
@@ -184,32 +198,49 @@ function QuestionEditor({
               value={choice.text}
               isCorrect={choice.isCorrect}
               onChange={(val) => {
-                const newChoices = question.choices.map(c => 
-                  c.id === choice.id ? { ...c, text: val } : c
+                const newChoices = question.choices.map((c) =>
+                  c.id === choice.id ? { ...c, text: val } : c,
                 );
                 onChange({ ...question, choices: newChoices });
               }}
-              onReroll={isFixed && !choice.isCorrect ? () => onRerollChoice(choice.id) : undefined}
+              onReroll={
+                isFixed && !choice.isCorrect
+                  ? () => onRerollChoice(choice.id)
+                  : undefined
+              }
               loading={loadingMap[`${question.id}-${choice.id}`]}
-              placeholder={choice.isCorrect ? "正解のテキスト..." : "間違いの選択肢..."}
+              placeholder={
+                choice.isCorrect ? "正解のテキスト..." : "間違いの選択肢..."
+              }
               readOnly={isFixed && choice.isCorrect}
             />
           ))}
         </Stack>
 
-        <Divider variant="dashed" label="補足説明（任意）" labelPosition="center" mt="md" />
+        <Divider
+          variant="dashed"
+          label="補足説明（任意）"
+          labelPosition="center"
+          mt="md"
+        />
 
         <Textarea
           label="補足説明"
           placeholder="正解・不正解が表示された後に出題者が伝えたい補足情報を入力してください（例: この趣味を始めたきっかけは...）"
           value={question.explanation || ""}
-          onChange={(e) => onChange({ ...question, explanation: e.currentTarget.value })}
+          onChange={(e) =>
+            onChange({ ...question, explanation: e.currentTarget.value })
+          }
           minRows={3}
           maxRows={6}
           autosize
           styles={(theme) => ({
-            label: { marginBottom: 8, fontWeight: 600, color: theme.colors.gray[7] },
-            input: { fontSize: theme.fontSizes.sm }
+            label: {
+              marginBottom: 8,
+              fontWeight: 600,
+              color: theme.colors.gray[7],
+            },
+            input: { fontSize: theme.fontSizes.sm },
           })}
         />
       </Stack>
@@ -241,7 +272,10 @@ function QuizEditContent() {
       ["events.getEventUserData", { eventId, userId: meData.id }],
       async () => {
         try {
-          return await apis.events.getEventUserData({ eventId, userId: meData.id });
+          return await apis.events.getEventUserData({
+            eventId,
+            userId: meData.id,
+          });
         } catch {
           // Return null if user data doesn't exist yet (e.g., new participant)
           return null;
@@ -257,7 +291,9 @@ function QuizEditContent() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createInitialChoices = (correctText: string): [ChoiceState, ChoiceState, ChoiceState, ChoiceState] => {
+  const createInitialChoices = (
+    correctText: string,
+  ): [ChoiceState, ChoiceState, ChoiceState, ChoiceState] => {
     return [
       { id: crypto.randomUUID(), text: correctText, isCorrect: true },
       { id: crypto.randomUUID(), text: "", isCorrect: false },
@@ -270,48 +306,55 @@ function QuizEditContent() {
   const isInitialized = useRef(false);
   useEffect(() => {
     if (isInitialized.current) return;
-    if (!displayName && !hobby && !favoriteArtist && !myFaculty && !myGrade) return;
+    if (!displayName && !hobby && !favoriteArtist && !myFaculty && !myGrade)
+      return;
 
     // If we have existing quiz data, load it
-    if (existingQuiz && existingQuiz.questions && existingQuiz.questions.length > 0) {
-      const loadedQuestions: QuestionState[] = existingQuiz.questions.map(q => {
-        // Determine the category and type based on question id or content
-        let category: QuestionCategory = "custom";
-        let type: "fixed" | "custom" = "custom";
+    if (
+      existingQuiz &&
+      existingQuiz.questions &&
+      existingQuiz.questions.length > 0
+    ) {
+      const loadedQuestions: QuestionState[] = existingQuiz.questions.map(
+        (q) => {
+          // Determine the category and type based on question id or content
+          let category: QuestionCategory = "custom";
+          let type: "fixed" | "custom" = "custom";
 
-        if (q.id === "q-names") {
-          category = "names";
-          type = "fixed";
-        } else if (q.id === "q-vsim-names") {
-          category = "verySimilarNames";
-          type = "fixed";
-        } else if (q.id === "q-hobby") {
-          category = "hobbies";
-          type = "fixed";
-        } else if (q.id === "q-artist") {
-          category = "artists";
-          type = "fixed";
-        } else if (q.id === "q-faculty") {
-          category = "faculty";
-          type = "fixed";
-        } else if (q.id === "q-grade") {
-          category = "grade";
-          type = "fixed";
-        }
+          if (q.id === "q-names") {
+            category = "names";
+            type = "fixed";
+          } else if (q.id === "q-vsim-names") {
+            category = "verySimilarNames";
+            type = "fixed";
+          } else if (q.id === "q-hobby") {
+            category = "hobbies";
+            type = "fixed";
+          } else if (q.id === "q-artist") {
+            category = "artists";
+            type = "fixed";
+          } else if (q.id === "q-faculty") {
+            category = "faculty";
+            type = "fixed";
+          } else if (q.id === "q-grade") {
+            category = "grade";
+            type = "fixed";
+          }
 
-        return {
-          id: q.id,
-          type,
-          category,
-          title: q.question,
-          choices: q.choices.map(c => ({
-            id: c.id,
-            text: c.text,
-            isCorrect: c.isCorrect,
-          })),
-          explanation: q.explanation,
-        };
-      });
+          return {
+            id: q.id,
+            type,
+            category,
+            title: q.question,
+            choices: q.choices.map((c) => ({
+              id: c.id,
+              text: c.text,
+              isCorrect: c.isCorrect,
+            })),
+            explanation: q.explanation,
+          };
+        },
+      );
 
       setQuestions(loadedQuestions);
       isInitialized.current = true;
@@ -431,18 +474,23 @@ function QuizEditContent() {
   const rerollChoice = async (qIndex: number, choiceId: string) => {
     const question = questions[qIndex];
     const key = `${question.id}-${choiceId}`;
-    
+
     setLoadingMap((prev) => ({ ...prev, [key]: true }));
     try {
       let newValue = "";
-      const currentChoiceTexts = question.choices.map(c => c.text);
+      const currentChoiceTexts = question.choices.map((c) => c.text);
 
-      if (question.category === "names" || question.category === "verySimilarNames") {
+      if (
+        question.category === "names" ||
+        question.category === "verySimilarNames"
+      ) {
         const isSimilar = question.category === "verySimilarNames";
         const response = await apis.llm.generateFakeNames({
           fakeNamesRequest: {
             inputName: displayName,
-            variance: isSimilar ? "ほぼ違いがない名前" : "互いにまったく似ていない名前",
+            variance: isSimilar
+              ? "ほぼ違いがない名前"
+              : "互いにまったく似ていない名前",
           },
         });
         const output = Array.from(response.output || []);
@@ -460,8 +508,8 @@ function QuizEditContent() {
       }
 
       if (newValue) {
-        const newChoices = question.choices.map(c => 
-          c.id === choiceId ? { ...c, text: newValue } : c
+        const newChoices = question.choices.map((c) =>
+          c.id === choiceId ? { ...c, text: newValue } : c,
         );
         updateQuestion(qIndex, { ...question, choices: newChoices });
       }
@@ -478,22 +526,28 @@ function QuizEditContent() {
     try {
       const [differentNames, similarNames] = await Promise.all([
         apis.llm.generateFakeNames({
-          fakeNamesRequest: { inputName: displayName, variance: "互いにまったく似ていない名前" },
+          fakeNamesRequest: {
+            inputName: displayName,
+            variance: "互いにまったく似ていない名前",
+          },
         }),
         apis.llm.generateFakeNames({
-          fakeNamesRequest: { inputName: displayName, variance: "ほぼ違いがない名前" },
+          fakeNamesRequest: {
+            inputName: displayName,
+            variance: "ほぼ違いがない名前",
+          },
         }),
       ]);
 
       const diffs = Array.from(differentNames.output || []).slice(0, 3);
       const sims = Array.from(similarNames.output || []).slice(0, 3);
-      
+
       const newQuestions = questions.map((q) => {
         if (q.type !== "fixed") return q;
 
-        const correctChoice = q.choices.find(c => c.isCorrect);
-        const wrongChoices = q.choices.filter(c => !c.isCorrect);
-        
+        const correctChoice = q.choices.find((c) => c.isCorrect);
+        const wrongChoices = q.choices.filter((c) => !c.isCorrect);
+
         let newWrongTexts: string[] = [];
 
         if (q.category === "names") {
@@ -504,31 +558,34 @@ function QuizEditContent() {
           newWrongTexts = [
             getRandomSingle(falseHobbies, [hobby]),
             getRandomSingle(falseHobbies, [hobby]),
-            getRandomSingle(falseHobbies, [hobby])
+            getRandomSingle(falseHobbies, [hobby]),
           ];
         } else if (q.category === "artists") {
           newWrongTexts = [
             getRandomSingle(falseArtists, [favoriteArtist]),
             getRandomSingle(falseArtists, [favoriteArtist]),
-            getRandomSingle(falseArtists, [favoriteArtist])
+            getRandomSingle(falseArtists, [favoriteArtist]),
           ];
         } else if (q.category === "faculty") {
           newWrongTexts = [
             getRandomSingle(faculty, [myFaculty]),
             getRandomSingle(faculty, [myFaculty]),
-            getRandomSingle(faculty, [myFaculty])
+            getRandomSingle(faculty, [myFaculty]),
           ];
         } else if (q.category === "grade") {
           newWrongTexts = [
             getRandomSingle(grade, [myGrade]),
             getRandomSingle(grade, [myGrade]),
-            getRandomSingle(grade, [myGrade])
+            getRandomSingle(grade, [myGrade]),
           ];
         }
 
         const newChoices = [
           correctChoice!,
-          ...wrongChoices.map((c, i) => ({ ...c, text: newWrongTexts[i] || "" }))
+          ...wrongChoices.map((c, i) => ({
+            ...c,
+            text: newWrongTexts[i] || "",
+          })),
         ];
 
         return { ...q, choices: newChoices };
@@ -545,7 +602,9 @@ function QuizEditContent() {
 
   const handleSave = async () => {
     // Validation
-    const invalidQuestion = questions.find(q => !q.title.trim() || q.choices.some(c => !c.text.trim()));
+    const invalidQuestion = questions.find(
+      (q) => !q.title.trim() || q.choices.some((c) => !c.text.trim()),
+    );
     if (invalidQuestion) {
       setError("すべての質問と選択肢を入力してください");
       return;
@@ -556,9 +615,9 @@ function QuizEditContent() {
     try {
       // Legacy compatibility: fill fakeAnswers if possible
       const getWrongTexts = (category: QuestionCategory) => {
-        const q = questions.find(qu => qu.category === category);
+        const q = questions.find((qu) => qu.category === category);
         if (!q) return [];
-        return q.choices.filter(c => !c.isCorrect).map(c => c.text);
+        return q.choices.filter((c) => !c.isCorrect).map((c) => c.text);
       };
 
       const fakeAnswers = {
@@ -570,10 +629,16 @@ function QuizEditContent() {
 
       // Construct direct correctness Quiz object with shuffled choices
       const myQuiz = {
-        questions: questions.map(q => ({
+        questions: questions.map((q) => ({
           id: q.id,
           question: q.title,
-          choices: shuffleArray(q.choices.map(c => ({ id: c.id, text: c.text, isCorrect: c.isCorrect }))),
+          choices: shuffleArray(
+            q.choices.map((c) => ({
+              id: c.id,
+              text: c.text,
+              isCorrect: c.isCorrect,
+            })),
+          ),
           explanation: q.explanation,
         })),
         updatedAt: new Date().toISOString(),
@@ -602,10 +667,16 @@ function QuizEditContent() {
   if (!displayName && !hobby && !favoriteArtist) {
     return (
       <Stack gap="md">
-        <Alert color="yellow" title="プロフィール情報不足" icon={<IconExclamationCircle />}>
+        <Alert
+          color="yellow"
+          title="プロフィール情報不足"
+          icon={<IconExclamationCircle />}
+        >
           プロフィールに情報が不足しているため、クイズを作成できません。
         </Alert>
-        <Button onClick={() => navigate("/me/profile/edit")} fullWidth>プロフィールを編集</Button>
+        <Button onClick={() => navigate("/me/profile/edit")} fullWidth>
+          プロフィールを編集
+        </Button>
       </Stack>
     );
   }
@@ -613,7 +684,13 @@ function QuizEditContent() {
   return (
     <Stack gap="xl" mb={150}>
       {error && (
-        <Alert color="red" variant="filled" onClose={() => setError(null)} withCloseButton icon={<IconExclamationCircle />}>
+        <Alert
+          color="red"
+          variant="filled"
+          onClose={() => setError(null)}
+          withCloseButton
+          icon={<IconExclamationCircle />}
+        >
           {error}
         </Alert>
       )}
@@ -651,7 +728,7 @@ function QuizEditContent() {
             root: {
               borderWidth: 2,
               fontSize: 18,
-            }
+            },
           }}
         >
           新しい質問を追加
@@ -676,7 +753,10 @@ function QuizEditContent() {
         radius="lg"
       >
         <Group grow gap="sm">
-          <Button variant="default" onClick={() => navigate(`/events/${eventId}`)}>
+          <Button
+            variant="default"
+            onClick={() => navigate(`/events/${eventId}`)}
+          >
             キャンセル
           </Button>
           <Button
@@ -704,7 +784,9 @@ export function QuizEditScreen() {
           <Alert color="red" title="読み込みエラー">
             <Stack gap="sm">
               <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>再試行</Button>
+              <Button variant="light" onClick={retry}>
+                再試行
+              </Button>
             </Stack>
           </Alert>
         )}

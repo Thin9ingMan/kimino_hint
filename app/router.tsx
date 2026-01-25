@@ -56,10 +56,7 @@ export function AppRouter() {
 
         {/* Quiz (under events) */}
         <Route path="/events/:eventId/quiz" element={<QuizIntroScreen />} />
-        <Route
-          path="/events/:eventId/quiz/edit"
-          element={<QuizEditScreen />}
-        />
+        <Route path="/events/:eventId/quiz/edit" element={<QuizEditScreen />} />
         <Route
           path="/events/:eventId/quiz/challenges"
           element={<QuizChallengeListScreen />}

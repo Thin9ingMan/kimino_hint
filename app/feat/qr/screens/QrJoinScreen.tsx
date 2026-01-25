@@ -1,9 +1,4 @@
-import {
-  Alert,
-  Button,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { Alert, Button, Stack, Text } from "@mantine/core";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -110,7 +105,11 @@ export function QrJoinScreen() {
         )}
       >
         <Suspense
-          fallback={<Text size="sm" c="dimmed">読み込み中...</Text>}
+          fallback={
+            <Text size="sm" c="dimmed">
+              読み込み中...
+            </Text>
+          }
         >
           <QrJoinContent />
         </Suspense>

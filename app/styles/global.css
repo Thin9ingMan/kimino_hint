@@ -1,5 +1,5 @@
 /* Load web font (mandatory): Noto Sans JP */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800&display=swap");
 
 /* Global styles: minimal but provides the “legacy” soft pastel background.
  * Keep global CSS limited to app/styles as per project policy.

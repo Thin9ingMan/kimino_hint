@@ -24,7 +24,7 @@ type Item = {
 };
 
 function pickDisplayName(
-  profileData: Record<string, unknown> | null | undefined
+  profileData: Record<string, unknown> | null | undefined,
 ): string {
   const pd = profileData ?? {};
   const v = pd.displayName;
@@ -33,7 +33,7 @@ function pickDisplayName(
 
 function ProfileListContent() {
   const data = useSuspenseQuery(["friendships.listReceivedFriendships"], () =>
-    apis.friendships.listReceivedFriendships()
+    apis.friendships.listReceivedFriendships(),
   );
 
   const items: Item[] = (data ?? []).map((f: any) => ({

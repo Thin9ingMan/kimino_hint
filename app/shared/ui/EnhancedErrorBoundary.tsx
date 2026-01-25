@@ -1,5 +1,5 @@
-import { Component, ReactNode } from 'react';
-import { Alert, Button, Stack, Text, Code } from '@mantine/core';
+import { Component, ReactNode } from "react";
+import { Alert, Button, Stack, Text, Code } from "@mantine/core";
 
 interface Props {
   children: ReactNode;
@@ -28,13 +28,13 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to console
-    console.error('Error caught by boundary:', error, errorInfo);
-    
+    console.error("Error caught by boundary:", error, errorInfo);
+
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
-    
+
     // Send to error tracking service (e.g., Sentry)
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
+    if (typeof window !== "undefined" && (window as any).Sentry) {
       (window as any).Sentry.captureException(error, {
         extra: errorInfo,
       });
@@ -59,22 +59,22 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
             <Text size="sm">
               アプリケーションでエラーが発生しました。ページを再読み込みするか、もう一度お試しください。
             </Text>
-            
+
             {import.meta.env.DEV && (
               <Code block>
                 {this.state.error.message}
-                {'\n'}
+                {"\n"}
                 {this.state.error.stack}
               </Code>
             )}
-            
+
             <Stack gap="xs">
               <Button onClick={this.handleRetry} fullWidth>
                 再試行
               </Button>
               <Button
                 variant="default"
-                onClick={() => window.location.href = '/home'}
+                onClick={() => (window.location.href = "/home")}
                 fullWidth
               >
                 ホームへ戻る

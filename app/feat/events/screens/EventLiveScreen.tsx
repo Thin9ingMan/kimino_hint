@@ -30,7 +30,12 @@ export function EventLiveScreen() {
           </Text>
         </Alert>
 
-        <Button component={Link} to={`/events/${eventId}`} variant="default" fullWidth>
+        <Button
+          component={Link}
+          to={`/events/${eventId}`}
+          variant="default"
+          fullWidth
+        >
           ロビーに戻る
         </Button>
       </Stack>

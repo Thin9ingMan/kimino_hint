@@ -19,7 +19,7 @@ export function useSuspenseQuery<TQueryFnData, TData = TQueryFnData>(
   queryKey: QueryKey,
   queryFn: () => Promise<TQueryFnData>,
   invalidateOnUnmount = true,
-  options?: UseSuspenseQueryOptions<TQueryFnData, TData>
+  options?: UseSuspenseQueryOptions<TQueryFnData, TData>,
 ): TData {
   const queryClient = useQueryClient();
   const { data } = useTanstackSuspenseQuery({
@@ -47,7 +47,7 @@ export type SuspenseQueryTuple<TData = unknown> =
   | readonly [
       QueryKey,
       () => Promise<TData>,
-      UseSuspenseQueryOptions<TData, TData> | undefined
+      UseSuspenseQueryOptions<TData, TData> | undefined,
     ];
 
 /**
@@ -59,7 +59,7 @@ export function useSuspenseQueries<T extends readonly unknown[]>(
   queries: {
     [K in keyof T]: SuspenseQueryTuple<T[K]>;
   },
-  invalidateOnUnmount = true
+  invalidateOnUnmount = true,
 ): T {
   const queryClient = useQueryClient();
   const results = useTanstackSuspenseQueries({

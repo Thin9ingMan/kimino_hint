@@ -66,7 +66,8 @@ test("Quiz Supplement Feature", async ({ page }) => {
         break;
       }
     }
-    if (!profileSynced && attempt < maxRetries - 1) {
+    // Wait before next retry, but not after the last attempt
+    if (attempt < maxRetries - 1) {
       await page.waitForTimeout(retryDelay);
     }
   }

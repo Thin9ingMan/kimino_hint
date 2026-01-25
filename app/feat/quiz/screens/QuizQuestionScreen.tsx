@@ -146,13 +146,17 @@ function QuizQuestionContent() {
   }
 
   // Early return for out of bounds question index
-  if (questionIndex >= quiz.questions.length || !question) {
+  if (questionIndex >= quiz.questions.length) {
     // All questions answered - redirect to result
     navigate(`/events/${eventId}/quiz/challenge/${targetUserId}/result`);
     return <Text>結果画面へ移動中...</Text>;
   }
 
-  const selectedChoice = question.choices.find(
+  // Type assertion: question is guaranteed to be defined after the above check
+  // since quiz.questions[questionIndex] exists when questionIndex < quiz.questions.length
+  const currentQuestion = quiz.questions[questionIndex];
+
+  const selectedChoice = currentQuestion.choices.find(
     (c) => c.id === selectedChoiceId,
   );
   const isCorrect = !!selectedChoice?.isCorrect;
@@ -174,11 +178,11 @@ function QuizQuestionContent() {
 
       <Paper withBorder p="lg" radius="md">
         <Title order={3} mb="xl">
-          {question.question}
+          {currentQuestion.question}
         </Title>
 
         <Stack gap="sm">
-          {question.choices.map((choice) => {
+          {currentQuestion.choices.map((choice) => {
             let color = undefined;
             let variant: "default" | "filled" | "light" = "default";
 
@@ -230,12 +234,12 @@ function QuizQuestionContent() {
             <Text size="sm">
               {isCorrect
                 ? "よくできました！"
-                : `正解は「${question.choices.find((c) => c.isCorrect)?.text}」でした。`}
+                : `正解は「${currentQuestion.choices.find((c) => c.isCorrect)?.text}」でした。`}
             </Text>
-            {question.explanation && (
+            {currentQuestion.explanation && (
               <Paper withBorder p="md" radius="md" bg="gray.0">
                 <Text size="md" fw={500}>
-                  解説: {question.explanation}
+                  解説: {currentQuestion.explanation}
                 </Text>
               </Paper>
             )}

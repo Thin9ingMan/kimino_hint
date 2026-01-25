@@ -176,6 +176,28 @@ test.describe("Full User Journey", () => {
     });
 
     // C. Answer Quiz (User A's quiz in sequential flow)
+    // Wait for lobby to be ready (all attendees have profile and quiz)
+    // The "クイズに挑戦" button is disabled when not all attendees are ready
+    let lobbyReady = false;
+    for (let i = 0; i < 10; i++) {
+      await page.reload();
+      await page.waitForTimeout(2000);
+      // Check if the "cannot start quiz" alert is NOT visible
+      const alertVisible = await page
+        .getByText("クイズを開始できません")
+        .isVisible()
+        .catch(() => false);
+      if (!alertVisible) {
+        lobbyReady = true;
+        break;
+      }
+      console.log(`Lobby not ready (attempt ${i + 1}), retrying...`);
+    }
+
+    if (!lobbyReady) {
+      throw new Error("Lobby did not become ready within expected time");
+    }
+
     await page.click("text=クイズに挑戦");
 
     // The quiz sequence will auto-navigate to first quiz (User A's quiz)

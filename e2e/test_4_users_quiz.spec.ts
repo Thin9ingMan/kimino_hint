@@ -103,36 +103,22 @@ test.describe('4 User Quiz Scenario', () => {
         // Wait for loading to finish
         await expect(page.getByText('読み込み中...')).not.toBeVisible({ timeout: 10000 });
 
-        const attendeeList = page.locator('.mantine-Badge-root').getByText(/.*人/).first();
-        try {
-            await expect(attendeeList).toBeVisible({ timeout: 10000 });
-            console.log("Attendee Badge Text:", await attendeeList.innerText());
-            await expect(attendeeList).toHaveText('4人');
-        } catch (e) {
-            console.log("Current Page Text:\n", await page.innerText('body'));
-            throw e;
-        }
+        // Verify all 4 users are displayed in the attendee list
+        await expect(page.getByText('User A')).toBeVisible({ timeout: 10000 });
+        await expect(page.getByText('User B')).toBeVisible();
+        await expect(page.getByText('User C')).toBeVisible();
+        await expect(page.getByText('User D')).toBeVisible();
 
 
 
         
-        // Go to Challenge List
+        // Go to Quiz Sequence (starts first quiz automatically)
         await page.click('text=クイズに挑戦');
         
-        // Wait for challenge list to load
-        await page.waitForURL(`**/quiz/challenges`, { timeout: 10000 });
+        // Wait for navigation to first quiz (User A's quiz since User A joined first)
+        // The quiz sequence screen automatically navigates to the first quiz question
+        await page.waitForURL(`**/quiz/challenge/**`, { timeout: 10000 });
         await page.waitForTimeout(1000);
-        
-        // Verify other 3 users are visible
-        await expect(page.getByText('User A')).toBeVisible({ timeout: 10000 });
-        await expect(page.getByText('User B')).toBeVisible({ timeout: 10000 });
-        await expect(page.getByText('User C')).toBeVisible({ timeout: 10000 });
-        // User D should NOT be in the challenge list (cannot challenge self)
-        await expect(page.getByText('User D')).not.toBeVisible();
-
-        // Play User A's Quiz
-        // Find card for User A and click Start
-        await page.locator('.mantine-Card-root', { hasText: 'User A' }).getByText('開始').click();
 
 
         await expect(page.getByText('Who is User A?')).toBeVisible();
@@ -141,15 +127,15 @@ test.describe('4 User Quiz Scenario', () => {
         await page.click('button:has-text("結果を見る")');
         await expect(page.getByText('結果')).toBeVisible();
 
-
-        // Return to List
-        await page.click('text=他のクイズに挑戦');
-
+        // Get profile reward
+        await page.click('text=プロフィールを取得');
+        await expect(page.getByText('プロフィール取得')).toBeVisible();
         
-        // Play User B's Quiz
-        await page.locator('.mantine-Card-root', { hasText: 'User B' }).getByText('開始').click();
-
-
+        // Continue to next quiz
+        await page.click('text=次のクイズへ');
+        await page.waitForURL(`**/quiz/challenge/**`, { timeout: 10000 });
+        
+        // Now should be on User B's quiz (sequential flow)
         await expect(page.getByText('Who is User B?')).toBeVisible();
         await page.click('button:has-text("User B")');
         await expect(page.getByText('正解！')).toBeVisible();

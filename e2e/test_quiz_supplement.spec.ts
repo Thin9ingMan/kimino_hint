@@ -47,21 +47,44 @@ test("Quiz Supplement Feature", async ({ page }) => {
     localStorage.setItem("jwtToken", t);
   }, cleanToken);
 
-  // Wait a bit and check if profile is actually there via console
+  // Wait for profile data to be synced by polling the API
   console.log("Waiting for backend to sync profile...");
-  await page.waitForTimeout(2000);
+  const maxRetries = 10;
+  const retryDelay = 1000;
+  let profileSynced = false;
+
+  for (let attempt = 0; attempt < maxRetries && !profileSynced; attempt++) {
+    const profileRes = await page.request.get(
+      "https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile",
+      { headers: { Authorization: token } },
+    );
+    if (profileRes.ok()) {
+      const profileData = await profileRes.json();
+      if (profileData?.profileData?.displayName === "補足テストユーザー") {
+        profileSynced = true;
+        console.log(`Profile synced after ${attempt + 1} attempt(s)`);
+        break;
+      }
+    }
+    if (!profileSynced && attempt < maxRetries - 1) {
+      await page.waitForTimeout(retryDelay);
+    }
+  }
+
+  if (!profileSynced) {
+    throw new Error("Profile failed to sync within timeout");
+  }
+
   await page.reload();
-  await page.waitForTimeout(1000);
 
   // 3. Navigate to Quiz Edit Screen
   await page.goto(`http://localhost:5173/events/${eventId}/quiz/edit`);
 
-  // 4. Wait for page to load
-  await expect(page.getByText("クイズ編集")).toBeVisible({ timeout: 10000 });
+  // 4. Wait for page to load and quiz editor to be ready with profile data
+  await expect(page.getByText("クイズ編集")).toBeVisible({ timeout: 15000 });
 
-  // 5. Find a question card and add a supplement/explanation
-  // Wait for the quiz editor to be ready and questions to load
-  await page.waitForTimeout(2000);
+  // 5. Wait for the quiz editor content to load (profile-based questions)
+  // This ensures profile data has been properly loaded by the app
 
   // Look for the "補足説明" label (it's in a Divider element)
   await expect(page.getByText("補足説明（任意）")).toBeVisible({
@@ -185,7 +208,8 @@ test("Quiz Supplement Feature", async ({ page }) => {
   // 12. Go to lobby and click on quiz challenge
   await page.goto(`http://localhost:5173/events/${eventId}`);
   await page.reload();
-  await page.waitForTimeout(2000);
+  // Wait for the quiz challenge button to be visible and clickable
+  await expect(page.getByText("クイズに挑戦")).toBeVisible({ timeout: 10000 });
   await page.click("text=クイズに挑戦");
 
   // 13. Wait for first question
@@ -196,13 +220,12 @@ test("Quiz Supplement Feature", async ({ page }) => {
     .locator("button")
     .filter({ hasText: /工学部|文学部|経済学部/ })
     .first();
+  await expect(firstChoice).toBeVisible({ timeout: 10000 });
   await firstChoice.click();
 
-  // 15. Wait for result to show
-  await page.waitForTimeout(1000);
-
+  // 15. Wait for result to show - the supplement text should appear after answering
   // 16. Verify that the supplement/explanation is displayed
-  await expect(page.getByText(supplementText)).toBeVisible({ timeout: 5000 });
+  await expect(page.getByText(supplementText)).toBeVisible({ timeout: 10000 });
 
   console.log("Quiz supplement feature verified successfully");
 });

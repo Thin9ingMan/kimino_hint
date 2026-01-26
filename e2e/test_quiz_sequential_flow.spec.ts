@@ -142,7 +142,7 @@ test.describe("Quiz Sequential Flow", () => {
     await page.click('button:has-text("結果を見る")');
 
     // Result screen should show
-    await expect(page.getByText("結果")).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'クイズ結果' })).toBeVisible();
 
     // Navigate to rewards screen
     await page.click("text=プロフィールを取得");
@@ -160,7 +160,7 @@ test.describe("Quiz Sequential Flow", () => {
     await page.click('button:has-text("結果を見る")');
 
     // Result screen
-    await expect(page.getByText("結果")).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'クイズ結果' })).toBeVisible();
 
     // Navigate to rewards screen
     await page.click("text=プロフィールを取得");

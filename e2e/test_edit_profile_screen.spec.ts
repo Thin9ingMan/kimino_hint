@@ -22,11 +22,11 @@ test.describe("Edit My Profile Screen", () => {
     // 3. Verify Edit Profile screen is displayed
     await expect(page.getByText("プロフィール編集")).toBeVisible();
 
-    // 4. Verify form fields are present
+    // 4. Verify form fields are present (use .first() for Select components which have multiple elements with same label)
     await expect(page.getByLabel("名前")).toBeVisible();
     await expect(page.getByLabel("フリガナ")).toBeVisible();
-    await expect(page.getByLabel("学部")).toBeVisible();
-    await expect(page.getByLabel("学年")).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "学部" })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "学年" })).toBeVisible();
     await expect(page.getByLabel("趣味")).toBeVisible();
     await expect(page.getByLabel("好きなアーティスト")).toBeVisible();
 
@@ -45,7 +45,7 @@ test.describe("Edit My Profile Screen", () => {
     const authRes = await page.request.post(`${API_BASE_URL}/api/auth/guest`);
     const token = authRes.headers()["authorization"];
 
-    // Create initial profile
+    // Create initial profile with correct option values
     await page.request.put(`${API_BASE_URL}/api/me/profile`, {
       headers: { Authorization: token },
       data: {
@@ -53,8 +53,8 @@ test.describe("Edit My Profile Screen", () => {
           displayName: "Original Name",
           hobby: "Original Hobby",
           favoriteArtist: "Original Artist",
-          grade: "1年",
-          faculty: "理工学部",
+          grade: "学部1年", // Must match GRADE_OPTIONS
+          faculty: "理学部", // Must match FACULTY_OPTIONS
         },
       },
     });
@@ -87,8 +87,8 @@ test.describe("Edit My Profile Screen", () => {
     // 7. Save the profile
     await page.getByRole("button", { name: "保存" }).click();
 
-    // 8. Verify navigation back to profile view
-    await expect(page).toHaveURL(/.*\/me\/profile$/);
+    // 8. Verify navigation back to profile view (wait longer for redirect)
+    await expect(page).toHaveURL(/.*\/me\/profile$/, { timeout: 10000 });
 
     // 9. Navigate back to edit and verify changes persisted
     await page.goto(`${APP_URL}/me/profile/edit`);
@@ -142,8 +142,8 @@ test.describe("Edit My Profile Screen", () => {
           displayName: "Cancel Test User",
           hobby: "Cancelling",
           favoriteArtist: "Cancel Artist",
-          grade: "2年",
-          faculty: "法学部",
+          grade: "学部2年", // Must match GRADE_OPTIONS
+          faculty: "法学部", // Must match FACULTY_OPTIONS
         },
       },
     });

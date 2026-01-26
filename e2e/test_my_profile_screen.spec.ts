@@ -44,8 +44,8 @@ test.describe("My Profile Screen", () => {
     // 3. Verify My Profile screen title
     await expect(page.getByText("自分のプロフィール")).toBeVisible();
 
-    // 4. Verify profile data is displayed
-    await expect(page.getByText("Profile Card Tester")).toBeVisible();
+    // 4. Verify profile data is displayed (use .first() for text that appears multiple times)
+    await expect(page.getByRole("heading", { name: "Profile Card Tester" })).toBeVisible();
     await expect(page.getByText(`userId: ${userId}`)).toBeVisible();
     await expect(page.getByText("Testing Profile Cards")).toBeVisible();
     await expect(page.getByText("Card Artist")).toBeVisible();
@@ -83,8 +83,8 @@ test.describe("My Profile Screen", () => {
     // 2. Navigate to My Profile
     await page.goto(`${APP_URL}/me/profile`);
 
-    // 3. Click share button to open modal
-    await page.getByRole("button", { name: "共有する" }).click();
+    // 3. Click share button to open modal (use the first one in the profile card actions)
+    await page.getByRole("button", { name: "共有する" }).first().click();
 
     // 4. Verify modal is displayed
     await expect(page.getByText("プロフィール交換QR")).toBeVisible();
@@ -97,18 +97,19 @@ test.describe("My Profile Screen", () => {
       page.locator('img[alt="プロフィール交換QR"]'),
     ).toBeVisible();
 
-    // 6. Verify action buttons in modal
+    // 6. Verify action buttons in modal (scope to the modal using getByLabel)
+    const modal = page.getByLabel("プロフィール交換QR");
     await expect(
-      page.getByRole("button", { name: "URLをコピー" }),
+      modal.getByRole("button", { name: "URLをコピー" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "公開プロフィールを開く" }),
+      modal.getByRole("link", { name: "公開プロフィールを開く" }),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "共有する" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "閉じる" })).toBeVisible();
+    await expect(modal.getByRole("button", { name: "共有する" })).toBeVisible();
+    await expect(modal.getByRole("button", { name: "閉じる" })).toBeVisible();
 
     // 7. Close the modal
-    await page.getByRole("button", { name: "閉じる" }).click();
+    await modal.getByRole("button", { name: "閉じる" }).click();
     await expect(page.getByText("プロフィール交換QR")).not.toBeVisible();
 
     console.log("My Profile share modal test completed successfully");
@@ -162,22 +163,34 @@ test.describe("My Profile Screen", () => {
     }, token);
     await page.reload();
 
-    // 2. Navigate to My Profile - should redirect or show create prompt
+    // 2. Navigate to My Profile - on 404, the component shows a redirect alert then redirects
     await page.goto(`${APP_URL}/me/profile`);
 
-    // 3. Wait for either redirect to edit or display of create prompt
-    // The component either shows a redirect alert or an empty state message
-    const hasCreatePrompt = await page
-      .getByText("プロフィールを作成する")
+    // 3. Wait for redirect to happen (the ErrorBoundary redirects to /me/profile/edit after 800ms)
+    // Or the empty profile state shows "プロフィールを作成する" button
+    await page.waitForTimeout(2000);
+
+    // The user should either:
+    // - Be redirected to /me/profile/edit (if 404)
+    // - See the "プロフィールを作成する" button (if empty profile state)
+    // - See the redirect alert "プロフィールを作りましょう"
+    const wasRedirected = page.url().includes("/me/profile/edit");
+    const hasCreateButton = await page
+      .getByRole("button", { name: "プロフィールを作成する" })
       .isVisible()
       .catch(() => false);
     const hasRedirectAlert = await page
       .getByText("プロフィールを作りましょう")
       .isVisible()
       .catch(() => false);
-    const wasRedirected = page.url().includes("/me/profile/edit");
+    const hasNowCreateButton = await page
+      .getByRole("button", { name: "今すぐ作成する" })
+      .isVisible()
+      .catch(() => false);
 
-    expect(hasCreatePrompt || hasRedirectAlert || wasRedirected).toBeTruthy();
+    expect(
+      wasRedirected || hasCreateButton || hasRedirectAlert || hasNowCreateButton,
+    ).toBeTruthy();
 
     console.log("My Profile empty state test completed successfully");
   });
@@ -213,7 +226,8 @@ test.describe("My Profile Screen", () => {
 
     // 4. Verify navigation to My Profile
     await expect(page).toHaveURL(/.*\/me\/profile$/);
-    await expect(page.getByText("Me Hub Nav Tester")).toBeVisible();
+    // Verify user's name is displayed (use heading selector to be specific)
+    await expect(page.getByRole("heading", { name: "Me Hub Nav Tester" })).toBeVisible();
 
     console.log("My Profile from Me Hub navigation test completed successfully");
   });

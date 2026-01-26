@@ -155,8 +155,8 @@ test.describe("Profile List Screen", () => {
     // 2. Verify Home screen is displayed
     await expect(page.getByText("キミのヒント")).toBeVisible();
 
-    // 3. Click on profiles button (labeled as "みんなのプロフィール")
-    await page.getByRole("link", { name: "みんなのプロフィール" }).click();
+    // 3. Click on profiles button (the text is split with line break, use link to /profiles)
+    await page.locator('a[href="/profiles"]').click();
 
     // 4. Verify navigation to Profile List
     await expect(page).toHaveURL(/.*\/profiles$/);
@@ -166,12 +166,27 @@ test.describe("Profile List Screen", () => {
   });
 
   test("Profile list back navigation to Me Hub", async ({ page }) => {
-    // 1. Setup Guest User with profile
-    const authRes = await page.request.post(`${API_BASE_URL}/api/auth/guest`);
-    const token = authRes.headers()["authorization"];
+    // 1. Create User A (will send friendship)
+    const userA_res = await page.request.post(`${API_BASE_URL}/api/auth/guest`);
+    const tokenA = userA_res.headers()["authorization"];
 
     await page.request.put(`${API_BASE_URL}/api/me/profile`, {
-      headers: { Authorization: token },
+      headers: { Authorization: tokenA },
+      data: {
+        profileData: {
+          displayName: "Sender For Nav Test",
+          hobby: "Sending",
+          favoriteArtist: "Sender Artist",
+        },
+      },
+    });
+
+    // 2. Create User B (will receive friendship and test navigation)
+    const userB_res = await page.request.post(`${API_BASE_URL}/api/auth/guest`);
+    const tokenB = userB_res.headers()["authorization"];
+
+    await page.request.put(`${API_BASE_URL}/api/me/profile`, {
+      headers: { Authorization: tokenB },
       data: {
         profileData: {
           displayName: "Back Nav Tester",
@@ -181,21 +196,42 @@ test.describe("Profile List Screen", () => {
       },
     });
 
-    // Login
+    // Get User B's ID
+    const meResB = await page.request.get(`${API_BASE_URL}/api/me`, {
+      headers: { Authorization: tokenB },
+    });
+    const userBData = await meResB.json();
+    const userBId = userBData.id;
+
+    // 3. User A sends friendship to User B (so マイページへ button appears)
+    await page.request.post(
+      `${API_BASE_URL}/api/users/${userBId}/friendship`,
+      {
+        headers: { Authorization: tokenA },
+        data: {
+          meta: { source: "profile_list_nav_test" },
+        },
+      },
+    );
+
+    // 4. Login as User B
     await page.goto(APP_URL);
     await page.evaluate((t) => {
       localStorage.setItem("jwtToken", t.replace("Bearer ", ""));
-    }, token);
+    }, tokenB);
     await page.reload();
 
-    // 2. Navigate to Profile List
+    // 5. Navigate to Profile List
     await page.goto(`${APP_URL}/profiles`);
     await expect(page.getByText("受け取ったプロフィール")).toBeVisible();
 
-    // 3. Click on back to Me Hub button
+    // 6. Verify friendship is displayed (button only shows when there are items)
+    await expect(page.getByText("Sender For Nav Test")).toBeVisible({ timeout: 10000 });
+
+    // 7. Click on back to Me Hub button
     await page.getByRole("link", { name: "マイページへ" }).click();
 
-    // 4. Verify navigation to Me Hub
+    // 8. Verify navigation to Me Hub
     await expect(page).toHaveURL(/.*\/me$/);
     await expect(page.getByText("マイページ")).toBeVisible();
 

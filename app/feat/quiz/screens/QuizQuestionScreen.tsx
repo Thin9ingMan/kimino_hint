@@ -127,7 +127,8 @@ function QuizQuestionContent() {
     // Start countdown timer
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 0.1) {
+        const newTime = prev - 0.1;
+        if (newTime <= 0) {
           // Time's up - auto submit with no answer
           if (timerRef.current) {
             clearInterval(timerRef.current);
@@ -137,9 +138,9 @@ function QuizQuestionContent() {
           handleAutoSubmit();
           return 0;
         }
-        return prev - 0.1;
+        return newTime;
       });
-    }, 100);
+    }, 100) as unknown as number;
 
     return () => {
       if (timerRef.current) {
@@ -314,7 +315,7 @@ function QuizQuestionContent() {
                 ? "よくできました！"
                 : selectedChoiceId
                   ? `正解は「${question.choices.find((c) => c.isCorrect)?.text}」でした。`
-                  : "時間切れです。正解は「" + question.choices.find((c) => c.isCorrect)?.text + "」でした。"}
+                  : `時間切れです。正解は「${question.choices.find((c) => c.isCorrect)?.text}」でした。`}
             </Text>
             {question.explanation && (
               <Paper withBorder p="md" radius="md" bg="gray.0">

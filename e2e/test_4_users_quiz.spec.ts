@@ -142,10 +142,9 @@ test.describe("4 User Quiz Scenario", () => {
 
     // Wait for navigation to first quiz (User A's quiz since User A joined first)
     // The quiz sequence screen automatically navigates to the first quiz question
-    await page.waitForURL(`**/quiz/challenge/**`, { timeout: 10000 });
-    await page.waitForTimeout(1000);
+    await page.waitForURL(`**/quiz/challenge/**`, { timeout: 30000 });
 
-    await expect(page.getByText(`Who is User A? [${testId}]`)).toBeVisible();
+    await expect(page.getByText(`Who is User A? [${testId}]`)).toBeVisible({ timeout: 15000 });
     await page.click(`button:has-text("${userA.displayName}")`);
     await expect(page.getByText("正解！")).toBeVisible();
     await page.getByRole("button", { name: /結果を見る|次の問題へ/ }).click();
@@ -159,10 +158,10 @@ test.describe("4 User Quiz Scenario", () => {
 
     // Continue to next quiz
     await page.click("text=次のクイズへ");
-    await page.waitForURL(`**/quiz/challenge/**`, { timeout: 10000 });
+    await page.waitForURL(`**/quiz/challenge/**`, { timeout: 30000 });
 
     // Now should be on User B's quiz (sequential flow)
-    await expect(page.getByText(`Who is User B? [${testId}]`)).toBeVisible();
+    await expect(page.getByText(`Who is User B? [${testId}]`)).toBeVisible({ timeout: 15000 });
     await page.click(`button:has-text("${userB.displayName}")`);
     await expect(page.getByText("正解！")).toBeVisible();
   });

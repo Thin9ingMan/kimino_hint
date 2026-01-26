@@ -215,6 +215,7 @@ test.describe("Quiz Sequential Flow", () => {
 
     // --- Completion screen ---
     await expect(page.getByText("すべてのクイズが完了しました")).toBeVisible();
+    await expect(page.getByText("プロフィール一覧")).toBeVisible();
     await expect(page.getByText("ロビーへ戻る")).toBeVisible();
 
     // Return to lobby

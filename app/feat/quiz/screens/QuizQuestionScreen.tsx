@@ -91,29 +91,6 @@ function QuizQuestionContent() {
   const [showResult, setShowResult] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(10);
 
-  // Timer logic - 10 seconds countdown
-  useEffect(() => {
-    // Don't run timer if result is already shown
-    if (showResult) return;
-
-    // Reset timer when question changes
-    setTimeRemaining(10);
-
-    const interval = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          // Time's up! Auto-advance without selecting an answer
-          clearInterval(interval);
-          handleTimeout();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [questionIndex, showResult, handleTimeout]);
-
   const handleTimeout = useCallback(() => {
     // Mark as incorrect (no answer selected)
     const storageKey = `quiz_${eventId}_${targetUserId}_answers`;
@@ -140,6 +117,29 @@ function QuizQuestionContent() {
       navigate(`/events/${eventId}/quiz/challenge/${targetUserId}/result`);
     }
   }, [eventId, targetUserId, questionIndex, question.id, questionNo, quiz.questions.length, navigate]);
+
+  // Timer logic - 10 seconds countdown
+  useEffect(() => {
+    // Don't run timer if result is already shown
+    if (showResult) return;
+
+    // Reset timer when question changes
+    setTimeRemaining(10);
+
+    const interval = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          // Time's up! Auto-advance without selecting an answer
+          clearInterval(interval);
+          handleTimeout();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [questionIndex, showResult, handleTimeout]);
 
   const handleAnswer = useCallback(
     (choiceId: string) => {

@@ -49,12 +49,14 @@ export interface Quiz {
 export interface QuizAnswer {
   /** ID of the question this answers */
   questionId: string;
-  /** ID of the choice that was selected */
-  selectedChoiceId: string;
+  /** ID of the choice that was selected (null if timed out) */
+  selectedChoiceId: string | null;
   /** Whether the answer was correct */
   isCorrect: boolean;
   /** When this answer was submitted */
   answeredAt: string;
+  /** Whether this answer timed out */
+  timedOut?: boolean;
 }
 
 /**

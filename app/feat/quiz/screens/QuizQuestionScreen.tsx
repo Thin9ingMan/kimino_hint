@@ -7,8 +7,10 @@ import {
   Title,
   Group,
   Progress,
+  RingProgress,
+  Center,
 } from "@mantine/core";
-import { Suspense, useCallback, useState, useMemo } from "react";
+import { Suspense, useCallback, useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
@@ -87,6 +89,57 @@ function QuizQuestionContent() {
   const question = quiz.questions[questionIndex];
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(10);
+
+  // Timer logic - 10 seconds countdown
+  useEffect(() => {
+    // Don't run timer if result is already shown
+    if (showResult) return;
+
+    // Reset timer when question changes
+    setTimeRemaining(10);
+
+    const interval = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          // Time's up! Auto-advance without selecting an answer
+          clearInterval(interval);
+          handleTimeout();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [questionIndex, showResult, handleTimeout]);
+
+  const handleTimeout = useCallback(() => {
+    // Mark as incorrect (no answer selected)
+    const storageKey = `quiz_${eventId}_${targetUserId}_answers`;
+    const stored = sessionStorage.getItem(storageKey);
+    const answers = stored ? JSON.parse(stored) : [];
+
+    answers[questionIndex] = {
+      questionId: question.id,
+      selectedChoiceId: null,
+      isCorrect: false,
+      answeredAt: new Date().toISOString(),
+      timedOut: true,
+    };
+
+    sessionStorage.setItem(storageKey, JSON.stringify(answers));
+
+    // Don't update score (already 0 for this question)
+    // Auto-advance to next question
+    if (questionIndex + 1 < quiz.questions.length) {
+      navigate(
+        `/events/${eventId}/quiz/challenge/${targetUserId}/${questionNo + 1}`,
+      );
+    } else {
+      navigate(`/events/${eventId}/quiz/challenge/${targetUserId}/result`);
+    }
+  }, [eventId, targetUserId, questionIndex, question.id, questionNo, quiz.questions.length, navigate]);
 
   const handleAnswer = useCallback(
     (choiceId: string) => {
@@ -147,6 +200,8 @@ function QuizQuestionContent() {
   );
   const isCorrect = !!selectedChoice?.isCorrect;
   const progress = (questionNo / quiz.questions.length) * 100;
+  const timerPercentage = (timeRemaining / 10) * 100;
+  const timerColor = timeRemaining <= 3 ? "red" : timeRemaining <= 5 ? "orange" : "blue";
 
   return (
     <Stack gap="md">
@@ -161,6 +216,29 @@ function QuizQuestionContent() {
       </Group>
 
       <Progress value={progress} size="sm" />
+
+      {/* Timer Display */}
+      {!showResult && (
+        <Paper withBorder p="md" radius="md" bg="gray.0">
+          <Group justify="center" gap="md">
+            <RingProgress
+              size={80}
+              thickness={8}
+              sections={[{ value: timerPercentage, color: timerColor }]}
+              label={
+                <Center>
+                  <Text size="xl" fw={700} data-testid="quiz-timer">
+                    {timeRemaining}
+                  </Text>
+                </Center>
+              }
+            />
+            <Text size="md" fw={500}>
+              残り時間: {timeRemaining}秒
+            </Text>
+          </Group>
+        </Paper>
+      )}
 
       <Paper withBorder p="lg" radius="md">
         <Title order={3} mb="xl">

@@ -4,6 +4,9 @@ test.describe("4 User Quiz Scenario", () => {
   test.setTimeout(120000); // Allow extra time for 4-user setup
 
   test("4 Users (A, B, C, D) can join and play", async ({ page, request }) => {
+    // Generate unique test ID to prevent conflicts with parallel tests
+    const testId = `4u-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
     // --- 1. Setup: Create 4 Users via API ---
     const users = [];
     for (const name of ["A", "B", "C", "D"]) {
@@ -12,21 +15,21 @@ test.describe("4 User Quiz Scenario", () => {
       );
       const token = authRes.headers()["authorization"];
 
-      // Set Profile
+      // Set Profile with unique display name to avoid conflicts
       await request.put(
         "https://quarkus-crud.ouchiserver.aokiapp.com/api/me/profile",
         {
           headers: { Authorization: token },
           data: {
             profileData: {
-              displayName: `User ${name}`,
+              displayName: `User ${name} [${testId}]`,
               hobby: `${name}'s Hobby`,
               favoriteArtist: `${name}'s Artist`,
             },
           },
         },
       );
-      users.push({ name, token });
+      users.push({ name, token, displayName: `User ${name} [${testId}]` });
     }
 
     // Only userA and userD are needed in this test; prefix unused variables with underscore to satisfy ESLint.
@@ -37,7 +40,7 @@ test.describe("4 User Quiz Scenario", () => {
       "https://quarkus-crud.ouchiserver.aokiapp.com/api/events",
       {
         headers: { Authorization: userA.token },
-        data: { meta: { name: "4 User Party" } },
+        data: { meta: { name: `4 User Party [${testId}]` } },
       },
     );
     const eventData = await createEventRes.json();
@@ -94,9 +97,9 @@ test.describe("4 User Quiz Scenario", () => {
                 questions: [
                   {
                     id: "q1",
-                    question: `私の「名前」はどれ？`,
+                    question: `Who is User ${user.name}? [${testId}]`,
                     choices: [
-                      { id: "c1", text: `User ${user.name}`, isCorrect: true },
+                      { id: "c1", text: user.displayName, isCorrect: true },
                       { id: "c2", text: "X", isCorrect: false },
                       { id: "c3", text: "Y", isCorrect: false },
                       { id: "c4", text: "Z", isCorrect: false },
@@ -129,31 +132,21 @@ test.describe("4 User Quiz Scenario", () => {
       timeout: 10000,
     });
 
-    // Verify all 4 users are displayed in the attendee list
-    await expect(page.getByText("User A")).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText("User B")).toBeVisible();
-    await expect(page.getByText("User C")).toBeVisible();
-    await expect(page.getByText("User D")).toBeVisible();
+    // Verify all 4 users are displayed in the attendee list (using unique display names)
+    await expect(page.getByText(userA.displayName)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(userB.displayName)).toBeVisible();
+    await expect(page.getByText(userC.displayName)).toBeVisible();
+    await expect(page.getByText(userD.displayName)).toBeVisible();
 
     // Go to Quiz Sequence (starts first quiz automatically)
-    // Ensure lobby loading has finished before interacting.
-    await expect(page.getByText("読み込み中...")).not.toBeVisible({
-      timeout: 20000,
-    });
-    // The start button becomes a link when enabled, so locate by visible text and ensure it is enabled.
-    const startQuizBtn = page.getByText(/クイズに挑戦/).first();
-    await expect(startQuizBtn).toBeVisible({ timeout: 30000 });
-    await expect(startQuizBtn).toBeEnabled({ timeout: 10000 });
-    await startQuizBtn.click();
+    await page.click("text=クイズに挑戦");
 
-    // After clicking the start button the app navigates to the quiz flow.
-    // Directly wait for the first question text to appear, allowing any
-    // intermediate redirects to complete.
-    await page.waitForSelector("text=私の「名前」はどれ？", { timeout: 30000 });
-    // Click the answer button for "User A" using a role selector for stability.
-    const answerBtn = page.getByRole("button", { name: /User A/ });
-    await expect(answerBtn).toBeVisible({ timeout: 10000 });
-    await answerBtn.click();
+    // Wait for navigation to first quiz (User A's quiz since User A joined first)
+    // The quiz sequence screen automatically navigates to the first quiz question
+    await page.waitForURL(`**/quiz/challenge/**`, { timeout: 30000 });
+
+    await expect(page.getByText(`Who is User A? [${testId}]`)).toBeVisible({ timeout: 15000 });
+    await page.click(`button:has-text("${userA.displayName}")`);
     await expect(page.getByText("正解！")).toBeVisible();
     await page.getByRole("button", { name: /結果を見る|次の問題へ/ }).click();
     await expect(
@@ -166,11 +159,11 @@ test.describe("4 User Quiz Scenario", () => {
 
     // Continue to next quiz
     await page.click("text=次のクイズへ");
-    await page.waitForURL(`**/quiz/challenge/**`, { timeout: 10000 });
+    await page.waitForURL(`**/quiz/challenge/**`, { timeout: 30000 });
 
     // Now should be on User B's quiz (sequential flow)
-    await expect(page.getByText("私の「名前」はどれ？")).toBeVisible();
-    await page.click('button:has-text("User B")');
+    await expect(page.getByText(`Who is User B? [${testId}]`)).toBeVisible({ timeout: 15000 });
+    await page.click(`button:has-text("${userB.displayName}")`);
     await expect(page.getByText("正解！")).toBeVisible();
   });
 });

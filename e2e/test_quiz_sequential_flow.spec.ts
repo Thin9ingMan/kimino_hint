@@ -160,10 +160,7 @@ test.describe("Quiz Sequential Flow", () => {
     });
 
     // Result screen should show
-    // The result heading may appear multiple times; use the first occurrence for stability.
-    await expect(page.getByText("結果").first()).toBeVisible({
-      timeout: 10000,
-    });
+    await expect(page.getByRole('heading', { name: 'クイズ結果' })).toBeVisible();
 
     // Navigate to rewards screen
     await page.click("text=プロフィールを取得");
@@ -180,10 +177,8 @@ test.describe("Quiz Sequential Flow", () => {
     await expect(page.getByText("正解！")).toBeVisible();
     await page.click('button:has-text("結果を見る")');
 
-    // Result screen – use the first occurrence to avoid strict mode violations.
-    await expect(page.getByText("結果").first()).toBeVisible({
-      timeout: 10000,
-    });
+    // Result screen
+    await expect(page.getByRole('heading', { name: 'クイズ結果' })).toBeVisible();
 
     // Navigate to rewards screen
     await page.click("text=プロフィールを取得");

@@ -10,13 +10,12 @@ import {
   TextInput,
 } from "@mantine/core";
 import { Suspense, useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { useMyProfile } from "@/shared/profile/hooks";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 import { FACULTY_OPTIONS, GRADE_OPTIONS } from "@/shared/profile/options";
 
 // New Spec rule: do NOT import legacy UI from `src/components/*`.
@@ -85,6 +84,8 @@ function getString(v: unknown): string {
 
 function EditProfileForm() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
 
   // 初期データ取得（共通フックを使用）
   const initialData = useMyProfile();
@@ -159,14 +160,15 @@ function EditProfileForm() {
           },
         });
 
-        navigate("/me/profile", { replace: true });
+        // Navigate to returnTo URL if provided, otherwise go to profile page
+        navigate(returnTo || "/me/profile", { replace: true });
       } catch {
         setFormError("プロフィールの更新に失敗しました");
       } finally {
         setSaving(false);
       }
     },
-    [navigate, profile, validateProfile],
+    [navigate, profile, validateProfile, returnTo],
   );
 
   const previewRows = useMemo(

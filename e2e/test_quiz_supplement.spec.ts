@@ -7,7 +7,8 @@ test("Quiz Supplement Feature", async ({ page }) => {
   const authRes = await page.request.post(
     "https://quarkus-crud.ouchiserver.aokiapp.com/api/auth/guest",
   );
-  const authData = await authRes.json();
+  // authData is not needed for the test logic; retrieve token only.
+  const _authData = await authRes.json();
   const token = authRes.headers()["authorization"];
 
   // Create profile

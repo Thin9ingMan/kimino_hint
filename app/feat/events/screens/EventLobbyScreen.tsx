@@ -190,6 +190,9 @@ function EventLobbyContent() {
     ? String(eventData.meta.description ?? "")
     : "";
 
+  const myAttendance = attendees.find((a) => a.userId === me.id);
+  const hasMyQuiz = !!myAttendance?.hasQuiz;
+
   return (
     <Stack gap="md">
       <Paper withBorder p="md" radius="md">
@@ -318,7 +321,13 @@ function EventLobbyContent() {
       />
 
       <Stack gap="sm">
-        <Button component={Link} to={`/events/${eventId}/quiz`} fullWidth>
+        <Button
+          component={Link}
+          to={`/events/${eventId}/quiz`}
+          fullWidth
+          variant={hasMyQuiz ? "light" : "gradient"}
+          size={hasMyQuiz ? "sm" : "xl"}
+        >
           自分のクイズを編集
         </Button>
         <Button
@@ -329,7 +338,8 @@ function EventLobbyContent() {
               : undefined
           }
           fullWidth
-          variant="light"
+          variant="gradient"
+          size={allAttendeesReady ? "xl" : "sm"}
           disabled={!allAttendeesReady}
           onClick={
             allAttendeesReady
@@ -342,7 +352,7 @@ function EventLobbyContent() {
         >
           クイズに挑戦
         </Button>
-        <Button component={Link} to="/events" variant="default" fullWidth>
+        <Button component={Link} to="/events" variant="transparent" fullWidth>
           イベント一覧へ
         </Button>
       </Stack>
@@ -367,4 +377,3 @@ export function EventLobbyScreen() {
 }
 
 EventLobbyScreen.loader = loader;
-

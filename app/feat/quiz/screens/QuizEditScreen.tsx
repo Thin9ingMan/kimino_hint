@@ -498,6 +498,16 @@ function QuizEditContent() {
     return filtered[Math.floor(Math.random() * filtered.length)];
   };
 
+  /**
+   * Get multiple unique random items from source array
+   * This ensures no duplicates in the returned array
+   */
+  const getRandomMultiple = (source: string[], count: number, exclude: string[]) => {
+    const filtered = source.filter((item) => !exclude.includes(item));
+    const shuffled = shuffleArray(filtered);
+    return shuffled.slice(0, count);
+  };
+
   const rerollChoice = async (qIndex: number, choiceId: string) => {
     const question = questions[qIndex];
     const key = `${question.id}-${choiceId}`;
@@ -521,8 +531,16 @@ function QuizEditContent() {
           },
         });
         const output = Array.from(response.output || []);
-        if (output.length > 0) {
-          newValue = output[0];
+        // Filter out current choices to avoid duplicates, then pick randomly
+        const availableChoices = output.filter(
+          (name) => !currentChoiceTexts.includes(name),
+        );
+        if (availableChoices.length > 0) {
+          newValue =
+            availableChoices[Math.floor(Math.random() * availableChoices.length)];
+        } else if (output.length > 0) {
+          // Fallback to any available output if all are duplicates
+          newValue = output[Math.floor(Math.random() * output.length)];
         }
       } else if (question.category === "hobbies") {
         newValue = getRandomSingle(falseHobbies, currentChoiceTexts);
@@ -566,8 +584,8 @@ function QuizEditContent() {
         }),
       ]);
 
-      const diffs = Array.from(differentNames.output || []).slice(0, 3);
-      const sims = Array.from(similarNames.output || []).slice(0, 3);
+      const diffs = shuffleArray(Array.from(differentNames.output || [])).slice(0, 3);
+      const sims = shuffleArray(Array.from(similarNames.output || [])).slice(0, 3);
 
       const newQuestions = questions.map((q) => {
         if (q.type !== "fixed") return q;
@@ -582,29 +600,13 @@ function QuizEditContent() {
         } else if (q.category === "verySimilarNames") {
           newWrongTexts = sims;
         } else if (q.category === "hobbies") {
-          newWrongTexts = [
-            getRandomSingle(falseHobbies, [hobby]),
-            getRandomSingle(falseHobbies, [hobby]),
-            getRandomSingle(falseHobbies, [hobby]),
-          ];
+          newWrongTexts = getRandomMultiple(falseHobbies, 3, [hobby]);
         } else if (q.category === "artists") {
-          newWrongTexts = [
-            getRandomSingle(falseArtists, [favoriteArtist]),
-            getRandomSingle(falseArtists, [favoriteArtist]),
-            getRandomSingle(falseArtists, [favoriteArtist]),
-          ];
+          newWrongTexts = getRandomMultiple(falseArtists, 3, [favoriteArtist]);
         } else if (q.category === "faculty") {
-          newWrongTexts = [
-            getRandomSingle(faculty, [myFaculty]),
-            getRandomSingle(faculty, [myFaculty]),
-            getRandomSingle(faculty, [myFaculty]),
-          ];
+          newWrongTexts = getRandomMultiple(faculty, 3, [myFaculty]);
         } else if (q.category === "grade") {
-          newWrongTexts = [
-            getRandomSingle(grade, [myGrade]),
-            getRandomSingle(grade, [myGrade]),
-            getRandomSingle(grade, [myGrade]),
-          ];
+          newWrongTexts = getRandomMultiple(grade, 3, [myGrade]);
         }
 
         const newChoices = [

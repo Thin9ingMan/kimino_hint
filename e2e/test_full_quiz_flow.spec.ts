@@ -185,26 +185,30 @@ test.describe("Full User Journey", () => {
       timeout: 10000,
     });
 
-    // D. Answer Quiz (User A's quiz in sequential flow)
-    // Ensure the lobby is ready – the UI shows a warning when not all attendees are ready.
-    let _ready = false;
+    // C. Answer Quiz (User A's quiz in sequential flow)
+    // Wait for lobby to be ready (all attendees have profile and quiz)
+    // The "クイズに挑戦" button is disabled when not all attendees are ready
+    let lobbyReady = false;
     for (let i = 0; i < 5; i++) {
-      if (
-        !(await page
-          .getByText("クイズを開始できません")
-          .isVisible()
-          .catch(() => false))
-      ) {
-        _ready = true;
-        break;
-      }
-      console.log(`Lobby not ready (attempt ${i + 1}), reloading...`);
       await page.reload();
       await page.waitForTimeout(2000);
+      // Check if the "cannot start quiz" alert is NOT visible
+      const alertVisible = await page
+        .getByText("クイズを開始できません")
+        .isVisible()
+        .catch(() => false);
+      if (!alertVisible) {
+        lobbyReady = true;
+        break;
+      }
+      console.log(`Lobby not ready (attempt ${i + 1}), retrying...`);
     }
-    if (!_ready) {
-      throw new Error("Lobby not ready for quiz start");
+
+    if (!lobbyReady) {
+      throw new Error("Lobby did not become ready within expected time");
     }
+
+    await page.click("text=クイズに挑戦");
 
     // Click the button that starts the quiz flow and wait for navigation.
     await page

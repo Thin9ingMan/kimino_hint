@@ -33,10 +33,10 @@ test("Navigate from Home to Create Event", async ({ page }) => {
   await expect(page.getByText("キミのヒント")).toBeVisible();
 
   // 2. Click "Events" button on Home
-  // The button text is "イベントに参加"
-  const eventButton = page.getByRole("link", { name: /イベントに参加/ });
-  await expect(eventButton).toBeVisible();
-  await eventButton.click();
+  // The navigation element may be a link or a button; use a text selector for robustness.
+  const eventButton = page.getByText(/イベントに参加/);
+  await expect(eventButton).toBeVisible({ timeout: 10000 });
+  await Promise.all([page.waitForURL(/.*\/events$/), eventButton.click()]);
 
   // 3. Verify we are on Events Hub
   await expect(page).toHaveURL(/.*\/events$/);

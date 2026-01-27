@@ -32,7 +32,8 @@ test.describe("4 User Quiz Scenario", () => {
       users.push({ name, token, displayName: `User ${name} [${testId}]` });
     }
 
-    const [userA, userB, userC, userD] = users;
+    // Only userA and userD are needed in this test; prefix unused variables with underscore to satisfy ESLint.
+    const [userA, _userB, _userC, userD] = users;
 
     // --- 2. User A Creates Event ---
     const createEventRes = await request.post(

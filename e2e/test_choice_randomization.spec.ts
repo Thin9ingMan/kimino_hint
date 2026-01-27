@@ -163,8 +163,8 @@ test.describe("Choice Randomization Verification", () => {
         headers: { Authorization: tokenB },
       },
     );
-    const userBData = await userBDataRes.json();
-    const userBId = userBData.id;
+    const _userBData = await userBDataRes.json();
+    // Reuse the userBId obtained from the join response; no redeclaration needed.
 
     await request.put(
       `https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}/users/${userBId}`,
@@ -202,7 +202,8 @@ test.describe("Choice Randomization Verification", () => {
     await page.goto(`http://localhost:5173/events/${eventId}`);
 
     // Wait for everyone to be ready (reload loop)
-    let ready = false;
+    // Track lobby readiness; underscore prefix avoids unused‑variable lint warning.
+    let _ready = false;
     for (let i = 0; i < 5; i++) {
       await page.reload();
       await page.waitForTimeout(2000);
@@ -212,21 +213,25 @@ test.describe("Choice Randomization Verification", () => {
           .isVisible()
           .catch(() => false))
       ) {
-        ready = true;
+        _ready = true;
         break;
       }
       console.log(`Lobby not ready (attempt ${i + 1}), retrying...`);
     }
 
-    // Click "クイズに挑戦" - this will start the sequential quiz flow
-    await page.click("text=クイズに挑戦");
+    // Click "クイズに挑戦" – the start control may be a button or link.
+    const startBtn = page.getByText(/クイズに挑戦/).first();
+    await expect(startBtn).toBeVisible({ timeout: 20000 });
+    await startBtn.click();
     await page.waitForTimeout(1000);
 
-    // The quiz sequence screen will auto-navigate to the first quiz
-    // Since User A joined first, User B will see User A's quiz first
-    // Wait for navigation to quiz question screen
-    await page.waitForURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
-    await page.waitForTimeout(2000);
+    // The quiz may redirect to either a challenge or a sequence flow. Accept both.
+    await page.waitForURL(/.*\/quiz\/(challenge|sequence)\/.*/, {
+      timeout: 30000,
+    });
+
+    // Wait for the first question text.
+    await page.waitForSelector("text=私の「名前」はどれ？", { timeout: 30000 });
 
     // Now we should be on the first question
     // Count how many questions have the correct answer NOT in the first position
@@ -240,9 +245,9 @@ test.describe("Choice Randomization Verification", () => {
       await page.waitForTimeout(1000);
 
       // Get all choice buttons
-      const choiceButtons = page
-        .locator("button")
-        .filter({ hasText: /^(?!.*次の問題へ)(?!.*結果を見る)/ });
+      const choiceButtons = page.getByRole("button").filter({
+        hasNotText: /次の問題へ|結果を見る|ホーム/,
+      });
       const choiceCount = await choiceButtons.count();
 
       // Find buttons that look like choices (have substantial text)

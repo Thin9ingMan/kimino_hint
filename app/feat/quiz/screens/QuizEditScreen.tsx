@@ -22,33 +22,18 @@ import {
   IconTrash,
   IconExclamationCircle,
 } from "@tabler/icons-react";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useState,
-  useMemo,
-  useRef,
-} from "react";
-import { useNavigate } from "react-router-dom";
+import { Suspense, useEffect, useState, useRef } from "react";
+import { useNavigate, useLoaderData } from "react-router-dom";
 
+import { Loading } from "@/shared/ui/Loading";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { useCurrentUser } from "@/shared/auth/hooks";
-import { useMyProfile } from "@/shared/profile/hooks";
-import { apis } from "@/shared/api";
-import { Loading } from "@/shared/ui/Loading";
-import {
-  handleQuizError,
-  getErrorMessage,
-  LLMGenerationError,
-  QuizSaveError,
-} from "../utils/errors";
+import { apis, fetchCurrentUser } from "@/shared/api";
+import { getErrorMessage, QuizSaveError } from "../utils/errors";
 import { falseHobbies, falseArtists, faculty, grade } from "../utils/fakeData";
-import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import type { Quiz } from "../types";
 import { shuffleArray } from "../utils/shuffle";
+import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 type QuestionCategory =
   | "names"
@@ -82,6 +67,13 @@ interface ChoiceInputProps {
   loading?: boolean;
   placeholder?: string;
   readOnly?: boolean;
+}
+
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
 function ChoiceInput({
@@ -248,19 +240,43 @@ function QuestionEditor({
   );
 }
 
-function QuizEditContent() {
-  const eventId = useNumericParam("eventId");
-  const navigate = useNavigate();
-
-  if (!eventId) {
+export async function loader({ params }: { params: { eventId?: string } }) {
+  const eventId = Number(params.eventId);
+  if (Number.isNaN(eventId)) {
     throw new Error("eventId が不正です");
   }
 
-  const meData = useCurrentUser();
-  const myProfile = useMyProfile();
+  const me = await fetchCurrentUser();
 
-  // Handle case when profile doesn't exist (returns null for 404)
-  if (!myProfile) {
+  const [profile, eventUserData] = await Promise.all([
+    (async () => {
+      try {
+        return await apis.profiles.getMyProfile();
+      } catch (e) {
+        if (e instanceof ResponseError && e.response.status === 404) {
+          return null;
+        }
+        throw e;
+      }
+    })(),
+    (async () => {
+      try {
+        return await apis.events.getEventUserData({ eventId, userId: me.id });
+      } catch {
+        return null;
+      }
+    })(),
+  ]);
+
+  return { eventId, me, profile, eventUserData };
+}
+
+function QuizEditContent() {
+  const { eventId, me, profile, eventUserData } =
+    useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+
+  if (!profile) {
     const returnTo = `/events/${eventId}/quiz/edit`;
     return (
       <Stack gap="md">
@@ -271,7 +287,14 @@ function QuizEditContent() {
         >
           クイズを作成するには、まずプロフィールを作成する必要があります。
         </Alert>
-        <Button onClick={() => navigate(`/me/profile/edit?returnTo=${encodeURIComponent(returnTo)}`)} fullWidth>
+        <Button
+          onClick={() =>
+            navigate(
+              `/me/profile/edit?returnTo=${encodeURIComponent(returnTo)}`,
+            )
+          }
+          fullWidth
+        >
           プロフィールを作成
         </Button>
         <Button
@@ -285,33 +308,17 @@ function QuizEditContent() {
     );
   }
 
-  const profileData = myProfile.profileData || {};
+  const profileData = isRecord(profile.profileData) ? profile.profileData : {};
 
-  const displayName = (profileData.displayName as string) || "";
-  const hobby = (profileData.hobby as string) || "";
-  const favoriteArtist = (profileData.favoriteArtist as string) || "";
-  const myFaculty = (profileData.faculty as string) || "";
-  const myGrade = (profileData.grade as string) || "";
+  const displayName = String(profileData.displayName || "");
+  const hobby = String(profileData.hobby || "");
+  const favoriteArtist = String(profileData.favoriteArtist || "");
+  const myFaculty = String(profileData.faculty || "");
+  const myGrade = String(profileData.grade || "");
 
-  // Fetch existing quiz data
-  const [existingQuizData] = useSuspenseQueries([
-    [
-      ["events.getEventUserData", { eventId, userId: meData.id }],
-      async () => {
-        try {
-          return await apis.events.getEventUserData({
-            eventId,
-            userId: meData.id,
-          });
-        } catch {
-          // Return null if user data doesn't exist yet (e.g., new participant)
-          return null;
-        }
-      },
-    ],
-  ]);
-
-  const existingQuiz = existingQuizData?.userData?.myQuiz as Quiz | undefined;
+  const existingQuiz = isRecord(eventUserData?.userData)
+    ? (eventUserData.userData.myQuiz as Quiz | undefined)
+    : undefined;
 
   const [questions, setQuestions] = useState<QuestionState[]>([]);
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
@@ -344,7 +351,6 @@ function QuizEditContent() {
     ) {
       const loadedQuestions: QuestionState[] = existingQuiz.questions.map(
         (q) => {
-          // Determine the category and type based on question id or content
           let category: QuestionCategory = "custom";
           let type: "fixed" | "custom" = "custom";
 
@@ -391,7 +397,6 @@ function QuizEditContent() {
     // Otherwise, create initial questions from profile
     const initialQuestions: QuestionState[] = [];
 
-    // Question 1: Name
     if (displayName) {
       initialQuestions.push({
         id: "q-names",
@@ -401,8 +406,6 @@ function QuizEditContent() {
         choices: createInitialChoices(displayName),
       });
     }
-
-    // Question 2: Faculty
     if (myFaculty) {
       initialQuestions.push({
         id: "q-faculty",
@@ -412,8 +415,6 @@ function QuizEditContent() {
         choices: createInitialChoices(myFaculty),
       });
     }
-
-    // Question 3: Grade
     if (myGrade) {
       initialQuestions.push({
         id: "q-grade",
@@ -423,8 +424,6 @@ function QuizEditContent() {
         choices: createInitialChoices(myGrade),
       });
     }
-
-    // Question 4: Hobby
     if (hobby) {
       initialQuestions.push({
         id: "q-hobby",
@@ -434,8 +433,6 @@ function QuizEditContent() {
         choices: createInitialChoices(hobby),
       });
     }
-
-    // Question 5: Name again (Very Similar Names)
     if (displayName) {
       initialQuestions.push({
         id: "q-vsim-names",
@@ -445,8 +442,6 @@ function QuizEditContent() {
         choices: createInitialChoices(displayName),
       });
     }
-
-    // Question 6: Artist
     if (favoriteArtist) {
       initialQuestions.push({
         id: "q-artist",
@@ -498,11 +493,11 @@ function QuizEditContent() {
     return filtered[Math.floor(Math.random() * filtered.length)];
   };
 
-  /**
-   * Get multiple unique random items from source array
-   * This ensures no duplicates in the returned array
-   */
-  const getRandomMultiple = (source: string[], count: number, exclude: string[]) => {
+  const getRandomMultiple = (
+    source: string[],
+    count: number,
+    exclude: string[],
+  ) => {
     const filtered = source.filter((item) => !exclude.includes(item));
     const shuffled = shuffleArray(filtered);
     return shuffled.slice(0, count);
@@ -510,6 +505,7 @@ function QuizEditContent() {
 
   const rerollChoice = async (qIndex: number, choiceId: string) => {
     const question = questions[qIndex];
+    if (!question) return;
     const key = `${question.id}-${choiceId}`;
 
     setLoadingMap((prev) => ({ ...prev, [key]: true }));
@@ -531,15 +527,15 @@ function QuizEditContent() {
           },
         });
         const output = Array.from(response.output || []);
-        // Filter out current choices to avoid duplicates, then pick randomly
         const availableChoices = output.filter(
           (name) => !currentChoiceTexts.includes(name),
         );
         if (availableChoices.length > 0) {
           newValue =
-            availableChoices[Math.floor(Math.random() * availableChoices.length)];
+            availableChoices[
+              Math.floor(Math.random() * availableChoices.length)
+            ];
         } else if (output.length > 0) {
-          // Fallback to any available output if all are duplicates
           newValue = output[Math.floor(Math.random() * output.length)];
         }
       } else if (question.category === "hobbies") {
@@ -584,8 +580,14 @@ function QuizEditContent() {
         }),
       ]);
 
-      const diffs = shuffleArray(Array.from(differentNames.output || [])).slice(0, 3);
-      const sims = shuffleArray(Array.from(similarNames.output || [])).slice(0, 3);
+      const diffs = shuffleArray(Array.from(differentNames.output || [])).slice(
+        0,
+        3,
+      );
+      const sims = shuffleArray(Array.from(similarNames.output || [])).slice(
+        0,
+        3,
+      );
 
       const newQuestions = questions.map((q) => {
         if (q.type !== "fixed") return q;
@@ -630,7 +632,6 @@ function QuizEditContent() {
   };
 
   const handleSave = async () => {
-    // Validation
     const invalidQuestion = questions.find(
       (q) => !q.title.trim() || q.choices.some((c) => !c.text.trim()),
     );
@@ -642,7 +643,6 @@ function QuizEditContent() {
     setSaving(true);
     setError(null);
     try {
-      // Legacy compatibility: fill fakeAnswers if possible
       const getWrongTexts = (category: QuestionCategory) => {
         const q = questions.find((qu) => qu.category === category);
         if (!q) return [];
@@ -656,7 +656,6 @@ function QuizEditContent() {
         artist: getWrongTexts("artists"),
       };
 
-      // Construct direct correctness Quiz object with shuffled choices
       const myQuiz = {
         questions: questions.map((q) => ({
           id: q.id,
@@ -675,7 +674,7 @@ function QuizEditContent() {
 
       await apis.events.updateEventUserData({
         eventId,
-        userId: meData.id,
+        userId: me.id,
         eventUserDataUpdateRequest: {
           userData: {
             myQuiz,
@@ -827,3 +826,5 @@ export function QuizEditScreen() {
     </Container>
   );
 }
+
+QuizEditScreen.loader = loader;

@@ -31,7 +31,7 @@ test.describe("Profile List Screen", () => {
     await page.goto(`${APP_URL}/profiles`);
 
     // 3. Verify screen title
-    await expect(page.getByText("受け取ったプロフィール")).toBeVisible();
+    await expect(page.getByText("受け取ったプロフィール").first()).toBeVisible();
 
     // 4. Verify empty state message
     await expect(
@@ -160,7 +160,7 @@ test.describe("Profile List Screen", () => {
 
     // 4. Verify navigation to Profile List
     await expect(page).toHaveURL(/.*\/profiles$/);
-    await expect(page.getByText("受け取ったプロフィール")).toBeVisible();
+    await expect(page.getByText("受け取ったプロフィール").first()).toBeVisible();
 
     console.log("Navigation from Home to Profile List verified successfully");
   });
@@ -223,7 +223,7 @@ test.describe("Profile List Screen", () => {
 
     // 5. Navigate to Profile List
     await page.goto(`${APP_URL}/profiles`);
-    await expect(page.getByText("受け取ったプロフィール")).toBeVisible();
+    await expect(page.getByText("受け取ったプロフィール").first()).toBeVisible();
 
     // 6. Verify friendship is displayed (button only shows when there are items)
     await expect(page.getByText("Sender For Nav Test")).toBeVisible({ timeout: 10000 });

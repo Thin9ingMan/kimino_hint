@@ -10,16 +10,13 @@ import {
   TextInput,
 } from "@mantine/core";
 import { Suspense, useCallback, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLoaderData } from "react-router-dom";
 
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useMyProfile } from "@/shared/profile/hooks";
 import { FACULTY_OPTIONS, GRADE_OPTIONS } from "@/shared/profile/options";
-
-// New Spec rule: do NOT import legacy UI from `src/components/*`.
-// We only reuse the *idea* from old EditProfile: field definitions, validation, preview.
+import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 type ProfileFormState = {
   name: string;
@@ -51,8 +48,6 @@ const FORM_FIELDS: FormField[] = [
   },
   { id: "furigana", label: "フリガナ", placeholder: "フリガナ" },
   { id: "faculty", label: "学部", type: "select", options: FACULTY_OPTIONS },
-
-  // 具体的な学部は、enPiTのレビューをかわすための措置。データは保存しているし残置。
   { id: "facultyDetail", label: "学科名" },
   {
     id: "grade",
@@ -82,16 +77,35 @@ function getString(v: unknown): string {
   return typeof v === "string" ? v : "";
 }
 
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+export async function loader() {
+  try {
+    const res = await apis.profiles.getMyProfile();
+    return { profile: res };
+  } catch (error) {
+    if (error instanceof ResponseError && error.response.status === 404) {
+      return { profile: null };
+    }
+    throw error;
+  }
+}
+
 function EditProfileForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnTo = searchParams.get("returnTo");
-
-  // 初期データ取得（共通フックを使用）
-  const initialData = useMyProfile();
+  const { profile: initialData } = useLoaderData<typeof loader>();
 
   const initialProfile: ProfileFormState = useMemo(() => {
-    const pd = (initialData?.profileData as Record<string, unknown>) ?? {};
+    const pd = isRecord(initialData?.profileData)
+      ? initialData.profileData
+      : {};
     return {
       name: getString(pd.displayName),
       furigana: getString(pd.furigana),
@@ -301,3 +315,5 @@ export function EditMyProfileScreen() {
     </Container>
   );
 }
+
+EditMyProfileScreen.loader = loader;

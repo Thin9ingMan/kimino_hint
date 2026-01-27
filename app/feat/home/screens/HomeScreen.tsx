@@ -8,7 +8,7 @@ import {
   ThemeIcon,
   Group,
 } from "@mantine/core";
-import { Link } from "react-router-dom";
+import { useLoaderData, Link } from "react-router-dom";
 import { Suspense } from "react";
 import {
   IconBulb,
@@ -19,27 +19,34 @@ import {
   IconAlertTriangle,
 } from "@tabler/icons-react";
 
-import { useMyProfile } from "@/shared/profile/hooks";
+import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
+import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { Loading } from "@/shared/ui/Loading";
 
-function HomeContent() {
-  // プロフィールの存在確認
-  let canStartQuiz = false;
+export async function loader() {
   try {
-    const profile = useMyProfile();
-    canStartQuiz = !!profile;
-  } catch (e: any) {
-    // 404の場合はプロフィール未作成 -> canStartQuiz = false
-    const status = e?.status ?? e?.response?.status;
-    if (status === 404) {
-      canStartQuiz = false;
-    } else {
-      // その他のエラーは再throw（ErrorBoundaryでキャッチ）
-      throw e;
+    const profile = await apis.profiles.getMyProfile();
+    return { profile };
+  } catch (err) {
+    if (err instanceof ResponseError && err.response.status === 404) {
+      return { profile: null };
     }
+    // Convert other errors to a more user-friendly message
+    const errorMessage =
+      err instanceof Error ? err.message : "Failed to fetch profile";
+    throw new Error(
+      `プロフィールの取得中にエラーが発生しました: ${errorMessage}`,
+    );
   }
+}
+
+type LoaderData = Awaited<ReturnType<typeof loader>>;
+
+function HomeContent() {
+  const { profile } = useLoaderData() as LoaderData;
+  const canStartQuiz = !!profile;
 
   return (
     <Stack gap="xl">
@@ -154,7 +161,11 @@ export function HomeScreen() {
         fallback={(error, retry) => (
           <Alert color="red" title="データ取得エラー">
             <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
+              <Text size="sm">
+                {error.message.includes("プロフィールの取得中にエラー")
+                  ? error.message
+                  : `データの取得中にエラーが発生しました: ${error.message}`}
+              </Text>
               <Button variant="light" onClick={retry}>
                 再試行
               </Button>
@@ -169,3 +180,5 @@ export function HomeScreen() {
     </Container>
   );
 }
+
+HomeScreen.loader = loader;

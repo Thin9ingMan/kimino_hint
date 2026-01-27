@@ -8,14 +8,23 @@ import {
   NumberInput,
 } from "@mantine/core";
 import { Suspense, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis } from "@/shared/api";
+import { apis, fetchCurrentUser } from "@/shared/api";
+
+export async function loader() {
+  const me = await fetchCurrentUser();
+  return { me };
+}
+
+type LoaderData = Awaited<ReturnType<typeof loader>>;
 
 function CreateEventContent() {
   const navigate = useNavigate();
+  useLoaderData(); // Ensure loader is used
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [maxParticipants, setMaxParticipants] = useState<number | string>(10);
@@ -146,3 +155,5 @@ export function CreateEventScreen() {
     </Container>
   );
 }
+
+CreateEventScreen.loader = loader;

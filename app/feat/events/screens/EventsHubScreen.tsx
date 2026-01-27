@@ -10,36 +10,61 @@ import {
   ActionIcon,
   Modal,
 } from "@mantine/core";
-import { Link } from "react-router-dom";
+import { Link, useLoaderData, useFetcher } from "react-router-dom";
 import { IconTrash } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import { Container } from "@/shared/ui/Container";
 import { InfoAlert } from "@/shared/ui/InfoAlert";
 import { NavigationButtonList } from "@/shared/ui/NavigationButtonList";
-import { useCurrentUser } from "@/shared/auth/hooks";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
-import { apis } from "@/shared/api";
+import { apis, fetchCurrentUser } from "@/shared/api";
 import { JoinedEventsList } from "@/feat/events/components/JoinedEventsList";
-import { useQueryClient } from "@tanstack/react-query";
+import { EventStatusEnum } from "@yuki-js/quarkus-crud-js-fetch-client";
+
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+export async function loader() {
+  const me = await fetchCurrentUser();
+  const [createdEvents, attendedEvents] = await Promise.all([
+    apis.events.listEventsByUser({ userId: me.id }),
+    apis.events.listMyAttendedEvents(),
+  ]);
+
+  return {
+    me,
+    createdEvents: createdEvents.filter(
+      (e) => e.status !== EventStatusEnum.Deleted,
+    ),
+    attendedEvents: attendedEvents.filter(
+      (e) => e.status !== EventStatusEnum.Deleted,
+    ),
+  };
+}
+
+type LoaderData = Awaited<ReturnType<typeof loader>>;
 
 function EventsList() {
-  const me = useCurrentUser();
-  const queryClient = useQueryClient();
-  const allEvents = useSuspenseQuery(["events.listEventsByUser", me.id], () =>
-    apis.events.listEventsByUser({ userId: me.id }),
-  );
-
-  // Filter out deleted events (soft-deleted events have status: 'deleted')
-  const events =
-    allEvents?.filter((event: any) => event.status !== "deleted") || [];
+  const { createdEvents } = useLoaderData<
+    typeof loader
+  >() as unknown as LoaderData;
+  const fetcher = useFetcher();
 
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState<any>(null);
+  const [eventToDelete, setEventToDelete] = useState<
+    LoaderData["createdEvents"][number] | null
+  >(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const handleDeleteClick = (event: any, e: React.MouseEvent) => {
+  const handleDeleteClick = (
+    event: LoaderData["createdEvents"][number],
+    e: React.MouseEvent,
+  ) => {
     e.preventDefault();
     e.stopPropagation();
     setEventToDelete(event);
@@ -55,28 +80,23 @@ function EventsList() {
 
     try {
       await apis.events.deleteEvent({ eventId: eventToDelete.id });
-
-      // Invalidate queries to refetch data
-      await queryClient.invalidateQueries({
-        queryKey: ["events.listEventsByUser", me.id],
-      });
-
-      // Also invalidate the joined events list since the user is a participant of their own created events
-      await queryClient.invalidateQueries({
-        queryKey: ["events.listMyAttendedEvents", me.id],
-      });
-
+      // Refresh loader
+      void fetcher.load(window.location.pathname);
       setDeleteModalOpened(false);
       setEventToDelete(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to delete event:", err);
-      setDeleteError(err.message || "イベントの削除に失敗しました");
+      let msg = "イベントの削除に失敗しました";
+      if (isRecord(err) && typeof err.message === "string") {
+        msg = err.message;
+      }
+      setDeleteError(msg);
     } finally {
       setDeleting(false);
     }
   };
 
-  if (!events || events.length === 0) {
+  if (createdEvents.length === 0) {
     return (
       <Text c="dimmed" size="sm" ta="center">
         まだ作成したイベントはありません
@@ -88,7 +108,7 @@ function EventsList() {
     <>
       <Stack gap="sm">
         <Title order={5}>作成したイベント</Title>
-        {events.map((event: any) => (
+        {createdEvents.map((event) => (
           <Card key={event.id} withBorder padding="sm" radius="md">
             <Group justify="space-between" wrap="nowrap">
               <Link
@@ -96,16 +116,30 @@ function EventsList() {
                 style={{ textDecoration: "none", color: "inherit", flex: 1 }}
               >
                 <Stack gap="xs">
-                  <Group justify="space-between">
+                  <Group justify="space-between" gap="sm">
                     <Text fw={500} truncate>
-                      {event.meta?.name || "（名前未設定）"}
+                      {isRecord(event.meta) &&
+                      typeof event.meta.name === "string"
+                        ? event.meta.name
+                        : "（名前未設定）"}
                     </Text>
-                    <Badge color={event.status === "closed" ? "gray" : "green"}>
-                      {event.status === "closed" ? "終了" : "開催中"}
+                    <Badge
+                      color={
+                        event.status === EventStatusEnum.Ended
+                          ? "gray"
+                          : "green"
+                      }
+                    >
+                      {event.status === EventStatusEnum.Ended
+                        ? "終了"
+                        : "開催中"}
                     </Badge>
                   </Group>
                   <Text size="xs" c="dimmed">
-                    {event.meta?.description || "説明なし"}
+                    {isRecord(event.meta) &&
+                    typeof event.meta.description === "string"
+                      ? event.meta.description
+                      : "説明なし"}
                   </Text>
                 </Stack>
               </Link>
@@ -141,7 +175,11 @@ function EventsList() {
           )}
 
           <Text size="sm">
-            本当に「{eventToDelete?.meta?.name || "（名前未設定）"}
+            本当に「
+            {isRecord(eventToDelete?.meta) &&
+            typeof eventToDelete.meta.name === "string"
+              ? eventToDelete.meta.name
+              : "（名前未設定）"}
             」を削除しますか？ この操作は取り消せません。
           </Text>
 
@@ -168,23 +206,26 @@ function EventsList() {
 }
 
 export function EventsHubScreen() {
-  const buttons = [
-    {
-      label: "イベントを作成",
-      to: "/events/new",
-      variant: "filled" as const,
-    },
-    {
-      label: "イベントに参加（招待コード）",
-      to: "/events/join",
-      variant: "light" as const,
-    },
-    {
-      label: "ホームへ",
-      to: "/home",
-      variant: "default" as const,
-    },
-  ];
+  const buttons = useMemo(
+    () => [
+      {
+        label: "イベントを作成",
+        to: "/events/new",
+        variant: "filled" as const,
+      },
+      {
+        label: "イベントに参加（招待コード）",
+        to: "/events/join",
+        variant: "light" as const,
+      },
+      {
+        label: "ホームへ",
+        to: "/home",
+        variant: "default" as const,
+      },
+    ],
+    [],
+  );
 
   return (
     <Container title="イベント">
@@ -207,3 +248,5 @@ export function EventsHubScreen() {
     </Container>
   );
 }
+
+EventsHubScreen.loader = loader;

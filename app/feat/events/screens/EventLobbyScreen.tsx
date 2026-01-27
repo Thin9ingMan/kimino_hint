@@ -11,92 +11,102 @@ import {
   Group,
 } from "@mantine/core";
 import { Suspense, useState } from "react";
-import { Link } from "react-router-dom";
+import {
+  Link,
+  useLoaderData,
+  useFetcher,
+  useNavigation,
+  useRevalidator,
+} from "react-router-dom";
 
-import { apis } from "@/shared/api";
+import { apis, fetchCurrentUser } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
-import { useNumericParam } from "@/shared/hooks/useNumericParam";
 import { EventAttendeesList } from "@/feat/events/components/EventAttendeesList";
 import { EventInvitationPanel } from "@/feat/events/components/EventInvitationPanel";
-import { useCurrentUser } from "@/shared/auth/hooks";
-import { useQueryClient } from "@tanstack/react-query";
 
-function EventLobbyContent() {
-  const eventId = useNumericParam("eventId");
-  const me = useCurrentUser();
-  const queryClient = useQueryClient();
-  const [editModalOpened, setEditModalOpened] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editDescription, setEditDescription] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
 
-  if (!eventId) {
+/**
+ * Type guard for error with status
+ */
+interface ErrorWithStatus {
+  status: number;
+}
+
+export async function loader({ params }: { params: { eventId?: string } }) {
+  const eventId = Number(params.eventId);
+  if (Number.isNaN(eventId)) {
     throw new Error("eventId が不正です");
   }
 
-  /* Parallel fetching with standardized keys */
-  const [eventData, attendees] = useSuspenseQueries([
-    [
-      ["events.getEventById", { eventId }],
-      () => apis.events.getEventById({ eventId }),
-    ],
-    [
-      ["events.listEventAttendees", { eventId }],
-      async () => {
-        const eventAttendees = await apis.events.listEventAttendees({
-          eventId,
-        });
-        // Fetch profiles and quiz data to get display names and check readiness
-        const enriched = await Promise.all(
-          eventAttendees.map(async (a: any) => {
-            const uid = a.attendeeUserId || a.userId;
-            let profileData = null;
-            let hasProfile = false;
-            let quizData = null;
-            let hasQuiz = false;
-
-            // Check profile
-            try {
-              const profile = await apis.profiles.getUserProfile({
-                userId: uid,
-              });
-              profileData = profile.profileData;
-              hasProfile = !!profileData;
-            } catch (e) {
-              // Profile doesn't exist (404)
-              hasProfile = false;
-            }
-
-            // Check quiz data
-            try {
-              const eventUserData = await apis.events.getEventUserData({
-                eventId,
-                userId: uid,
-              });
-              quizData = eventUserData?.userData;
-              hasQuiz = !!(quizData as any)?.myQuiz;
-            } catch (e) {
-              // Quiz data doesn't exist (404)
-              hasQuiz = false;
-            }
-
-            return {
-              ...a,
-              userId: uid,
-              displayName: profileData?.displayName,
-              profileData,
-              hasProfile,
-              hasQuiz,
-            };
-          }),
-        );
-        return enriched;
-      },
-    ],
+  const [me, eventData, eventAttendees] = await Promise.all([
+    fetchCurrentUser(),
+    apis.events.getEventById({ eventId }),
+    apis.events.listEventAttendees({ eventId }),
   ]);
+
+  // Fetch profiles and quiz data to get display names and check readiness
+  const attendees = await Promise.all(
+    eventAttendees.map(async (a) => {
+      const uid = a.attendeeUserId;
+      if (uid === undefined) throw new Error("User ID is missing");
+
+      let profileData: Record<string, unknown> | null = null;
+      let hasProfile = false;
+      let hasQuiz = false;
+
+      try {
+        const profile = await apis.profiles.getUserProfile({ userId: uid });
+        const rawPd = profile.profileData;
+        if (isRecord(rawPd)) {
+          profileData = rawPd;
+          hasProfile = true;
+        }
+      } catch {
+        hasProfile = false;
+      }
+
+      try {
+        const eventUserData = await apis.events.getEventUserData({
+          eventId,
+          userId: uid,
+        });
+        hasQuiz = !!eventUserData.userData?.myQuiz;
+      } catch {
+        hasQuiz = false;
+      }
+
+      return {
+        ...a,
+        userId: uid,
+        displayName: String(profileData?.displayName ?? ""),
+        profileData,
+        hasProfile,
+        hasQuiz,
+      };
+    }),
+  );
+
+  return { eventId, eventData, attendees, me };
+}
+
+function EventLobbyContent() {
+  const { eventId, eventData, attendees, me } = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
+  const navigation = useNavigation();
+  const revalidator = useRevalidator();
+
+  const [editModalOpened, setEditModalOpened] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   if (!eventData) {
     return (
@@ -108,19 +118,18 @@ function EventLobbyContent() {
     );
   }
 
-  const isCreator = (eventData as any).initiatorId === me.id;
+  const isCreator = eventData.initiatorId === me.id;
 
   // Check if all attendees have both profile and quiz data
-  const attendeesWithoutProfile = (attendees ?? []).filter(
-    (a: any) => !a.hasProfile,
-  );
-  const attendeesWithoutQuiz = (attendees ?? []).filter((a: any) => !a.hasQuiz);
+  const attendeesWithoutProfile = attendees.filter((a) => !a.hasProfile);
+  const attendeesWithoutQuiz = attendees.filter((a) => !a.hasQuiz);
   const allAttendeesReady =
     attendeesWithoutProfile.length === 0 && attendeesWithoutQuiz.length === 0;
 
   const handleOpenEditModal = () => {
-    setEditName((eventData as any).meta?.name || "");
-    setEditDescription((eventData as any).meta?.description || "");
+    const meta = eventData.meta;
+    setEditName(isRecord(meta) ? String(meta.name ?? "") : "");
+    setEditDescription(isRecord(meta) ? String(meta.description ?? "") : "");
     setError(null);
     setEditModalOpened(true);
   };
@@ -145,30 +154,37 @@ function EventLobbyContent() {
         },
       });
 
-      // Invalidate queries to refetch data
-      await queryClient.invalidateQueries({
-        queryKey: ["events.getEventById", { eventId }],
-      });
-
+      // Refresh loader data
+      revalidator.revalidate();
       setEditModalOpened(false);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to update event:", err);
-      setError("イベントの更新に失敗しました。もう一度お試しください。");
+      let msg = "イベントの更新に失敗しました。もう一度お試しください。";
+      if (isRecord(err) && typeof err.message === "string") {
+        msg = err.message;
+      }
+      setError(msg);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleRefreshAttendees = async () => {
-    try {
-      await queryClient.refetchQueries({
-        queryKey: ["events.listEventAttendees", { eventId }],
-        exact: true,
-      });
-    } catch (error) {
-      console.error(`Failed to refresh attendees for event ${eventId}:`, error);
-    }
+  const handleRefreshAttendees = () => {
+    revalidator.revalidate();
   };
+
+  const isSaving =
+    saving ||
+    navigation.state !== "idle" ||
+    fetcher.state !== "idle" ||
+    revalidator.state !== "idle";
+
+  const eventName = isRecord(eventData.meta)
+    ? String(eventData.meta.name ?? "（名前未設定）")
+    : "（名前未設定）";
+  const eventDescription = isRecord(eventData.meta)
+    ? String(eventData.meta.description ?? "")
+    : "";
 
   return (
     <Stack gap="md">
@@ -177,17 +193,22 @@ function EventLobbyContent() {
           <Group justify="space-between" align="flex-start">
             <Title order={4}>イベント情報</Title>
             {isCreator && (
-              <Button size="xs" variant="light" onClick={handleOpenEditModal}>
+              <Button
+                size="xs"
+                variant="light"
+                onClick={handleOpenEditModal}
+                disabled={isSaving}
+              >
                 編集
               </Button>
             )}
           </Group>
           <Text size="sm" c="dimmed">
-            {(eventData as any).meta?.name || "（名前未設定）"}
+            {eventName}
           </Text>
-          {(eventData as any).meta?.description && (
+          {eventDescription && (
             <Text size="sm" mt="xs">
-              {(eventData as any).meta?.description}
+              {eventDescription}
             </Text>
           )}
         </Stack>
@@ -218,6 +239,7 @@ function EventLobbyContent() {
             onChange={(e) => setEditName(e.currentTarget.value)}
             required
             maxLength={100}
+            disabled={isSaving}
           />
 
           <Textarea
@@ -227,19 +249,20 @@ function EventLobbyContent() {
             onChange={(e) => setEditDescription(e.currentTarget.value)}
             minRows={3}
             maxLength={500}
+            disabled={isSaving}
           />
 
           <Group justify="flex-end" gap="sm">
             <Button
               variant="default"
               onClick={() => setEditModalOpened(false)}
-              disabled={saving}
+              disabled={isSaving}
             >
               キャンセル
             </Button>
             <Button
               onClick={handleSaveEdit}
-              loading={saving}
+              loading={isSaving}
               disabled={!editName.trim()}
             >
               保存
@@ -248,9 +271,7 @@ function EventLobbyContent() {
         </Stack>
       </Modal>
 
-      <EventInvitationPanel
-        invitationCode={(eventData as any).invitationCode}
-      />
+      <EventInvitationPanel invitationCode={eventData.invitationCode} />
 
       {!allAttendeesReady && (
         <Alert color="yellow" title="クイズを開始できません">
@@ -262,7 +283,7 @@ function EventLobbyContent() {
               <Text size="sm">
                 プロフィール未作成:{" "}
                 {attendeesWithoutProfile
-                  .map((a: any) => a.displayName || `ユーザー ${a.userId}`)
+                  .map((a) => a.displayName || `ユーザー ${a.userId}`)
                   .join(", ")}
               </Text>
             )}
@@ -270,7 +291,7 @@ function EventLobbyContent() {
               <Text size="sm">
                 クイズ未作成:{" "}
                 {attendeesWithoutQuiz
-                  .map((a: any) => a.displayName || `ユーザー ${a.userId}`)
+                  .map((a) => a.displayName || `ユーザー ${a.userId}`)
                   .join(", ")}
               </Text>
             )}
@@ -279,12 +300,12 @@ function EventLobbyContent() {
       )}
 
       <EventAttendeesList
-        attendees={(attendees ?? []).map((a: any) => ({
-          id: a.id,
+        attendees={attendees.map((a) => ({
+          id: a.id ?? 0,
           userId: a.userId,
           displayName: a.displayName,
           profileData: a.profileData,
-          joinedAt: a.joinedAt,
+          joinedAt: a.createdAt,
         }))}
         title="参加者"
         linkToProfile
@@ -299,7 +320,9 @@ function EventLobbyContent() {
         <Button
           component={allAttendeesReady ? Link : undefined}
           to={
-            allAttendeesReady ? `/events/${eventId}/quiz/sequence` : undefined
+            allAttendeesReady
+              ? (`/events/${eventId}/quiz/sequence` as any)
+              : undefined
           }
           fullWidth
           variant="light"
@@ -327,11 +350,11 @@ export function EventLobbyScreen() {
   return (
     <Container title="ロビー">
       <ErrorBoundary
-        fallback={(error, retry) => (
+        fallback={(error, _) => (
           <Alert color="red" title="取得エラー">
             <Stack gap="sm">
               <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
+              <Button variant="light" onClick={() => window.location.reload()}>
                 再試行
               </Button>
             </Stack>
@@ -351,3 +374,5 @@ export function EventLobbyScreen() {
     </Container>
   );
 }
+
+EventLobbyScreen.loader = loader;

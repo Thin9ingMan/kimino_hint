@@ -1,39 +1,46 @@
 import { Alert, Button, Stack, Text, Paper, Title } from "@mantine/core";
 import { Suspense } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { useCurrentUser } from "@/shared/auth/hooks";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
-import { apis } from "@/shared/api";
+import { apis, fetchCurrentUser } from "@/shared/api";
 
-function QuizIntroContent() {
-  const eventId = useNumericParam("eventId");
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
 
-  if (!eventId) {
+export async function loader({ params }: { params: { eventId?: string } }) {
+  const eventId = Number(params.eventId);
+  if (Number.isNaN(eventId)) {
     throw new Error("eventId が不正です");
   }
 
-  const meData = useCurrentUser();
+  const me = await fetchCurrentUser();
 
-  const eventUserData = useSuspenseQuery(
-    ["events.getEventUserData", eventId, meData.id],
-    async () => {
-      try {
-        const userData = await apis.events.getEventUserData({
-          eventId,
-          userId: meData.id,
-        });
-        return userData;
-      } catch {
-        return null;
-      }
-    },
-  );
+  let eventUserData: any = null; // We'll type this properly in the component via useLoaderData
+  try {
+    eventUserData = await apis.events.getEventUserData({
+      eventId,
+      userId: me.id,
+    });
+  } catch {
+    eventUserData = null;
+  }
 
-  const hasFakeAnswers = eventUserData?.userData?.fakeAnswers;
+  return { eventId, me, eventUserData };
+}
+
+function QuizIntroContent() {
+  const { eventId, eventUserData } = useLoaderData<typeof loader>();
+
+  const hasFakeAnswers =
+    isRecord(eventUserData?.userData) &&
+    isRecord(eventUserData.userData.fakeAnswers) &&
+    Object.keys(eventUserData.userData.fakeAnswers).length > 0;
 
   return (
     <Stack gap="md">
@@ -119,3 +126,5 @@ export function QuizIntroScreen() {
     </Container>
   );
 }
+
+QuizIntroScreen.loader = loader;

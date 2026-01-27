@@ -1,59 +1,65 @@
 import { Alert, Button, Stack, Text } from "@mantine/core";
 import { Suspense, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import { ProfileCard } from "@/shared/ui/ProfileCard";
 import { mapProfileDataToUiProfile } from "@/shared/profile/profileUi";
+import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 type ExchangeStatus = "idle" | "saving" | "done" | "error";
 
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+export async function loader({
+  params,
+}: {
+  params: { eventId?: string; targetUserId?: string };
+}) {
+  const eventId = Number(params.eventId);
+  const targetUserId = Number(params.targetUserId);
+
+  if (Number.isNaN(eventId) || Number.isNaN(targetUserId)) {
+    throw new Error("パラメータが不正です");
+  }
+
+  const [profileData, isFriendshipExchanged] = await Promise.all([
+    apis.profiles.getUserProfile({ userId: targetUserId }),
+    (async () => {
+      try {
+        await apis.friendships.getFriendshipByOtherUser({
+          otherUserId: targetUserId,
+        });
+        return true; // Already exchanged
+      } catch (e: unknown) {
+        if (e instanceof ResponseError && e.response.status === 404) {
+          return false; // Not exchanged
+        }
+        throw e;
+      }
+    })(),
+  ]);
+
+  return { eventId, targetUserId, profileData, isFriendshipExchanged };
+}
+
 function QuizRewardsContent() {
-  const eventId = useNumericParam("eventId");
-  const targetUserId = useNumericParam("targetUserId");
+  const { eventId, targetUserId, profileData, isFriendshipExchanged } =
+    useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [exchangeStatus, setExchangeStatus] = useState<ExchangeStatus>("idle");
   const [exchangeMessage, setExchangeMessage] = useState<string | null>(null);
 
-  if (!eventId || !targetUserId) {
-    throw new Error("パラメータが不正です");
-  }
-
-  /* Fetch profile and check friendship status */
-  const [profileData, isFriendshipExchanged] = useSuspenseQueries([
-    [
-      ["profiles.getUserProfile", { userId: targetUserId }],
-      () => apis.profiles.getUserProfile({ userId: targetUserId }),
-    ],
-    [
-      ["friendships.getFriendshipByOtherUser", { userId: targetUserId }],
-      async () => {
-        try {
-          await apis.friendships.getFriendshipByOtherUser({
-            otherUserId: targetUserId,
-          });
-          return true; // Already exchanged
-        } catch (eOrP: any) {
-          if (eOrP instanceof Promise) {
-            throw eOrP;
-          }
-          // 404 means not exchanged yet.
-          const s = eOrP?.status ?? eOrP?.response?.status;
-          if (s !== 404) {
-            throw eOrP;
-          } else {
-            return false; // Not exchanged
-          }
-        }
-      },
-    ],
-  ]);
-
-  const profile = mapProfileDataToUiProfile(profileData?.profileData as any);
+  const profile = mapProfileDataToUiProfile(
+    isRecord(profileData.profileData) ? profileData.profileData : {},
+  );
   const displayName = profile.displayName || `ユーザー ${targetUserId}`;
 
   // Auto-exchange profile on mount if not already exchanged
@@ -77,21 +83,27 @@ function QuizRewardsContent() {
         });
         setExchangeStatus("done");
         setExchangeMessage("プロフィールを交換しました");
-      } catch (e: any) {
-        const s = e?.status ?? e?.response?.status;
-        if (s === 409) {
+      } catch (e: unknown) {
+        let status = 0;
+        let message = "交換に失敗しました";
+        if (e instanceof ResponseError) {
+          status = e.response.status;
+          message = e.message;
+        }
+
+        if (status === 409) {
           setExchangeStatus("done");
           setExchangeMessage("プロフィールを交換しました");
           return;
         }
-        if (s === 404) {
+        if (status === 404) {
           setExchangeStatus("error");
           setExchangeMessage("ユーザーが見つかりませんでした");
           return;
         }
 
         setExchangeStatus("error");
-        setExchangeMessage(String(e?.message ?? "交換に失敗しました"));
+        setExchangeMessage(message);
       }
     };
 
@@ -103,7 +115,7 @@ function QuizRewardsContent() {
     try {
       const progressKey = `quiz_sequence_${eventId}`;
       const stored = sessionStorage.getItem(progressKey);
-      let progress = { completedQuizzes: [] };
+      let progress: { completedQuizzes: number[] } = { completedQuizzes: [] };
 
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -187,3 +199,5 @@ export function QuizRewardsScreen() {
     </Container>
   );
 }
+
+QuizRewardsScreen.loader = loader;

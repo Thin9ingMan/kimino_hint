@@ -8,62 +8,68 @@ import {
   Group,
   Avatar,
   ThemeIcon,
-  Badge,
 } from "@mantine/core";
 import { Suspense } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
 import { IconClock, IconPlayerPlay, IconUsers } from "@tabler/icons-react";
 
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { useCurrentUser } from "@/shared/auth/hooks";
-import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
-import { apis } from "@/shared/api";
+import { apis, fetchCurrentUser } from "@/shared/api";
 import { Loading } from "@/shared/ui/Loading";
 
-function QuizChallengeListContent() {
-  const eventId = useNumericParam("eventId");
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
 
-  if (!eventId) {
+export async function loader({ params }: { params: { eventId?: string } }) {
+  const eventId = Number(params.eventId);
+  if (Number.isNaN(eventId)) {
     throw new Error("eventId が不正です");
   }
 
-  const meData = useCurrentUser();
-  const [attendees] = useSuspenseQueries([
-    [
-      ["events.listEventAttendees", { eventId }],
-      async () => {
-        const eventAttendees = await apis.events.listEventAttendees({
-          eventId,
+  const me = await fetchCurrentUser();
+  const eventAttendees = await apis.events.listEventAttendees({ eventId });
+
+  // Fetch profiles to get display names
+  const attendees = await Promise.all(
+    eventAttendees.map(async (a) => {
+      const uid = a.attendeeUserId ?? 0;
+      try {
+        const profile = await apis.profiles.getUserProfile({
+          userId: uid,
         });
-        // Fetch profiles to get display names
-        const enriched = await Promise.all(
-          eventAttendees.map(async (a: any) => {
-            const uid = a.attendeeUserId || a.userId;
-            try {
-              const profile = await apis.profiles.getUserProfile({
-                userId: uid,
-              });
-              return {
-                ...a,
-                userId: uid,
-                displayName: profile.profileData?.displayName,
-                profileData: profile.profileData,
-              };
-            } catch (e) {
-              return { ...a, userId: uid };
-            }
-          }),
-        );
-        return enriched;
-      },
-    ],
-  ]);
+        const pd = isRecord(profile.profileData) ? profile.profileData : null;
+        return {
+          ...a,
+          userId: uid,
+          displayName: String(pd?.displayName ?? ""),
+          profileData: pd,
+        };
+      } catch {
+        // Removed 'e' variable
+        return {
+          ...a,
+          userId: uid,
+          displayName: "",
+          profileData: null,
+        };
+      }
+    }),
+  );
+
+  return { eventId, me, attendees };
+}
+
+function QuizChallengeListContent() {
+  const { eventId, me, attendees } = useLoaderData<typeof loader>();
 
   // Filter out the current user from the list
   const otherAttendees = attendees.filter(
-    (attendee) => attendee.attendeeUserId !== meData.id,
+    (attendee) => attendee.userId !== me.id,
   );
 
   if (!otherAttendees.length) {
@@ -106,9 +112,12 @@ function QuizChallengeListContent() {
       <Stack gap="sm">
         {otherAttendees.map((attendee) => {
           const displayName =
-            (attendee as any).displayName ||
-            (attendee.meta as any)?.displayName ||
-            `ユーザー ${attendee.attendeeUserId}`;
+            attendee.displayName ||
+            (isRecord(attendee.meta) &&
+            typeof attendee.meta.displayName === "string"
+              ? attendee.meta.displayName
+              : "") ||
+            `ユーザー ${attendee.userId}`;
 
           return (
             <Card key={attendee.id} padding="lg" radius="lg">
@@ -132,13 +141,13 @@ function QuizChallengeListContent() {
 
                 <Button
                   component={Link}
-                  to={`/events/${eventId}/quiz/challenge/${attendee.attendeeUserId}/1`}
+                  to={`/events/${eventId}/quiz/challenge/${attendee.userId}/1`}
                   onClick={() => {
                     sessionStorage.removeItem(
-                      `quiz_${eventId}_${attendee.attendeeUserId}_answers`,
+                      `quiz_${eventId}_${attendee.userId}_answers`,
                     );
                     sessionStorage.removeItem(
-                      `quiz_${eventId}_${attendee.attendeeUserId}_score`,
+                      `quiz_${eventId}_${attendee.userId}_score`,
                     );
                   }}
                   variant="light"
@@ -187,3 +196,5 @@ export function QuizChallengeListScreen() {
     </Container>
   );
 }
+
+QuizChallengeListScreen.loader = loader;

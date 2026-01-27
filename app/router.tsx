@@ -1,5 +1,10 @@
 import { Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  createRoutesFromElements,
+  Route,
+} from "react-router-dom";
 
 import { legacyRedirectRoutes } from "./legacyRouter";
 
@@ -26,66 +31,107 @@ import { QuizResultScreen } from "./feat/quiz/screens/QuizResultScreen";
 import { QuizRewardsScreen } from "./feat/quiz/screens/QuizRewardsScreen";
 import { QrJoinScreen } from "./feat/qr/screens/QrJoinScreen";
 
+export const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route>
+      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="/home" element={<HomeScreen />} loader={HomeScreen.loader} />
+      <Route path="/help" element={<HelpScreen />} />
+      <Route path="/error/auth" element={<AuthErrorScreen />} />
+      <Route path="/me" element={<MeHubScreen />} loader={MeHubScreen.loader} />
+      <Route
+        path="/me/profile"
+        element={<MyProfileScreen />}
+        loader={MyProfileScreen.loader}
+      />
+      <Route
+        path="/me/profile/edit"
+        element={<EditMyProfileScreen />}
+        loader={EditMyProfileScreen.loader}
+      />
+      <Route
+        path="/profiles"
+        element={<ProfileListScreen />}
+        loader={ProfileListScreen.loader}
+      />
+      <Route
+        path="/profiles/:userId"
+        element={<ProfileDetailScreen />}
+        loader={ProfileDetailScreen.loader}
+      />
+      <Route
+        path="/events"
+        element={<EventsHubScreen />}
+        loader={EventsHubScreen.loader}
+      />
+      <Route
+        path="/events/new"
+        element={<CreateEventScreen />}
+        loader={CreateEventScreen.loader}
+      />
+      <Route
+        path="/events/join"
+        element={<JoinEventScreen />}
+        loader={JoinEventScreen.loader}
+      />
+      <Route
+        path="/events/:eventId"
+        element={<EventLobbyScreen />}
+        loader={EventLobbyScreen.loader}
+      />
+      <Route
+        path="/events/:eventId/live"
+        element={<EventLiveScreen />}
+        loader={EventLiveScreen.loader}
+      />
+      <Route
+        path="/events/:eventId/quiz"
+        element={<QuizIntroScreen />}
+        loader={QuizIntroScreen.loader}
+      />
+      <Route
+        path="/events/:eventId/quiz/edit"
+        element={<QuizEditScreen />}
+        loader={QuizEditScreen.loader}
+      />
+      <Route
+        path="/events/:eventId/quiz/challenges"
+        element={<QuizChallengeListScreen />}
+        loader={QuizChallengeListScreen.loader}
+      />
+      <Route
+        path="/events/:eventId/quiz/sequence"
+        element={<QuizSequenceScreen />}
+        loader={QuizSequenceScreen.loader}
+      />
+      <Route
+        path="/events/:eventId/quiz/challenge/:targetUserId/:questionNo"
+        element={<QuizQuestionScreen />}
+        loader={QuizQuestionScreen.loader}
+      />
+      <Route
+        path="/events/:eventId/quiz/challenge/:targetUserId/result"
+        element={<QuizResultScreen />}
+        loader={QuizResultScreen.loader}
+      />
+      <Route
+        path="/events/:eventId/quiz/challenge/:targetUserId/rewards"
+        element={<QuizRewardsScreen />}
+        loader={QuizRewardsScreen.loader}
+      />
+      <Route
+        path="/qr/join"
+        element={<QrJoinScreen />}
+        loader={QrJoinScreen.loader}
+      />
+      {legacyRedirectRoutes}
+      <Route path="*" element={<NotFoundScreen />} />
+    </Route>,
+  ),
+);
+
 export function AppRouter() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <Routes>
-        {/* Root redirect to home */}
-        <Route path="/" element={<Navigate to="/home" replace />} />
-
-        {/* Top/Common */}
-        <Route path="/home" element={<HomeScreen />} />
-        <Route path="/help" element={<HelpScreen />} />
-        <Route path="/error/auth" element={<AuthErrorScreen />} />
-
-        {/* Me */}
-        <Route path="/me" element={<MeHubScreen />} />
-        <Route path="/me/profile" element={<MyProfileScreen />} />
-        <Route path="/me/profile/edit" element={<EditMyProfileScreen />} />
-
-        {/* Profiles */}
-        <Route path="/profiles" element={<ProfileListScreen />} />
-        <Route path="/profiles/:userId" element={<ProfileDetailScreen />} />
-
-        {/* Events */}
-        <Route path="/events" element={<EventsHubScreen />} />
-        <Route path="/events/new" element={<CreateEventScreen />} />
-        <Route path="/events/join" element={<JoinEventScreen />} />
-        <Route path="/events/:eventId" element={<EventLobbyScreen />} />
-        <Route path="/events/:eventId/live" element={<EventLiveScreen />} />
-
-        {/* Quiz (under events) */}
-        <Route path="/events/:eventId/quiz" element={<QuizIntroScreen />} />
-        <Route path="/events/:eventId/quiz/edit" element={<QuizEditScreen />} />
-        <Route
-          path="/events/:eventId/quiz/challenges"
-          element={<QuizChallengeListScreen />}
-        />
-        <Route
-          path="/events/:eventId/quiz/sequence"
-          element={<QuizSequenceScreen />}
-        />
-        <Route
-          path="/events/:eventId/quiz/challenge/:targetUserId/:questionNo"
-          element={<QuizQuestionScreen />}
-        />
-        <Route
-          path="/events/:eventId/quiz/challenge/:targetUserId/result"
-          element={<QuizResultScreen />}
-        />
-        <Route
-          path="/events/:eventId/quiz/challenge/:targetUserId/rewards"
-          element={<QuizRewardsScreen />}
-        />
-
-        <Route path="/qr/join" element={<QrJoinScreen />} />
-
-        {/* Legacy URL compat (Phase 0): keep old URLs as thin redirects */}
-        {legacyRedirectRoutes}
-
-        {/* 404 */}
-        <Route path="*" element={<NotFoundScreen />} />
-      </Routes>
-    </Suspense>
-  );
+  // This component might be obsolete if we use RouterProvider directly in App.tsx
+  // but keeping it for now if needed.
+  return null;
 }

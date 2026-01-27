@@ -1,57 +1,80 @@
-import { Alert, Button, Stack, Text } from "@mantine/core";
 import { Suspense } from "react";
-import { Link } from "react-router-dom";
-
+import { useLoaderData } from "react-router";
+import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 import { ProfileDetailContent } from "../components/ProfileDetailContent";
+import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
+
+/**
+ * Type guard for ResponseError to avoid 'as'
+ */
+function isResponseError(error: unknown): error is ResponseError {
+  return error instanceof ResponseError;
+}
+
+export async function loader({ params }: { params: { userId?: string } }) {
+  const userId = Number(params.userId);
+  if (Number.isNaN(userId)) {
+    throw new Error("userId が不正です");
+  }
+
+  try {
+    const [profileData, isFriendshipExchanged] = await Promise.all([
+      apis.profiles.getUserProfile({ userId }),
+      (async () => {
+        try {
+          await apis.friendships.getFriendshipByOtherUser({
+            otherUserId: userId,
+          });
+          return true;
+        } catch (e: unknown) {
+          if (isResponseError(e) && e.response.status === 404) {
+            return false;
+          }
+          throw e;
+        }
+      })(),
+    ]);
+
+    return {
+      userId,
+      profileData,
+      isFriendshipExchanged,
+      error: null,
+    };
+  } catch (e: unknown) {
+    if (isResponseError(e) && e.response.status === 404) {
+      return {
+        userId,
+        profileData: null,
+        isFriendshipExchanged: false,
+        error: "not_found" as const,
+      };
+    }
+    throw e;
+  }
+}
 
 export function ProfileDetailScreen() {
+  const data = useLoaderData<typeof loader>();
+
   return (
     <Container title="プロフィール詳細">
       <ErrorBoundary
-        fallback={(error, retry) => {
-          const is404 =
-            error instanceof ResponseError && error.response.status === 404;
-
-          if (is404) {
-            return (
-              <Alert color="blue" title="プロフィールが見つかりません">
-                <Stack gap="sm">
-                  <Text size="sm">
-                    このユーザーはプロフィールを作成していないようです。作ってもらいましょう。
-                  </Text>
-                  <Button component={Link} to="/profiles" variant="light">
-                    プロフィール一覧へ戻る
-                  </Button>
-                </Stack>
-              </Alert>
-            );
-          }
-
-          return (
-            <Alert color="red" title="プロフィールの取得に失敗しました">
-              <Stack gap="sm">
-                <Text size="sm">{error.message}</Text>
-                <Button variant="light" onClick={retry}>
-                  再試行
-                </Button>
-              </Stack>
-            </Alert>
-          );
-        }}
+        fallback={(error, retry) => (
+          <div style={{ padding: "20px" }}>
+            <p>エラーが発生しました: {error.message}</p>
+            <button onClick={retry}>再試行</button>
+          </div>
+        )}
       >
-        <Suspense
-          fallback={
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          }
-        >
-          <ProfileDetailContent />
+        <Suspense fallback={<div>読み込み中...</div>}>
+          <ProfileDetailContent loaderData={data} />
         </Suspense>
       </ErrorBoundary>
     </Container>
   );
 }
+
+ProfileDetailScreen.loader = loader;

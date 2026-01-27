@@ -1,22 +1,23 @@
 import { Badge, Card, Group, Stack, Text, Title } from "@mantine/core";
-import { Link } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
+import { EventsHubScreen } from "../screens/EventsHubScreen";
+import { EventStatusEnum } from "@yuki-js/quarkus-crud-js-fetch-client";
 
-import { apis } from "@/shared/api";
-import { useCurrentUser } from "@/shared/auth/hooks";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+type LoaderData = Awaited<ReturnType<typeof EventsHubScreen.loader>>;
 
 export function JoinedEventsList() {
-  const me = useCurrentUser();
-  const allJoinedEvents = useSuspenseQuery(
-    ["events.listMyAttendedEvents", me.id],
-    () => apis.events.listMyAttendedEvents(),
-  );
+  const { attendedEvents } = useLoaderData<
+    typeof EventsHubScreen.loader
+  >() as unknown as LoaderData;
 
-  // Filter out deleted events
-  const joinedEvents =
-    allJoinedEvents?.filter((event: any) => event.status !== "deleted") || [];
-
-  if (!joinedEvents || joinedEvents.length === 0) {
+  if (attendedEvents.length === 0) {
     return (
       <Text c="dimmed" size="sm" ta="center">
         まだ参加したイベントはありません
@@ -27,23 +28,32 @@ export function JoinedEventsList() {
   return (
     <Stack gap="sm">
       <Title order={5}>参加したイベント</Title>
-      {joinedEvents.map((event: any) => (
+      {attendedEvents.map((event) => (
         <Card key={event.id} withBorder padding="sm" radius="md">
           <Link
             to={`/events/${event.id}`}
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <Stack gap="xs">
-              <Group justify="space-between">
+              <Group justify="space-between" gap="sm">
                 <Text fw={500} truncate>
-                  {event.meta?.name || "（名前未設定）"}
+                  {isRecord(event.meta) && typeof event.meta.name === "string"
+                    ? event.meta.name
+                    : "（名前未設定）"}
                 </Text>
-                <Badge color={event.status === "closed" ? "gray" : "blue"}>
-                  {event.status === "closed" ? "終了" : "参加中"}
+                <Badge
+                  color={
+                    event.status === EventStatusEnum.Ended ? "gray" : "blue"
+                  }
+                >
+                  {event.status === EventStatusEnum.Ended ? "終了" : "参加中"}
                 </Badge>
               </Group>
               <Text size="xs" c="dimmed">
-                {event.meta?.description || "説明なし"}
+                {isRecord(event.meta) &&
+                typeof event.meta.description === "string"
+                  ? event.meta.description
+                  : "説明なし"}
               </Text>
             </Stack>
           </Link>

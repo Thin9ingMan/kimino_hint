@@ -1,23 +1,15 @@
-import {
-  Alert,
-  Button,
-  Group,
-  Image,
-  Modal,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
-import { Link, useNavigate } from "react-router-dom";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Button, Group, Image, Modal, Stack, Text } from "@mantine/core";
+import { Link, useNavigate, useLoaderData } from "react-router-dom";
+import { Suspense, useCallback, useMemo, useState } from "react";
 
 import { Container } from "@/shared/ui/Container";
 import { ProfileCard, ProfileCardActions } from "@/shared/ui/ProfileCard";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useCurrentUser } from "@/shared/auth/hooks";
-import { useMyUiProfile } from "@/shared/profile/hooks";
-import { apis } from "@/shared/api";
-import { isUiProfileEmpty } from "@/shared/profile/profileUi";
+import { apis, fetchCurrentUser } from "@/shared/api";
+import {
+  isUiProfileEmpty,
+  mapProfileDataToUiProfile,
+} from "@/shared/profile/profileUi";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
 function normalizeBaseUrlPath(): string {
@@ -35,42 +27,44 @@ function getQrImageUrl(url: string, size: number): string {
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${data}`;
 }
 
-function RedirectToEditProfile(props: { to: string }) {
-  const navigate = useNavigate();
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
 
-  useEffect(() => {
-    const t = window.setTimeout(() => {
-      navigate(props.to, { replace: true });
-    }, 800);
-    return () => window.clearTimeout(t);
-  }, [navigate, props.to]);
+export async function loader() {
+  const me = await fetchCurrentUser();
+  let profileData: Record<string, unknown> | null = null;
 
-  return (
-    <Alert color="blue" title="プロフィールを作りましょう">
-      <Stack gap="sm">
-        <Text size="sm">
-          あなたのプロフィールはまだ作成されていません。編集画面へ移動します。
-        </Text>
-        <Button
-          onClick={() => navigate(props.to, { replace: true })}
-          variant="light"
-        >
-          今すぐ作成する
-        </Button>
-      </Stack>
-    </Alert>
-  );
+  try {
+    const res = await apis.profiles.getMyProfile();
+    const rawPd = res.profileData;
+    if (isRecord(rawPd)) {
+      profileData = rawPd;
+    }
+  } catch (error) {
+    if (error instanceof ResponseError && error.response.status === 404) {
+      profileData = null;
+    } else {
+      throw error;
+    }
+  }
+
+  return { me, profileData };
 }
 
 function MyProfileContent() {
   const navigate = useNavigate();
-  const me = useCurrentUser();
-  const profile = useMyUiProfile();
+  const { me, profileData } = useLoaderData<typeof loader>();
 
-  const myUserId = useMemo(() => {
-    const v = (me as any)?.id;
-    return typeof v === "number" && Number.isFinite(v) ? v : null;
-  }, [me]);
+  const profile = useMemo(
+    () => mapProfileDataToUiProfile(profileData),
+    [profileData],
+  );
+
+  const myUserId = me.id;
 
   const shareUrl = useMemo(
     () => (myUserId ? getProfileShareUrl(myUserId) : ""),
@@ -128,13 +122,6 @@ function MyProfileContent() {
         >
           プロフィールを作成する
         </Button>
-        {myUserId && (
-          <Alert color="gray" title="メモ">
-            <Text size="sm">
-              プロフィール作成後、この画面から「自分のQR」や「共有URL」を表示できます。
-            </Text>
-          </Alert>
-        )}
       </Stack>
     );
   }
@@ -144,7 +131,7 @@ function MyProfileContent() {
       <ProfileCard
         profile={profile}
         title={profile.displayName || "あなたのプロフィール"}
-        subtitle={myUserId ? `userId: ${myUserId}` : "userId: (不明)"}
+        subtitle={`userId: ${myUserId}`}
         actions={
           <ProfileCardActions
             onEdit={() => navigate("/me/profile/edit")}
@@ -222,11 +209,6 @@ export function MyProfileScreen() {
     <Container title="自分のプロフィール">
       <ErrorBoundary
         fallback={(error, retry) => {
-          const is404 =
-            error instanceof ResponseError && error.response.status === 404;
-          if (is404) {
-            return <RedirectToEditProfile to="/me/profile/edit" />;
-          }
           return (
             <Alert color="red" title="プロフィールの取得に失敗しました">
               <Stack gap="sm">
@@ -257,3 +239,5 @@ export function MyProfileScreen() {
     </Container>
   );
 }
+
+MyProfileScreen.loader = loader;

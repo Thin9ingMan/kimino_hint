@@ -11,58 +11,64 @@ import {
   Table,
 } from "@mantine/core";
 import { Suspense, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import type { Quiz, QuizAnswer } from "../types";
 import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
 import { getPerformanceRating } from "../utils/validation";
 
-function QuizResultContent() {
-  const eventId = useNumericParam("eventId");
-  const targetUserId = useNumericParam("targetUserId");
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
 
-  if (!eventId || !targetUserId) {
+export async function loader({
+  params,
+}: {
+  params: { eventId?: string; targetUserId?: string };
+}) {
+  const eventId = Number(params.eventId);
+  const targetUserId = Number(params.targetUserId);
+
+  if (Number.isNaN(eventId) || Number.isNaN(targetUserId)) {
     throw new Error("パラメータが不正です");
   }
 
-  // Fetch target user's profile and quiz to show final result
-  const [targetUser, targetProfile, quizData] = useSuspenseQueries([
-    [
-      ["users.getUserById", { userId: targetUserId }],
-      () => apis.users.getUserById({ userId: targetUserId }),
-    ],
-    [
-      ["profiles.getUserProfile", { userId: targetUserId }],
-      () => apis.profiles.getUserProfile({ userId: targetUserId }),
-    ],
-    [
-      ["events.getEventUserData", { eventId, userId: targetUserId }],
-      () => apis.events.getEventUserData({ eventId, userId: targetUserId }),
-    ],
+  const [targetUser, targetProfile, eventUserData] = await Promise.all([
+    apis.users.getUserById({ userId: targetUserId }),
+    apis.profiles.getUserProfile({ userId: targetUserId }),
+    apis.events.getEventUserData({ eventId, userId: targetUserId }),
   ]);
+
+  return { eventId, targetUserId, targetUser, targetProfile, eventUserData };
+}
+
+function QuizResultContent() {
+  const { eventId, targetUserId, targetUser, targetProfile, eventUserData } =
+    useLoaderData<typeof loader>();
 
   // Generate quiz from profile + fake answers OR use stored myQuiz
   const quiz = useMemo(() => {
     // 1. Try myQuiz (New Standard)
-    if (quizData?.userData?.myQuiz) {
-      return quizData.userData.myQuiz;
+    if (isRecord(eventUserData?.userData) && eventUserData.userData.myQuiz) {
+      return eventUserData.userData.myQuiz as Quiz;
     }
 
     // 2. Legacy / Fallback
-    const fakeAnswers = quizData?.userData?.fakeAnswers;
-    if (!fakeAnswers || !targetProfile) {
+    const fakeAnswers = isRecord(eventUserData?.userData)
+      ? eventUserData.userData.fakeAnswers
+      : null;
+    if (!isRecord(fakeAnswers) || !targetProfile) {
       return null;
     }
     return generateQuizFromProfileAndFakes(targetProfile, fakeAnswers);
-  }, [targetProfile, quizData]);
+  }, [targetProfile, eventUserData]);
 
-  // TODO: Get actual score from session/state
-  // For now, using placeholder
   const score = useMemo(() => {
     const stored = sessionStorage.getItem(
       `quiz_${eventId}_${targetUserId}_score`,
@@ -226,3 +232,5 @@ export function QuizResultScreen() {
     </Container>
   );
 }
+
+QuizResultScreen.loader = loader;

@@ -8,20 +8,19 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { Link } from "react-router-dom";
-import { Suspense, useEffect, useState } from "react";
+import { Link, useLoaderData } from "react-router-dom";
+import { Suspense } from "react";
 
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useSuspenseQuery } from "@/shared/hooks/useSuspenseQuery";
 
-type Item = {
-  id: number;
-  senderUserId: number;
-  createdAt?: Date;
-  senderProfileData?: Record<string, unknown> | null;
-};
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
 
 function pickDisplayName(
   profileData: Record<string, unknown> | null | undefined,
@@ -31,17 +30,27 @@ function pickDisplayName(
   return typeof v === "string" && v.trim() ? v.trim() : "";
 }
 
-function ProfileListContent() {
-  const data = useSuspenseQuery(["friendships.listReceivedFriendships"], () =>
-    apis.friendships.listReceivedFriendships(),
-  );
+export async function loader() {
+  const data = await apis.friendships.listReceivedFriendships();
 
-  const items: Item[] = (data ?? []).map((f: any) => ({
-    id: f.id,
-    senderUserId: f.senderUserId,
-    createdAt: f.createdAt,
-    senderProfileData: (f.senderProfile?.profileData ?? null) as any,
-  }));
+  const items = data.map((f) => {
+    const senderProfileData = isRecord(f.senderProfile?.profileData)
+      ? f.senderProfile.profileData
+      : null;
+
+    return {
+      id: f.id ?? 0,
+      senderUserId: f.senderUserId ?? 0,
+      createdAt: f.createdAt,
+      senderProfileData,
+    };
+  });
+
+  return { items };
+}
+
+function ProfileListContent() {
+  const { items } = useLoaderData<typeof loader>();
 
   if (items.length === 0) {
     return (
@@ -71,7 +80,7 @@ function ProfileListContent() {
             to={`/profiles/${item.senderUserId}`}
             style={{ textDecoration: "none" }}
           >
-            <Paper key={item.id} withBorder p="md" radius="md">
+            <Paper withBorder p="md" radius="md">
               <Stack gap="xs">
                 <Group justify="left" wrap="nowrap">
                   <Avatar radius="xl" name={displayName} size={48} />
@@ -128,3 +137,5 @@ export function ProfileListScreen() {
     </Container>
   );
 }
+
+ProfileListScreen.loader = loader;

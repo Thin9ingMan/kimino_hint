@@ -226,7 +226,7 @@ test.describe("4 User Quiz Scenario", () => {
 
     // Get profile reward
     await page.click("text=プロフィールを取得");
-    await expect(page.getByText("プロフィール取得")).toBeVisible();
+    await expect(page.getByText("プロフィール取得").first()).toBeVisible();
 
     // Continue to next quiz
     await page.click("text=次のクイズへ");

@@ -168,7 +168,7 @@ test.describe("Quiz Sequential Flow", () => {
     await page.click("text=プロフィールを取得");
 
     // Rewards screen: Click Next Quiz
-    await expect(page.getByText("プロフィール取得")).toBeVisible({
+    await expect(page.getByText("プロフィール取得").first()).toBeVisible({
       timeout: 10000,
     });
     await page.click("text=次のクイズへ");
@@ -188,7 +188,7 @@ test.describe("Quiz Sequential Flow", () => {
     await page.click("text=プロフィールを取得");
 
     // Rewards screen: Click Next Quiz
-    await expect(page.getByText("プロフィール取得")).toBeVisible({
+    await expect(page.getByText("プロフィール取得").first()).toBeVisible({
       timeout: 10000,
     });
     await page.click("text=次のクイズへ");

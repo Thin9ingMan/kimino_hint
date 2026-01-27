@@ -1,14 +1,22 @@
 import { Alert, Button, Stack, Text, TextInput } from "@mantine/core";
 import { Suspense, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis } from "@/shared/api";
+import { apis, fetchCurrentUser } from "@/shared/api";
 import { useQueryParam } from "@/shared/hooks/useQueryParam";
+
+export async function loader() {
+  const me = await fetchCurrentUser();
+  return { me };
+}
+
+type LoaderData = Awaited<ReturnType<typeof loader>>;
 
 function JoinEventContent() {
   const navigate = useNavigate();
+  useLoaderData(); // Ensure loader is used
   const codeFromUrl = useQueryParam("code");
   const [invitationCode, setInvitationCode] = useState("");
   const [joining, setJoining] = useState(false);
@@ -39,9 +47,15 @@ function JoinEventContent() {
 
       // Navigate to event lobby
       navigate(`/events/${result.eventId}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to join event:", err);
-      const status = err?.response?.status;
+      // We can use a type guard or check properties on unknown
+      const status =
+        (err &&
+          typeof err === "object" &&
+          "response" in err &&
+          (err.response as any)?.status) ||
+        500;
 
       if (status === 400 || status === 404) {
         setError("招待コードが無効または期限切れです");
@@ -132,3 +146,5 @@ export function JoinEventScreen() {
     </Container>
   );
 }
+
+JoinEventScreen.loader = loader;

@@ -5,64 +5,75 @@ import {
   Text,
   Paper,
   Title,
-  Group,
   ThemeIcon,
 } from "@mantine/core";
-import { Suspense, useMemo, useEffect } from "react";
-import * as React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Suspense, useMemo, useState, useEffect } from "react";
+import { Link, useNavigate, useLoaderData } from "react-router-dom";
 import { IconTrophy, IconSparkles } from "@tabler/icons-react";
 
 import { Container } from "@/shared/ui/Container";
 import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { useNumericParam } from "@/shared/hooks/useNumericParam";
-import { useCurrentUser } from "@/shared/auth/hooks";
-import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
-import { apis } from "@/shared/api";
+import { apis, fetchCurrentUser } from "@/shared/api";
 import { Loading } from "@/shared/ui/Loading";
 
-function QuizSequenceContent() {
-  const eventId = useNumericParam("eventId");
-  const navigate = useNavigate();
-  const [refreshKey, setRefreshKey] = React.useState(0);
+/**
+ * Type guard for Record<string, unknown>
+ */
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
 
-  if (!eventId) {
+export async function loader({ params }: { params: { eventId?: string } }) {
+  const eventId = Number(params.eventId);
+  if (Number.isNaN(eventId)) {
     throw new Error("eventId が不正です");
   }
 
-  const meData = useCurrentUser();
-  const [attendees] = useSuspenseQueries([
-    [
-      ["events.listEventAttendees", { eventId }],
-      async () => {
-        const eventAttendees = await apis.events.listEventAttendees({
-          eventId,
+  const me = await fetchCurrentUser();
+  const eventAttendees = await apis.events.listEventAttendees({ eventId });
+
+  // Fetch profiles to get display names
+  const attendees = await Promise.all(
+    eventAttendees.map(async (a) => {
+      const uid = a.attendeeUserId ?? 0;
+      try {
+        const profile = await apis.profiles.getUserProfile({
+          userId: uid,
         });
-        // Fetch profiles to get display names
-        const enriched = await Promise.all(
-          eventAttendees.map(async (a: any) => {
-            const uid = a.attendeeUserId || a.userId;
-            try {
-              const profile = await apis.profiles.getUserProfile({
-                userId: uid,
-              });
-              return {
-                ...a,
-                userId: uid,
-                attendeeUserId: uid,
-                displayName: profile.profileData?.displayName,
-                profileData: profile.profileData,
-              };
-            } catch {
-              return { ...a, userId: uid, attendeeUserId: uid };
-            }
-          }),
-        );
-        // Sort by ID to maintain join order
-        return enriched.sort((a, b) => a.id - b.id);
-      },
-    ],
-  ]);
+        const pd = isRecord(profile.profileData) ? profile.profileData : null;
+        return {
+          ...a,
+          userId: uid,
+          attendeeUserId: uid,
+          displayName: String(pd?.displayName ?? ""),
+          profileData: pd,
+        };
+      } catch {
+        return {
+          ...a,
+          userId: uid,
+          attendeeUserId: uid,
+          displayName: "",
+          profileData: null,
+        };
+      }
+    }),
+  );
+
+  // Sort by ID to maintain join order
+  attendees.sort((a, b) => a.id - b.id);
+
+  return { eventId, me, attendees };
+}
+
+type LoaderData = Awaited<ReturnType<typeof loader>>;
+
+function QuizSequenceContent() {
+  const { eventId, me, attendees } = useLoaderData<
+    typeof loader
+  >() as unknown as LoaderData;
+  const navigate = useNavigate();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Get quiz completion state from sessionStorage
   const quizProgress = useMemo(() => {
@@ -70,9 +81,8 @@ function QuizSequenceContent() {
       const stored = sessionStorage.getItem(`quiz_sequence_${eventId}`);
       if (stored) {
         const parsed = JSON.parse(stored);
-        // Validate the structure
         if (parsed && Array.isArray(parsed.completedQuizzes)) {
-          return parsed;
+          return parsed as { completedQuizzes: number[] };
         }
       }
     } catch (error) {
@@ -81,7 +91,7 @@ function QuizSequenceContent() {
         error,
       );
     }
-    return { completedQuizzes: [] };
+    return { completedQuizzes: [] as number[] };
   }, [eventId, refreshKey]);
 
   // Find current quiz index
@@ -91,7 +101,7 @@ function QuizSequenceContent() {
 
   const currentAttendee = attendees[currentQuizIndex];
   const isOwnQuiz =
-    !!currentAttendee && currentAttendee.attendeeUserId === meData.id;
+    !!currentAttendee && currentAttendee.attendeeUserId === me.id;
 
   useEffect(() => {
     if (!currentAttendee || isOwnQuiz) return;
@@ -144,7 +154,7 @@ function QuizSequenceContent() {
   }
 
   // If it's the user's own quiz, show special screen
-  if (isOwnQuiz) {
+  if (isOwnQuiz && currentAttendee) {
     const handleNext = () => {
       // Mark this quiz as completed (avoid duplicates)
       const completed = quizProgress.completedQuizzes;
@@ -188,8 +198,10 @@ function QuizSequenceContent() {
   }
 
   // Otherwise, display loading state while transitioning (handled by useEffect above)
-  const displayName =
-    currentAttendee.displayName || `ユーザー ${currentAttendee.attendeeUserId}`;
+  const displayName = currentAttendee
+    ? currentAttendee.displayName ||
+      `ユーザー ${currentAttendee.attendeeUserId}`
+    : "";
 
   return (
     <Stack gap="md" align="center">
@@ -222,3 +234,5 @@ export function QuizSequenceScreen() {
     </Container>
   );
 }
+
+QuizSequenceScreen.loader = loader;

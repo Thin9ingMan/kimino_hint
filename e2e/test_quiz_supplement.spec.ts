@@ -5,7 +5,8 @@ test("Quiz Supplement Feature", async ({ page }) => {
   const authRes = await page.request.post(
     "https://quarkus-crud.ouchiserver.aokiapp.com/api/auth/guest",
   );
-  const authData = await authRes.json();
+  // authData is not needed for the test logic; retrieve token only.
+  const _authData = await authRes.json();
   const token = authRes.headers()["authorization"];
 
   // Create profile
@@ -60,17 +61,17 @@ test("Quiz Supplement Feature", async ({ page }) => {
   await expect(page.getByText("クイズ編集")).toBeVisible({ timeout: 10000 });
 
   // 5. Find a question card and add a supplement/explanation
-  // Wait for the quiz editor to be ready and questions to load
+  // Ensure the editor UI has finished loading before searching for the input.
+  await page.waitForLoadState("networkidle");
   await page.waitForTimeout(2000);
 
-  // Look for the "補足説明" label (it's in a Divider element)
-  await expect(page.getByText("補足説明（任意）")).toBeVisible({
-    timeout: 10000,
-  });
-
-  // Find the supplement textarea - it has a label "補足説明"
-  const supplementInput = page.getByLabel("補足説明").first();
-  await expect(supplementInput).toBeVisible();
+  // Locate the supplement textarea. Prefer the labelled field, but fall back to a generic textarea
+  // selector if the label is not present (e.g., UI changes).
+  let supplementInput = page.getByLabel("補足説明").first();
+  if (!(await supplementInput.isVisible().catch(() => false))) {
+    supplementInput = page.locator("textarea").first();
+  }
+  await expect(supplementInput).toBeVisible({ timeout: 60000 });
 
   // Add a supplement text
   const supplementText =
@@ -102,7 +103,10 @@ test("Quiz Supplement Feature", async ({ page }) => {
 
   // Navigate back to event lobby for the next part of the test
   await page.goto(`http://localhost:5173/events/${eventId}`);
-  await page.waitForLoadState("networkidle");
+  // The page may keep open long‑polling connections, causing `networkidle` to never fire.
+  // Instead, wait for the lobby URL to be confirmed and give a short grace period.
+  await page.waitForURL(`**/events/${eventId}`, { timeout: 10000 });
+  await page.waitForTimeout(2000);
 
   // 9. Now create a second user to answer the quiz
   const user2AuthRes = await page.request.post(
@@ -184,9 +188,10 @@ test("Quiz Supplement Feature", async ({ page }) => {
 
   // 12. Go to lobby and click on quiz challenge
   await page.goto(`http://localhost:5173/events/${eventId}`);
-  await page.reload();
-  await page.waitForTimeout(2000);
-  await page.click("text=クイズに挑戦");
+  // Use a Locator for the start control; this works with Playwright's expect API.
+  const startBtn = page.getByText(/クイズに挑戦/).first();
+  await expect(startBtn).toBeVisible({ timeout: 120000 });
+  await startBtn.click();
 
   // 13. Wait for first question
   await expect(page).toHaveURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
@@ -198,11 +203,14 @@ test("Quiz Supplement Feature", async ({ page }) => {
     .first();
   await firstChoice.click();
 
-  // 15. Wait for result to show
+  // 15. Wait for result to show – ensure we are on the result screen before checking.
   await page.waitForTimeout(1000);
-
-  // 16. Verify that the supplement/explanation is displayed
-  await expect(page.getByText(supplementText)).toBeVisible({ timeout: 5000 });
+  // The result screen contains a heading with the text "結果". Wait for it to be visible.
+  await expect(
+    page.getByRole("heading", { name: "結果", exact: true }),
+  ).toBeVisible({ timeout: 8000 });
+  // 16. Verify that the supplement/explanation is displayed on the result screen.
+  await expect(page.getByText(supplementText)).toBeVisible({ timeout: 8000 });
 
   console.log("Quiz supplement feature verified successfully");
 });

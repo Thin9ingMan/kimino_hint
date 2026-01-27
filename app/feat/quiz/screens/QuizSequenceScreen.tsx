@@ -104,9 +104,20 @@ function QuizSequenceContent() {
             イベントロビーに戻って他の参加者と交流しましょう。
           </Text>
         </Stack>
-        <Button component={Link} to={`/events/${eventId}`} size="lg">
-          ロビーへ戻る
-        </Button>
+        <Stack gap="sm" w="100%" maw={400}>
+          <Button component={Link} to="/profiles" size="lg" fullWidth>
+            プロフィール一覧
+          </Button>
+          <Button
+            component={Link}
+            to={`/events/${eventId}`}
+            size="lg"
+            variant="light"
+            fullWidth
+          >
+            ロビーへ戻る
+          </Button>
+        </Stack>
       </Stack>
     );
   }

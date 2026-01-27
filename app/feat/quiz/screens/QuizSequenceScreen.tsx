@@ -8,14 +8,14 @@ import {
   ThemeIcon,
   Badge,
   Divider,
+  Group,
 } from "@mantine/core";
 import { Suspense, useMemo, useState, useEffect } from "react";
 import { Link, useNavigate, useLoaderData } from "react-router-dom";
 import { IconTrophy, IconSparkles } from "@tabler/icons-react";
 
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis, fetchCurrentUser } from "@/shared/api";
+import { apis, fetchCurrentUser, AppError } from "@/shared/api";
 import { Loading } from "@/shared/ui/Loading";
 import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
 
@@ -29,50 +29,65 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 export async function loader({ params }: { params: { eventId?: string } }) {
   const eventId = Number(params.eventId);
   if (Number.isNaN(eventId)) {
-    throw new Error("eventId が不正です");
+    throw new AppError("eventId が不正です", { recoveryUrl: "/events" });
   }
 
-  const me = await fetchCurrentUser();
-  const eventAttendees = await apis.events.listEventAttendees({ eventId });
+  try {
+    const me = await fetchCurrentUser();
+    const eventAttendees = await apis.events.listEventAttendees({ eventId });
 
-  // Fetch profiles to get display names
-  const attendees = await Promise.all(
-    eventAttendees.map(async (a) => {
-      const uid = a.attendeeUserId ?? 0;
-      try {
-        const profile = await apis.profiles.getUserProfile({
-          userId: uid,
-        });
-        const pd = isRecord(profile.profileData) ? profile.profileData : null;
-        return {
-          ...a,
-          userId: uid,
-          attendeeUserId: uid,
-          displayName: String(pd?.displayName ?? ""),
-          profileData: pd,
-        };
-      } catch {
-        return {
-          ...a,
-          userId: uid,
-          attendeeUserId: uid,
-          displayName: "",
-          profileData: null,
-        };
-      }
-    }),
-  );
+    // Fetch profiles to get display names
+    const attendees = await Promise.all(
+      eventAttendees.map(async (a) => {
+        const uid = a.attendeeUserId ?? 0;
+        try {
+          const profile = await apis.profiles.getUserProfile({
+            userId: uid,
+          });
+          const pd = isRecord(profile.profileData) ? profile.profileData : null;
+          return {
+            ...a,
+            userId: uid,
+            attendeeUserId: uid,
+            displayName: String(pd?.displayName ?? ""),
+            profileData: pd,
+            profile, // Keep full profile for quiz generation
+          };
+        } catch {
+          return {
+            ...a,
+            userId: uid,
+            attendeeUserId: uid,
+            displayName: "",
+            profileData: null,
+            profile: null,
+          };
+        }
+      }),
+    );
 
-  // Sort by ID to maintain join order
-  attendees.sort((a, b) => a.id - b.id);
+    // Sort by ID to maintain join order
+    attendees.sort((a, b) => a.id - b.id);
 
-  return { eventId, me, attendees };
+    // Fetch my event user data for the quiz preview
+    const myEventUserData = await apis.events.getEventUserData({
+      eventId,
+      userId: me.id,
+    });
+
+    return { eventId, me, attendees, myEventUserData };
+  } catch (error) {
+    throw new AppError("クイズシーケンス情報の読み込みに失敗しました", {
+      cause: error,
+      recoveryUrl: `/events/${eventId}`,
+    });
+  }
 }
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
 
 function QuizSequenceContent() {
-  const { eventId, me, attendees } = useLoaderData<
+  const { eventId, me, attendees, myEventUserData } = useLoaderData<
     typeof loader
   >() as unknown as LoaderData;
   const navigate = useNavigate();
@@ -122,6 +137,26 @@ function QuizSequenceContent() {
       `/events/${eventId}/quiz/challenge/${currentAttendee.attendeeUserId}/1`,
     );
   }, [eventId, currentAttendee?.attendeeUserId, isOwnQuiz, navigate]);
+
+  // Generate quiz from profile + fake answers OR use stored myQuiz
+  const quiz = useMemo(() => {
+    if (!isOwnQuiz || !currentAttendee) return null;
+
+    const targetProfile = currentAttendee.profile;
+    const quizData = myEventUserData;
+
+    // 1. Try myQuiz (New Standard)
+    if (quizData?.userData?.myQuiz) {
+      return quizData.userData.myQuiz;
+    }
+
+    // 2. Legacy / Fallback
+    const fakeAnswers = quizData?.userData?.fakeAnswers;
+    if (!fakeAnswers || !targetProfile) {
+      return null;
+    }
+    return generateQuizFromProfileAndFakes(targetProfile, fakeAnswers);
+  }, [isOwnQuiz, currentAttendee, myEventUserData]);
 
   // Check if all quizzes are completed
   if (currentQuizIndex >= attendees.length) {
@@ -174,43 +209,6 @@ function QuizSequenceContent() {
         setRefreshKey((prev) => prev + 1);
       }
     };
-
-    // Fetch quiz data to display
-    const [targetProfile, quizData] = useSuspenseQueries([
-      [
-        ["profiles.getUserProfile", { userId: currentAttendee.attendeeUserId }],
-        () =>
-          apis.profiles.getUserProfile({
-            userId: currentAttendee.attendeeUserId,
-          }),
-      ],
-      [
-        [
-          "events.getEventUserData",
-          { eventId, userId: currentAttendee.attendeeUserId },
-        ],
-        () =>
-          apis.events.getEventUserData({
-            eventId,
-            userId: currentAttendee.attendeeUserId,
-          }),
-      ],
-    ]);
-
-    // Generate quiz from profile + fake answers OR use stored myQuiz
-    const quiz = useMemo(() => {
-      // 1. Try myQuiz (New Standard)
-      if (quizData?.userData?.myQuiz) {
-        return quizData.userData.myQuiz;
-      }
-
-      // 2. Legacy / Fallback
-      const fakeAnswers = quizData?.userData?.fakeAnswers;
-      if (!fakeAnswers || !targetProfile) {
-        return null;
-      }
-      return generateQuizFromProfileAndFakes(targetProfile, fakeAnswers);
-    }, [targetProfile, quizData]);
 
     return (
       <Stack gap="xl" py="xl">
@@ -317,22 +315,9 @@ function QuizSequenceContent() {
 export function QuizSequenceScreen() {
   return (
     <Container title="クイズ挑戦">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="読み込みエラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
-      >
-        <Suspense fallback={<Loading />}>
-          <QuizSequenceContent />
-        </Suspense>
-      </ErrorBoundary>
+      <Suspense fallback={<Loading />}>
+        <QuizSequenceContent />
+      </Suspense>
     </Container>
   );
 }

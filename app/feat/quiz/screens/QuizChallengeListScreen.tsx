@@ -14,8 +14,7 @@ import { Link, useLoaderData } from "react-router-dom";
 import { IconClock, IconPlayerPlay, IconUsers } from "@tabler/icons-react";
 
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis, fetchCurrentUser } from "@/shared/api";
+import { apis, fetchCurrentUser, AppError } from "@/shared/api";
 import { Loading } from "@/shared/ui/Loading";
 
 /**
@@ -28,40 +27,49 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 export async function loader({ params }: { params: { eventId?: string } }) {
   const eventId = Number(params.eventId);
   if (Number.isNaN(eventId)) {
-    throw new Error("eventId が不正です");
+    throw new AppError("eventId が不正です", { recoveryUrl: "/events" });
   }
 
-  const me = await fetchCurrentUser();
-  const eventAttendees = await apis.events.listEventAttendees({ eventId });
+  try {
+    const me = await fetchCurrentUser();
+    const eventAttendees = await apis.events.listEventAttendees({ eventId });
 
-  // Fetch profiles to get display names
-  const attendees = await Promise.all(
-    eventAttendees.map(async (a) => {
-      const uid = a.attendeeUserId ?? 0;
-      try {
-        const profile = await apis.profiles.getUserProfile({
-          userId: uid,
-        });
-        const pd = isRecord(profile.profileData) ? profile.profileData : null;
-        return {
-          ...a,
-          userId: uid,
-          displayName: String(pd?.displayName ?? ""),
-          profileData: pd,
-        };
-      } catch {
-        // Removed 'e' variable
-        return {
-          ...a,
-          userId: uid,
-          displayName: "",
-          profileData: null,
-        };
-      }
-    }),
-  );
+    // Fetch profiles to get display names
+    const attendees = await Promise.all(
+      eventAttendees.map(async (a) => {
+        const uid = a.attendeeUserId ?? 0;
+        try {
+          const profile = await apis.profiles.getUserProfile({
+            userId: uid,
+          });
+          const pd = isRecord(profile.profileData)
+            ? profile.profileData
+            : null;
+          return {
+            ...a,
+            userId: uid,
+            displayName: String(pd?.displayName ?? ""),
+            profileData: pd,
+          };
+        } catch {
+          // Removed 'e' variable
+          return {
+            ...a,
+            userId: uid,
+            displayName: "",
+            profileData: null,
+          };
+        }
+      }),
+    );
 
-  return { eventId, me, attendees };
+    return { eventId, me, attendees };
+  } catch (error) {
+    throw new AppError("挑戦リストの読み込みに失敗しました", {
+      cause: error,
+      recoveryUrl: `/events/${eventId}`,
+    });
+  }
 }
 
 function QuizChallengeListContent() {
@@ -177,24 +185,12 @@ function QuizChallengeListContent() {
 export function QuizChallengeListScreen() {
   return (
     <Container title="クイズ挑戦">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="読み込みエラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
-      >
-        <Suspense fallback={<Loading />}>
-          <QuizChallengeListContent />
-        </Suspense>
-      </ErrorBoundary>
+      <Suspense fallback={<Loading />}>
+        <QuizChallengeListContent />
+      </Suspense>
     </Container>
   );
 }
 
 QuizChallengeListScreen.loader = loader;
+

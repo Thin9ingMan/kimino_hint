@@ -20,8 +20,8 @@ import {
 } from "react-router-dom";
 
 import { apis, fetchCurrentUser } from "@/shared/api";
+import { toApiError, AppError } from "@/shared/api/errors";
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { EventAttendeesList } from "@/feat/events/components/EventAttendeesList";
 import { EventInvitationPanel } from "@/feat/events/components/EventInvitationPanel";
 
@@ -32,68 +32,72 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
-/**
- * Type guard for error with status
- */
-interface ErrorWithStatus {
-  status: number;
-}
-
 export async function loader({ params }: { params: { eventId?: string } }) {
   const eventId = Number(params.eventId);
   if (Number.isNaN(eventId)) {
-    throw new Error("eventId が不正です");
+    throw new AppError("eventId が不正です", { recoveryUrl: "/events" });
   }
 
-  const [me, eventData, eventAttendees] = await Promise.all([
-    fetchCurrentUser(),
-    apis.events.getEventById({ eventId }),
-    apis.events.listEventAttendees({ eventId }),
-  ]);
+  try {
+    const [me, eventData, eventAttendees] = await Promise.all([
+      fetchCurrentUser(),
+      apis.events.getEventById({ eventId }),
+      apis.events.listEventAttendees({ eventId }),
+    ]);
 
-  // Fetch profiles and quiz data to get display names and check readiness
-  const attendees = await Promise.all(
-    eventAttendees.map(async (a) => {
-      const uid = a.attendeeUserId;
-      if (uid === undefined) throw new Error("User ID is missing");
+    // Fetch profiles and quiz data to get display names and check readiness
+    const attendees = await Promise.all(
+      eventAttendees.map(async (a) => {
+        const uid = a.attendeeUserId;
+        if (uid === undefined) throw new Error("User ID is missing");
 
-      let profileData: Record<string, unknown> | null = null;
-      let hasProfile = false;
-      let hasQuiz = false;
+        let profileData: Record<string, unknown> | null = null;
+        let hasProfile = false;
+        let hasQuiz = false;
 
-      try {
-        const profile = await apis.profiles.getUserProfile({ userId: uid });
-        const rawPd = profile.profileData;
-        if (isRecord(rawPd)) {
-          profileData = rawPd;
-          hasProfile = true;
+        try {
+          const profile = await apis.profiles.getUserProfile({ userId: uid });
+          const rawPd = profile.profileData;
+          if (isRecord(rawPd)) {
+            profileData = rawPd;
+            hasProfile = true;
+          }
+        } catch {
+          hasProfile = false;
         }
-      } catch {
-        hasProfile = false;
-      }
 
-      try {
-        const eventUserData = await apis.events.getEventUserData({
-          eventId,
+        try {
+          const eventUserData = await apis.events.getEventUserData({
+            eventId,
+            userId: uid,
+          });
+          hasQuiz = !!eventUserData.userData?.myQuiz;
+        } catch {
+          hasQuiz = false;
+        }
+
+        return {
+          ...a,
           userId: uid,
-        });
-        hasQuiz = !!eventUserData.userData?.myQuiz;
-      } catch {
-        hasQuiz = false;
-      }
-
-      return {
-        ...a,
-        userId: uid,
-        displayName: String(profileData?.displayName ?? ""),
-        profileData,
-        hasProfile,
-        hasQuiz,
-      };
-    }),
-  );
-
-  return { eventId, eventData, attendees, me };
+          displayName: String(profileData?.displayName ?? ""),
+          profileData,
+          hasProfile,
+          hasQuiz,
+        };
+      }),
+    );
+    return { eventId, eventData, attendees, me };
+  } catch (err) {
+    const apiError = toApiError(err);
+    if (apiError.kind === "not_found") {
+      const me = await fetchCurrentUser();
+      return { eventId, eventData: null, attendees: [], me };
+    }
+    throw new AppError("イベントの読み込みに失敗しました", {
+      cause: err,
+      recoveryUrl: "/events",
+    });
+  }
 }
 
 function EventLobbyContent() {
@@ -349,30 +353,18 @@ function EventLobbyContent() {
 export function EventLobbyScreen() {
   return (
     <Container title="ロビー">
-      <ErrorBoundary
-        fallback={(error, _) => (
-          <Alert color="red" title="取得エラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={() => window.location.reload()}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
+      <Suspense
+        fallback={
+          <Text size="sm" c="dimmed">
+            読み込み中...
+          </Text>
+        }
       >
-        <Suspense
-          fallback={
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          }
-        >
-          <EventLobbyContent />
-        </Suspense>
-      </ErrorBoundary>
+        <EventLobbyContent />
+      </Suspense>
     </Container>
   );
 }
 
 EventLobbyScreen.loader = loader;
+

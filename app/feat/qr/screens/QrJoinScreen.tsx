@@ -8,20 +8,19 @@ import {
   Group,
 } from "@mantine/core";
 import { Suspense } from "react";
-import { useNavigate, useLoaderData } from "react-router-dom";
+import { useLoaderData, redirect } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis } from "@/shared/api";
+import { apis, AppError } from "@/shared/api";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
-import { redirect } from "react-router-dom";
 
 export async function loader({ request }: { request: Request }) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
+  const recoveryUrl = "/events";
 
   if (!code) {
-    return { error: "招待コードが指定されていません" };
+    throw new AppError("招待コードが指定されていません", { recoveryUrl });
   }
 
   try {
@@ -44,44 +43,17 @@ export async function loader({ request }: { request: Request }) {
       } else if (status === 401) {
         errorMsg = "認証エラーが発生しました。再試行してください。";
       } else if (status === 409) {
-        // Already joined - redirect to lobby
-        // We need to find the event ID. But the error might not have it.
-        // Actually, 409 usually means we can't join again, but we might not know which event.
-        // In this app, the invitation code is usually specific enough.
-        // If we can't get eventId from 409, we might have to show an error or
-        // fetch the event by code first.
-        // For now, let's just show an error message that they already joined.
         errorMsg = "すでにこのイベントに参加しています";
       }
     }
-    return { error: errorMsg };
+    throw new AppError(errorMsg, { cause: err, recoveryUrl });
   }
 }
 
 function QrJoinContent() {
-  const navigate = useNavigate();
-  const data = useLoaderData<typeof loader>();
-
-  // If we reach here, it means we didn't redirect (so there's an error)
-  const error = (data as { error?: string }).error;
-
-  if (error) {
-    return (
-      <Stack gap="md">
-        <Alert color="red" title="エラー">
-          <Text size="sm">{error}</Text>
-        </Alert>
-        <Button onClick={() => window.location.reload()} fullWidth>
-          再試行
-        </Button>
-        <Button onClick={() => navigate("/events")} variant="default" fullWidth>
-          イベント一覧へ
-        </Button>
-      </Stack>
-    );
-  }
-
-  // This part might be shown briefly before redirect if any (though redirect is usually immediate)
+  // If we reach here, it means we didn't redirect.
+  // This screen is mostly for the loader action.
+  // The content is a loading indicator until the redirect happens.
   return (
     <Stack gap="md">
       <Alert color="blue" title="処理中">
@@ -99,35 +71,23 @@ function QrJoinContent() {
 export function QrJoinScreen() {
   return (
     <Container title="イベント参加">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="エラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
+      <Suspense
+        fallback={
+          <Center py="xl">
+            <Stack align="center" gap="sm">
+              <Loader size="lg" />
+              <Text size="sm" c="dimmed">
+                読み込み中...
+              </Text>
             </Stack>
-          </Alert>
-        )}
+          </Center>
+        }
       >
-        <Suspense
-          fallback={
-            <Center py="xl">
-              <Stack align="center" gap="sm">
-                <Loader size="lg" />
-                <Text size="sm" c="dimmed">
-                  読み込み中...
-                </Text>
-              </Stack>
-            </Center>
-          }
-        >
-          <QrJoinContent />
-        </Suspense>
-      </ErrorBoundary>
+        <QrJoinContent />
+      </Suspense>
     </Container>
   );
 }
 
 QrJoinScreen.loader = loader;
+

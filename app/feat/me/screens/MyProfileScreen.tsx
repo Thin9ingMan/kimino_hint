@@ -4,8 +4,7 @@ import { Suspense, useCallback, useMemo, useState } from "react";
 
 import { Container } from "@/shared/ui/Container";
 import { ProfileCard, ProfileCardActions } from "@/shared/ui/ProfileCard";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis, fetchCurrentUser } from "@/shared/api";
+import { apis, fetchCurrentUser, AppError } from "@/shared/api";
 import {
   isUiProfileEmpty,
   mapProfileDataToUiProfile,
@@ -48,7 +47,10 @@ export async function loader() {
     if (error instanceof ResponseError && error.response.status === 404) {
       profileData = null;
     } else {
-      throw error;
+      throw new AppError("プロフィールの読み込みに失敗しました", {
+        cause: error,
+        recoveryUrl: "/me",
+      });
     }
   }
 
@@ -207,37 +209,18 @@ function MyProfileContent() {
 export function MyProfileScreen() {
   return (
     <Container title="自分のプロフィール">
-      <ErrorBoundary
-        fallback={(error, retry) => {
-          return (
-            <Alert color="red" title="プロフィールの取得に失敗しました">
-              <Stack gap="sm">
-                <Text size="sm">{error.message}</Text>
-                <Group grow>
-                  <Button variant="light" onClick={retry}>
-                    再試行
-                  </Button>
-                  <Button component={Link} to="/me" variant="default">
-                    戻る
-                  </Button>
-                </Group>
-              </Stack>
-            </Alert>
-          );
-        }}
+      <Suspense
+        fallback={
+          <Text size="sm" c="dimmed">
+            読み込み中...
+          </Text>
+        }
       >
-        <Suspense
-          fallback={
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          }
-        >
-          <MyProfileContent />
-        </Suspense>
-      </ErrorBoundary>
+        <MyProfileContent />
+      </Suspense>
     </Container>
   );
 }
 
 MyProfileScreen.loader = loader;
+

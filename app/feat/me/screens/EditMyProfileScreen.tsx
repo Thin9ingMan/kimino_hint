@@ -12,9 +12,8 @@ import {
 import { Suspense, useCallback, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, useLoaderData } from "react-router-dom";
 
-import { apis } from "@/shared/api";
+import { apis, AppError } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { FACULTY_OPTIONS, GRADE_OPTIONS } from "@/shared/profile/options";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
@@ -92,7 +91,10 @@ export async function loader() {
     if (error instanceof ResponseError && error.response.status === 404) {
       return { profile: null };
     }
-    throw error;
+    throw new AppError("プロフィールの読み込みに失敗しました", {
+      cause: error,
+      recoveryUrl: "/me/profile",
+    });
   }
 }
 
@@ -290,30 +292,18 @@ function EditProfileForm() {
 export function EditMyProfileScreen() {
   return (
     <Container title="プロフィール編集">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="読み込みエラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
+      <Suspense
+        fallback={
+          <Text size="sm" c="dimmed">
+            読み込み中...
+          </Text>
+        }
       >
-        <Suspense
-          fallback={
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          }
-        >
-          <EditProfileForm />
-        </Suspense>
-      </ErrorBoundary>
+        <EditProfileForm />
+      </Suspense>
     </Container>
   );
 }
 
 EditMyProfileScreen.loader = loader;
+

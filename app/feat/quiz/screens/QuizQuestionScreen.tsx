@@ -12,8 +12,7 @@ import { Suspense, useCallback, useState, useMemo } from "react";
 import { useNavigate, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis, toApiError } from "@/shared/api";
+import { apis, toApiError, AppError } from "@/shared/api";
 import type { Quiz } from "../types";
 import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
 
@@ -34,7 +33,9 @@ export async function loader({
   const questionNo = Number(params.questionNo) || 1;
 
   if (Number.isNaN(eventId) || Number.isNaN(targetUserId)) {
-    throw new Error("パラメータが不正です");
+    throw new AppError("パラメータが不正です", {
+      recoveryUrl: "/events",
+    });
   }
 
   try {
@@ -69,17 +70,24 @@ export async function loader({
       eventUserData,
     };
   } catch (error) {
-    // Convert other API errors to more user-friendly messages
     const apiError = toApiError(error);
+    const recoveryUrl = `/events/${eventId}/quiz/challenges`;
 
     if (apiError.kind === "unauthorized") {
-      throw new Error("このクイズにアクセスする権限がありません。");
+      throw new AppError("このクイズにアクセスする権限がありません。", {
+        recoveryUrl,
+        cause: error,
+      });
     } else if (apiError.kind === "network") {
-      throw new Error(
+      throw new AppError(
         "ネットワーク接続に失敗しました。接続を確認して再試行してください。",
+        { recoveryUrl, cause: error },
       );
     } else {
-      throw new Error("クイズデータの読み込み中にエラーが発生しました。");
+      throw new AppError("クイズデータの読み込み中にエラーが発生しました。", {
+        recoveryUrl,
+        cause: error,
+      });
     }
   }
 }
@@ -272,7 +280,9 @@ function QuizQuestionContent() {
             <Text size="sm">
               {isCorrect
                 ? "よくできました！"
-                : `正解は「${question.choices.find((c) => c.isCorrect)?.text}」でした。`}
+                : `正解は「${
+                    question.choices.find((c) => c.isCorrect)?.text
+                  }」でした。`}
             </Text>
             {question.explanation && (
               <Paper withBorder p="md" radius="md" bg="gray.0">
@@ -298,30 +308,18 @@ export function QuizQuestionScreen() {
 
   return (
     <Container title="クイズ">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="読み込みエラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
+      <Suspense
+        fallback={
+          <Text size="sm" c="dimmed">
+            読み込み中...
+          </Text>
+        }
       >
-        <Suspense
-          fallback={
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          }
-        >
-          <QuizQuestionContent key={questionNo} />
-        </Suspense>
-      </ErrorBoundary>
+        <QuizQuestionContent key={questionNo} />
+      </Suspense>
     </Container>
   );
 }
 
 QuizQuestionScreen.loader = loader;
+

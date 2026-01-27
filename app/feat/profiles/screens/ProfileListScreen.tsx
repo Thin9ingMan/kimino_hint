@@ -11,9 +11,8 @@ import {
 import { Link, useLoaderData } from "react-router-dom";
 import { Suspense } from "react";
 
-import { apis } from "@/shared/api";
+import { apis, AppError } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 
 /**
  * Type guard for Record<string, unknown>
@@ -31,22 +30,29 @@ function pickDisplayName(
 }
 
 export async function loader() {
-  const data = await apis.friendships.listReceivedFriendships();
+  try {
+    const data = await apis.friendships.listReceivedFriendships();
 
-  const items = data.map((f) => {
-    const senderProfileData = isRecord(f.senderProfile?.profileData)
-      ? f.senderProfile.profileData
-      : null;
+    const items = data.map((f) => {
+      const senderProfileData = isRecord(f.senderProfile?.profileData)
+        ? f.senderProfile.profileData
+        : null;
 
-    return {
-      id: f.id ?? 0,
-      senderUserId: f.senderUserId ?? 0,
-      createdAt: f.createdAt,
-      senderProfileData,
-    };
-  });
+      return {
+        id: f.id ?? 0,
+        senderUserId: f.senderUserId ?? 0,
+        createdAt: f.createdAt,
+        senderProfileData,
+      };
+    });
 
-  return { items };
+    return { items };
+  } catch (error) {
+    throw new AppError("プロファイルリストの読み込みに失敗しました", {
+      cause: error,
+      recoveryUrl: "/me",
+    });
+  }
 }
 
 function ProfileListContent() {
@@ -112,30 +118,18 @@ function ProfileListContent() {
 export function ProfileListScreen() {
   return (
     <Container title="受け取ったプロフィール">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="一覧の取得に失敗しました">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
+      <Suspense
+        fallback={
+          <Text size="sm" c="dimmed">
+            読み込み中...
+          </Text>
+        }
       >
-        <Suspense
-          fallback={
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          }
-        >
-          <ProfileListContent />
-        </Suspense>
-      </ErrorBoundary>
+        <ProfileListContent />
+      </Suspense>
     </Container>
   );
 }
 
 ProfileListScreen.loader = loader;
+

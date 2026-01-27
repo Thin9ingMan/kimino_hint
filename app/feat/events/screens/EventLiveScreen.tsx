@@ -2,37 +2,29 @@ import { Alert, Button, Stack, Text } from "@mantine/core";
 import { Link, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
-import { apis } from "@/shared/api";
+import { apis, AppError } from "@/shared/api"; // AppError added
 
 export async function loader({ params }: { params: { eventId?: string } }) {
   const eventId = Number(params.eventId);
   if (Number.isNaN(eventId)) {
-    return { eventId: null, eventData: null, error: "invalid_id" as const };
+    throw new AppError("無効なイベントIDです", { recoveryUrl: "/events" }); // Changed to throw AppError
   }
 
-  const eventData = await apis.events.getEventById({ eventId });
-  return { eventId, eventData, error: null };
+  try { // Added try block
+    const eventData = await apis.events.getEventById({ eventId });
+    return { eventId, eventData }; // Modified to remove 'error: null'
+  } catch (error) { // Added catch block
+    throw new AppError("イベント情報の読み込みに失敗しました", {
+      cause: error,
+      recoveryUrl: `/events/${eventId}`,
+    });
+  }
 }
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
 
 export function EventLiveScreen() {
-  const data = useLoaderData() as LoaderData;
-
-  if (data.error === "invalid_id" || !data.eventId) {
-    return (
-      <Container title="ライブ更新">
-        <Stack gap="md">
-          <Text>無効なイベントIDです</Text>
-          <Button component={Link} to="/events" variant="default">
-            イベント一覧へ
-          </Button>
-        </Stack>
-      </Container>
-    );
-  }
-
-  const { eventId } = data;
+  const { eventId } = useLoaderData() as LoaderData; // Direct destructuring, assumes eventId is present
 
   return (
     <Container title="ライブ更新">

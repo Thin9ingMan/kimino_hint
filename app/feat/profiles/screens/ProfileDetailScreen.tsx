@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import { useLoaderData } from "react-router";
+import { useLoaderData } from "react-router-dom";
+import { Text } from "@mantine/core";
 import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { ProfileDetailContent } from "../components/ProfileDetailContent";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 
@@ -61,20 +61,18 @@ export function ProfileDetailScreen() {
 
   return (
     <Container title="プロフィール詳細">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <div style={{ padding: "20px" }}>
-            <p>エラーが発生しました: {error.message}</p>
-            <button onClick={retry}>再試行</button>
-          </div>
-        )}
+      <Suspense
+        fallback={
+          <Text size="sm" c="dimmed">
+            読み込み中...
+          </Text>
+        }
       >
-        <Suspense fallback={<div>読み込み中...</div>}>
-          <ProfileDetailContent loaderData={data} />
-        </Suspense>
-      </ErrorBoundary>
+        <ProfileDetailContent loaderData={data} />
+      </Suspense>
     </Container>
   );
 }
 
 ProfileDetailScreen.loader = loader;
+

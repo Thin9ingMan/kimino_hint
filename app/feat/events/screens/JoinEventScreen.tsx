@@ -1,15 +1,21 @@
-import { Alert, Button, Stack, Text, TextInput } from "@mantine/core";
+import { Alert, Button, Group, Stack, Text, TextInput } from "@mantine/core";
 import { Suspense, useState, useEffect } from "react";
-import { useNavigate, useLoaderData } from "react-router-dom";
+import { Link, useNavigate, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis, fetchCurrentUser } from "@/shared/api";
+import { apis, fetchCurrentUser, AppError } from "@/shared/api"; // AppError added
 import { useQueryParam } from "@/shared/hooks/useQueryParam";
 
 export async function loader() {
-  const me = await fetchCurrentUser();
-  return { me };
+  try { // Added try block
+    const me = await fetchCurrentUser();
+    return { me };
+  } catch (error) { // Added catch block
+    throw new AppError("ユーザー情報の読み込みに失敗しました", {
+      cause: error,
+      recoveryUrl: "/events",
+    });
+  }
 }
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
@@ -121,28 +127,15 @@ function JoinEventContent() {
 export function JoinEventScreen() {
   return (
     <Container title="イベント参加">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="エラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
+      <Suspense
+        fallback={
+          <Text size="sm" c="dimmed">
+            読み込み中...
+          </Text>
+        }
       >
-        <Suspense
-          fallback={
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          }
-        >
-          <JoinEventContent />
-        </Suspense>
-      </ErrorBoundary>
+        <JoinEventContent />
+      </Suspense>
     </Container>
   );
 }

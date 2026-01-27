@@ -3,8 +3,7 @@ import { Suspense, useState, useEffect } from "react";
 import { useNavigate, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis } from "@/shared/api";
+import { apis, AppError } from "@/shared/api";
 import { ProfileCard } from "@/shared/ui/ProfileCard";
 import { mapProfileDataToUiProfile } from "@/shared/profile/profileUi";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
@@ -27,27 +26,34 @@ export async function loader({
   const targetUserId = Number(params.targetUserId);
 
   if (Number.isNaN(eventId) || Number.isNaN(targetUserId)) {
-    throw new Error("パラメータが不正です");
+    throw new AppError("パラメータが不正です", { recoveryUrl: "/events" });
   }
 
-  const [profileData, isFriendshipExchanged] = await Promise.all([
-    apis.profiles.getUserProfile({ userId: targetUserId }),
-    (async () => {
-      try {
-        await apis.friendships.getFriendshipByOtherUser({
-          otherUserId: targetUserId,
-        });
-        return true; // Already exchanged
-      } catch (e: unknown) {
-        if (e instanceof ResponseError && e.response.status === 404) {
-          return false; // Not exchanged
+  try {
+    const [profileData, isFriendshipExchanged] = await Promise.all([
+      apis.profiles.getUserProfile({ userId: targetUserId }),
+      (async () => {
+        try {
+          await apis.friendships.getFriendshipByOtherUser({
+            otherUserId: targetUserId,
+          });
+          return true; // Already exchanged
+        } catch (e: unknown) {
+          if (e instanceof ResponseError && e.response.status === 404) {
+            return false; // Not exchanged
+          }
+          throw e;
         }
-        throw e;
-      }
-    })(),
-  ]);
+      })(),
+    ]);
 
-  return { eventId, targetUserId, profileData, isFriendshipExchanged };
+    return { eventId, targetUserId, profileData, isFriendshipExchanged };
+  } catch (error) {
+    throw new AppError("報酬の読み込みに失敗しました", {
+      cause: error,
+      recoveryUrl: `/events/${eventId}/quiz/challenges`,
+    });
+  }
 }
 
 function QuizRewardsContent() {
@@ -174,30 +180,18 @@ function QuizRewardsContent() {
 export function QuizRewardsScreen() {
   return (
     <Container title="プロフィール取得">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="読み込みエラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
+      <Suspense
+        fallback={
+          <Text size="sm" c="dimmed">
+            読み込み中...
+          </Text>
+        }
       >
-        <Suspense
-          fallback={
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          }
-        >
-          <QuizRewardsContent />
-        </Suspense>
-      </ErrorBoundary>
+        <QuizRewardsContent />
+      </Suspense>
     </Container>
   );
 }
 
 QuizRewardsScreen.loader = loader;
+

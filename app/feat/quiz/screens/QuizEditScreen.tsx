@@ -27,8 +27,7 @@ import { useNavigate, useLoaderData } from "react-router-dom";
 
 import { Loading } from "@/shared/ui/Loading";
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis, fetchCurrentUser } from "@/shared/api";
+import { apis, fetchCurrentUser, AppError } from "@/shared/api";
 import { getErrorMessage, QuizSaveError } from "../utils/errors";
 import { falseHobbies, falseArtists, faculty, grade } from "../utils/fakeData";
 import type { Quiz } from "../types";
@@ -243,32 +242,42 @@ function QuestionEditor({
 export async function loader({ params }: { params: { eventId?: string } }) {
   const eventId = Number(params.eventId);
   if (Number.isNaN(eventId)) {
-    throw new Error("eventId が不正です");
+    throw new AppError("eventId が不正です", { recoveryUrl: "/events" }); // Modified
   }
 
-  const me = await fetchCurrentUser();
+  try { // Added try block
+    const me = await fetchCurrentUser();
 
-  const [profile, eventUserData] = await Promise.all([
-    (async () => {
-      try {
-        return await apis.profiles.getMyProfile();
-      } catch (e) {
-        if (e instanceof ResponseError && e.response.status === 404) {
-          return null;
+    const [profile, eventUserData] = await Promise.all([
+      (async () => {
+        try {
+          return await apis.profiles.getMyProfile();
+        } catch (e) {
+          if (e instanceof ResponseError && e.response.status === 404) {
+            return null;
+          }
+          throw e;
         }
-        throw e;
-      }
-    })(),
-    (async () => {
-      try {
-        return await apis.events.getEventUserData({ eventId, userId: me.id });
-      } catch {
-        return null;
-      }
-    })(),
-  ]);
+      })(),
+      (async () => {
+        try {
+          return await apis.events.getEventUserData({ eventId, userId: me.id });
+        } catch (e) { // Modified to catch error and rethrow if not 404
+          if (e instanceof ResponseError && e.response.status === 404) {
+            return null;
+          }
+          throw e;
+        }
+      })(),
+    ]);
 
-  return { eventId, me, profile, eventUserData };
+    return { eventId, me, profile, eventUserData };
+  } catch (error) { // Added catch block
+    throw new AppError("クイズ編集情報の読み込みに失敗しました", {
+      cause: error,
+      recoveryUrl: `/events/${eventId}`,
+    });
+  }
 }
 
 function QuizEditContent() {
@@ -807,22 +816,9 @@ function QuizEditContent() {
 export function QuizEditScreen() {
   return (
     <Container title="クイズ編集">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="読み込みエラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
-      >
-        <Suspense fallback={<Loading />}>
-          <QuizEditContent />
-        </Suspense>
-      </ErrorBoundary>
+      <Suspense fallback={<Loading />}>
+        <QuizEditContent />
+      </Suspense>
     </Container>
   );
 }

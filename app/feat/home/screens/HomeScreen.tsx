@@ -20,9 +20,8 @@ import {
 } from "@tabler/icons-react";
 
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
-import { apis } from "@/shared/api";
+import { apis, AppError } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
 import { Loading } from "@/shared/ui/Loading";
 
 export async function loader() {
@@ -36,8 +35,9 @@ export async function loader() {
     // Convert other errors to a more user-friendly message
     const errorMessage =
       err instanceof Error ? err.message : "Failed to fetch profile";
-    throw new Error(
+    throw new AppError(
       `プロフィールの取得中にエラーが発生しました: ${errorMessage}`,
+      { cause: err },
     );
   }
 }
@@ -157,28 +157,12 @@ function HomeContent() {
 export function HomeScreen() {
   return (
     <Container title="キミのヒント" isHome>
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="データ取得エラー">
-            <Stack gap="sm">
-              <Text size="sm">
-                {error.message.includes("プロフィールの取得中にエラー")
-                  ? error.message
-                  : `データの取得中にエラーが発生しました: ${error.message}`}
-              </Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
-      >
-        <Suspense fallback={<Loading />}>
-          <HomeContent />
-        </Suspense>
-      </ErrorBoundary>
+      <Suspense fallback={<Loading />}>
+        <HomeContent />
+      </Suspense>
     </Container>
   );
 }
 
 HomeScreen.loader = loader;
+

@@ -11,12 +11,18 @@ import { Suspense, useState } from "react";
 import { useNavigate, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis, fetchCurrentUser } from "@/shared/api";
+import { apis, fetchCurrentUser, AppError } from "@/shared/api"; // AppError added
 
 export async function loader() {
-  const me = await fetchCurrentUser();
-  return { me };
+  try { // Added try block
+    const me = await fetchCurrentUser();
+    return { me };
+  } catch (error) { // Added catch block
+    throw new AppError("ユーザー情報の読み込みに失敗しました", {
+      cause: error,
+      recoveryUrl: "/events",
+    });
+  }
 }
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
@@ -130,28 +136,15 @@ function CreateEventContent() {
 export function CreateEventScreen() {
   return (
     <Container title="新規イベント作成">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="エラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
+      <Suspense
+        fallback={
+          <Text size="sm" c="dimmed">
+            読み込み中...
+          </Text>
+        }
       >
-        <Suspense
-          fallback={
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          }
-        >
-          <CreateEventContent />
-        </Suspense>
-      </ErrorBoundary>
+        <CreateEventContent />
+      </Suspense>
     </Container>
   );
 }

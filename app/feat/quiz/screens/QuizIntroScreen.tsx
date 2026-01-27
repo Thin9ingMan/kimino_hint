@@ -1,10 +1,17 @@
-import { Alert, Button, Stack, Text, Paper, Title } from "@mantine/core";
+import {
+  Alert,
+  Button,
+  Group,
+  Stack,
+  Text,
+  Paper,
+  Title,
+} from "@mantine/core";
 import { Suspense } from "react";
 import { Link, useLoaderData } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
-import { ErrorBoundary } from "@/shared/ui/ErrorBoundary";
-import { apis, fetchCurrentUser } from "@/shared/api";
+import { apis, fetchCurrentUser, AppError } from "@/shared/api";
 
 /**
  * Type guard for Record<string, unknown>
@@ -16,22 +23,29 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 export async function loader({ params }: { params: { eventId?: string } }) {
   const eventId = Number(params.eventId);
   if (Number.isNaN(eventId)) {
-    throw new Error("eventId が不正です");
+    throw new AppError("eventId が不正です", { recoveryUrl: "/events" }); // Changed
   }
 
-  const me = await fetchCurrentUser();
+  try { // Added try block
+    const me = await fetchCurrentUser();
 
-  let eventUserData: any = null; // We'll type this properly in the component via useLoaderData
-  try {
-    eventUserData = await apis.events.getEventUserData({
-      eventId,
-      userId: me.id,
+    let eventUserData: any = null; // We'll type this properly in the component via useLoaderData
+    try {
+      eventUserData = await apis.events.getEventUserData({
+        eventId,
+        userId: me.id,
+      });
+    } catch {
+      eventUserData = null;
+    }
+
+    return { eventId, me, eventUserData };
+  } catch (error) { // Added catch block
+    throw new AppError("クイズ情報の読み込みに失敗しました", {
+      cause: error,
+      recoveryUrl: `/events/${eventId}`,
     });
-  } catch {
-    eventUserData = null;
   }
-
-  return { eventId, me, eventUserData };
 }
 
 function QuizIntroContent() {
@@ -101,28 +115,15 @@ function QuizIntroContent() {
 export function QuizIntroScreen() {
   return (
     <Container title="クイズ">
-      <ErrorBoundary
-        fallback={(error, retry) => (
-          <Alert color="red" title="読み込みエラー">
-            <Stack gap="sm">
-              <Text size="sm">{error.message}</Text>
-              <Button variant="light" onClick={retry}>
-                再試行
-              </Button>
-            </Stack>
-          </Alert>
-        )}
+      <Suspense
+        fallback={
+          <Text size="sm" c="dimmed">
+            読み込み中...
+          </Text>
+        }
       >
-        <Suspense
-          fallback={
-            <Text size="sm" c="dimmed">
-              読み込み中...
-            </Text>
-          }
-        >
-          <QuizIntroContent />
-        </Suspense>
-      </ErrorBoundary>
+        <QuizIntroContent />
+      </Suspense>
     </Container>
   );
 }

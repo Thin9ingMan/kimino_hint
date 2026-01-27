@@ -1,3 +1,18 @@
+export class AppError extends Error {
+  public recoveryUrl?: string;
+  public cause?: unknown;
+
+  constructor(
+    message: string,
+    options?: { recoveryUrl?: string; cause?: unknown },
+  ) {
+    super(message);
+    this.name = "AppError";
+    this.recoveryUrl = options?.recoveryUrl;
+    this.cause = options?.cause;
+  }
+}
+
 export type ApiErrorKind =
   | "network"
   | "unauthorized"
@@ -6,6 +21,7 @@ export type ApiErrorKind =
   | "bad_request"
   | "server"
   | "unknown";
+
 
 export class ApiError extends Error {
   readonly kind: ApiErrorKind;

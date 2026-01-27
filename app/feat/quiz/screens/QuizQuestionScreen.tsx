@@ -7,8 +7,10 @@ import {
   Title,
   Group,
   Progress,
+  RingProgress,
+  Box,
 } from "@mantine/core";
-import { Suspense, useCallback, useState, useMemo } from "react";
+import { Suspense, useCallback, useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Container } from "@/shared/ui/Container";
@@ -18,6 +20,7 @@ import { useSuspenseQueries } from "@/shared/hooks/useSuspenseQuery";
 import { apis } from "@/shared/api";
 import type { Quiz, QuizAnswer } from "../types";
 import { generateQuizFromProfileAndFakes } from "../utils/quizFromFakes";
+import { ANSWER_LIMIT_SEC } from "@/shared/constants";
 
 function QuizQuestionContent() {
   const eventId = useNumericParam("eventId");
@@ -87,11 +90,78 @@ function QuizQuestionContent() {
   const question = quiz.questions[questionIndex];
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(ANSWER_LIMIT_SEC);
+  const timerRef = useRef<number | null>(null);
+
+  const handleAutoSubmit = useCallback(() => {
+    // Auto-submit with no answer (null)
+    setShowResult(true);
+
+    // Store the answer in session storage as no answer
+    const storageKey = `quiz_${eventId}_${targetUserId}_answers`;
+    const stored = sessionStorage.getItem(storageKey);
+    const answers = stored ? JSON.parse(stored) : [];
+
+    answers[questionIndex] = {
+      questionId: question.id,
+      selectedChoiceId: null,
+      isCorrect: false,
+      answeredAt: new Date().toISOString(),
+    };
+
+    sessionStorage.setItem(storageKey, JSON.stringify(answers));
+    // Score remains unchanged (no correct answer)
+  }, [eventId, targetUserId, questionIndex, question.id]);
+
+  // Timer effect
+  useEffect(() => {
+    if (showResult) {
+      // Clear timer if result is shown
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 0.1;
+        if (newTime <= 0) {
+          // Time's up - auto submit with no answer
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          // Trigger auto-submit
+          handleAutoSubmit();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 100) as unknown as number;
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [showResult, handleAutoSubmit]);
 
   const handleAnswer = useCallback(
     (choiceId: string) => {
+      if (showResult) return; // Prevent multiple submissions
+      
       setSelectedChoiceId(choiceId);
       setShowResult(true);
+
+      // Clear the timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
 
       // Store the answer in session storage
       const storageKey = `quiz_${eventId}_${targetUserId}_answers`;
@@ -120,7 +190,7 @@ function QuizQuestionContent() {
         sessionStorage.setItem(scoreKey, String(currentScore + 1));
       }
     },
-    [eventId, targetUserId, questionIndex, question.id, question.choices],
+    [eventId, targetUserId, questionIndex, question.id, question.choices, showResult],
   );
 
   const handleNext = useCallback(() => {
@@ -162,7 +232,30 @@ function QuizQuestionContent() {
 
       <Progress value={progress} size="sm" />
 
-      <Paper withBorder p="lg" radius="md">
+      <Paper withBorder p="lg" radius="md" pos="relative">
+        {/* Timer Ring Progress - positioned at top right */}
+        {!showResult && (
+          <Box
+            style={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              zIndex: 10,
+            }}
+          >
+            <RingProgress
+              size={60}
+              thickness={6}
+              sections={[
+                {
+                  value: (timeLeft / ANSWER_LIMIT_SEC) * 100,
+                  color: timeLeft > 3 ? "blue" : "red",
+                },
+              ]}
+            />
+          </Box>
+        )}
+
         <Title order={3} mb="xl">
           {question.question}
         </Title>
@@ -220,7 +313,9 @@ function QuizQuestionContent() {
             <Text size="sm">
               {isCorrect
                 ? "よくできました！"
-                : `正解は「${question.choices.find((c) => c.isCorrect)?.text}」でした。`}
+                : selectedChoiceId
+                  ? `正解は「${question.choices.find((c) => c.isCorrect)?.text}」でした。`
+                  : `時間切れです。正解は「${question.choices.find((c) => c.isCorrect)?.text}」でした。`}
             </Text>
             {question.explanation && (
               <Paper withBorder p="md" radius="md" bg="gray.0">

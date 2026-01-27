@@ -47,8 +47,6 @@ test.describe("Creator Can See Own Quiz", () => {
     const eventId = eventData.id;
     const invitationCode = eventData.invitationCode;
 
-    console.log(`Event Created: ID=${eventId}, Code=${invitationCode}`);
-
     // Create Quiz for User A with distinct content
     await request.put(
       `https://quarkus-crud.ouchiserver.aokiapp.com/api/events/${eventId}/users/${eventData.initiatorId}`,
@@ -166,7 +164,6 @@ test.describe("Creator Can See Own Quiz", () => {
         lobbyReady = true;
         break;
       }
-      console.log(`Lobby not ready (attempt ${i + 1}), retrying...`);
     }
 
     if (!lobbyReady) {
@@ -195,14 +192,11 @@ test.describe("Creator Can See Own Quiz", () => {
         pageContent.includes("プレビュー"),
     ).toBeTruthy();
 
-    console.log("✓ Creator can see their own quiz content");
-
     // The creator should be able to proceed without answering
     const hasNextButton =
       (await page.getByText("次のクイズへ").isVisible().catch(() => false)) ||
       (await page.getByText("スキップ").isVisible().catch(() => false));
 
     expect(hasNextButton).toBeTruthy();
-    console.log("✓ Creator can skip their own quiz");
   });
 });

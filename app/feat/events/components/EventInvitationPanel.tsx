@@ -25,7 +25,9 @@ export function EventInvitationPanel({ invitationCode }: Props) {
   }
 
   // URL for auto-joining via QR code
-  const joinUrl = `${window.location.origin}/qr/join?code=${invitationCode}`;
+  // URL-encode the invitation code for maximum compatibility across different QR readers
+  // Some camera apps may misinterpret non-ASCII characters (like Japanese hiragana) in QR codes
+  const joinUrl = `${window.location.origin}/qr/join?code=${encodeURIComponent(invitationCode)}`;
 
   return (
     <Paper withBorder p="md" radius="md">

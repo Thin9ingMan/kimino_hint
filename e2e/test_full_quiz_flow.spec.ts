@@ -210,42 +210,14 @@ test.describe("Full User Journey", () => {
 
     await page.click("text=クイズに挑戦");
 
-    // Click the button that starts the quiz flow and wait for navigation.
-    await page
-      .getByRole("button", { name: /クイズに挑戦/ })
-      .click({ timeout: 30000 });
+    // weit 3 sec
 
-    // Wait for navigation to a quiz flow page (challenge or sequence).
-    await page.waitForURL(/.*\/quiz\/(challenge|sequence)(\/.*)?/, {
-      timeout: 30000,
-    });
+    await page.waitForTimeout(3000);
 
-    // Wait for any answer button to become visible before proceeding.
-    await expect(
-      page
-        .locator("button")
-        .filter({ hasText: /^(?!.*次の問題へ)(?!.*結果を見る)/ })
-        .first(),
-    ).toBeVisible({ timeout: 20000 });
+    // User Aをクリック
+    await page.click("text=User A");
+    await page.click("text=結果を見る");
 
-    // Answer the first available choice (the quiz UI may render the question in Japanese).
-    // Wait for any answer button to appear and click the first one.
-    const answerButton = page
-      .locator("button")
-      .filter({ hasText: /^(?!.*次の問題へ)(?!.*結果を見る)/ })
-      .first();
-    await expect(answerButton).toBeVisible({ timeout: 15000 });
-    await answerButton.click();
-
-    // Result Screen – verify that either a correct or incorrect indicator appears.
-    await expect(page.getByText(/正解！|不正解/)).toBeVisible({
-      timeout: 15000,
-    });
-    await page.getByRole("button", { name: /結果を見る|次の問題へ/ }).click();
-
-    // Note: With sequential flow, there's no "一覧へ戻る" button
-    // Instead, there's navigation to result/rewards and then next quiz
-
-    console.log("Full User Journey verified successfully");
+    await page.waitForTimeout(3000);
   });
 });

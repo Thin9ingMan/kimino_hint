@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("4 User Quiz Scenario", () => {
-  test.setTimeout(120000); // Allow extra time for 4-user setup
+  test.setTimeout(180000); // Allow extra time for 4-user setup and retries
 
   test("4 Users (A, B, C, D) can join and play", async ({ page, request }) => {
     // Generate unique test ID to prevent conflicts with parallel tests
@@ -32,10 +32,9 @@ test.describe("4 User Quiz Scenario", () => {
       users.push({ name, token, displayName: `User ${name} [${testId}]` });
     }
 
-    // Only userA and userD are needed in this test; prefix unused variables with underscore to satisfy ESLint.
-    const [userA, _userB, _userC, userD] = users;
+    // All users are needed for assertions.
+    const [userA, userB, userC, userD] = users;
 
-    // --- 2. User A Creates Event ---
     const createEventRes = await request.post(
       "https://quarkus-crud.ouchiserver.aokiapp.com/api/events",
       {
@@ -43,10 +42,26 @@ test.describe("4 User Quiz Scenario", () => {
         data: { meta: { name: `4 User Party [${testId}]` } },
       },
     );
+    if (!createEventRes.ok()) {
+      console.error(
+        `Failed to create event: ${createEventRes.status()} ${await createEventRes.text()}`,
+      );
+      throw new Error("Failed to create event");
+    }
     const eventData = await createEventRes.json();
     const eventId = eventData.id;
     const invitationCode = eventData.invitationCode;
-    console.log(`Event ${eventId} created with code ${invitationCode}`);
+    const creatorUserId = eventData.initiatorId;
+
+    if (!eventId || !invitationCode) {
+      throw new Error(
+        `Event data missing: ID=${eventId}, Code=${invitationCode}`,
+      );
+    }
+
+    console.log(
+      `Event Created: ID=${eventId}, Code=${invitationCode}, CreatorID=${creatorUserId}`,
+    );
 
     // --- 3. All Users Join & Create Quizzes (API) ---
     // We use API to speed up setup. User D will use UI later.
@@ -132,20 +147,76 @@ test.describe("4 User Quiz Scenario", () => {
       timeout: 10000,
     });
 
-    // Verify all 4 users are displayed in the attendee list (using unique display names)
-    await expect(page.getByText(userA.displayName)).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText(userB.displayName)).toBeVisible();
-    await expect(page.getByText(userC.displayName)).toBeVisible();
-    await expect(page.getByText(userD.displayName)).toBeVisible();
+    // Wait for lobby to be ready (all attendees have profile and quiz)
+    let lobbyReady = false;
+    const startQuizButton = page
+      .locator("a, button")
+      .filter({ hasText: "クイズに挑戦" });
 
-    // Go to Quiz Sequence (starts first quiz automatically)
-    await page.click("text=クイズに挑戦");
+    for (let i = 0; i < 30; i++) {
+      await page.reload();
+      await expect(page.getByRole("heading", { name: "参加者" })).toBeVisible({
+        timeout: 10000,
+      });
 
-    // Wait for navigation to first quiz (User A's quiz since User A joined first)
-    // The quiz sequence screen automatically navigates to the first quiz question
-    await page.waitForURL(`**/quiz/challenge/**`, { timeout: 30000 });
+      // Check for all users' names in the lobby
+      const namesFound = await Promise.all([
+        page
+          .getByText(userA.displayName)
+          .isVisible()
+          .catch(() => false),
+        page
+          .getByText(userB.displayName)
+          .isVisible()
+          .catch(() => false),
+        page
+          .getByText(userC.displayName)
+          .isVisible()
+          .catch(() => false),
+        page
+          .getByText(userD.displayName)
+          .isVisible()
+          .catch(() => false),
+      ]);
+      const allNamesVisible = namesFound.every(Boolean);
 
-    await expect(page.getByText(`Who is User A? [${testId}]`)).toBeVisible({ timeout: 15000 });
+      const alertVisible = await page
+        .getByText("クイズを開始できません")
+        .isVisible()
+        .catch(() => false);
+      const isEnabled = await startQuizButton.isEnabled().catch(() => false);
+
+      console.log(
+        `Lobby readiness (attempt ${i + 1}/30): alertVisible=${alertVisible}, isEnabled=${isEnabled}, allNamesVisible=${allNamesVisible}`,
+      );
+
+      if (!alertVisible && isEnabled && allNamesVisible) {
+        lobbyReady = true;
+        break;
+      }
+      await page.waitForTimeout(2000);
+    }
+
+    if (!lobbyReady) {
+      throw new Error("Lobby did not become ready within expected time");
+    }
+
+    await startQuizButton.click();
+
+    // Wait for the sequence/challenge screen
+    await page.waitForURL(/.*\/quiz\/(challenge|sequence)(\/.*)?/, {
+      timeout: 30000,
+    });
+
+    // If we land on sequence, wait for auto-redirect to challenge
+    if (page.url().includes("/quiz/sequence")) {
+      await page.waitForURL(/.*\/quiz\/challenge\/.*/, { timeout: 20000 });
+    }
+
+    // Now should be on User A's quiz (sequential flow)
+    await expect(page.getByText(`Who is User A? [${testId}]`)).toBeVisible({
+      timeout: 20000,
+    });
     await page.click(`button:has-text("${userA.displayName}")`);
     await expect(page.getByText("正解！")).toBeVisible();
     await page.getByRole("button", { name: /結果を見る|次の問題へ/ }).click();
@@ -159,10 +230,18 @@ test.describe("4 User Quiz Scenario", () => {
 
     // Continue to next quiz
     await page.click("text=次のクイズへ");
-    await page.waitForURL(`**/quiz/challenge/**`, { timeout: 30000 });
+    await page.waitForURL(/.*\/quiz\/(challenge|sequence)(\/.*)?/, {
+      timeout: 30000,
+    });
+
+    if (page.url().includes("/quiz/sequence")) {
+      await page.waitForURL(/.*\/quiz\/challenge\/.*/, { timeout: 20000 });
+    }
 
     // Now should be on User B's quiz (sequential flow)
-    await expect(page.getByText(`Who is User B? [${testId}]`)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(`Who is User B? [${testId}]`)).toBeVisible({
+      timeout: 20000,
+    });
     await page.click(`button:has-text("${userB.displayName}")`);
     await expect(page.getByText("正解！")).toBeVisible();
   });

@@ -143,7 +143,7 @@ test.describe("Quiz Sequential Flow", () => {
     const hostQuestion = page.getByText(/Who is User Host\?/).first();
     await expect(hostQuestion).toBeVisible({ timeout: 30000 });
     // The answer button may not have an accessible name, so fall back to a text selector.
-    const hostAnswerBtn = page.getByText(/User Host/).first();
+    const hostAnswerBtn = page.getByText(/^User Host/).first();
     await expect(hostAnswerBtn).toBeVisible({ timeout: 15000 });
     await hostAnswerBtn.click();
     // After answering, the UI shows a button to view the result screen.
@@ -160,7 +160,9 @@ test.describe("Quiz Sequential Flow", () => {
     });
 
     // Result screen should show
-    await expect(page.getByRole('heading', { name: 'クイズ結果' })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "クイズ結果" }),
+    ).toBeVisible();
 
     // Navigate to rewards screen
     await page.click("text=プロフィールを取得");
@@ -178,7 +180,9 @@ test.describe("Quiz Sequential Flow", () => {
     await page.click('button:has-text("結果を見る")');
 
     // Result screen
-    await expect(page.getByRole('heading', { name: 'クイズ結果' })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "クイズ結果" }),
+    ).toBeVisible();
 
     // Navigate to rewards screen
     await page.click("text=プロフィールを取得");

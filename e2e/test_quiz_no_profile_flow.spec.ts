@@ -32,7 +32,6 @@ test.describe("Quiz Without Profile Flow", () => {
       },
     );
 
-    // Create Event (User A)
     const createEventRes = await request.post(
       "https://quarkus-crud.ouchiserver.aokiapp.com/api/events",
       {
@@ -45,9 +44,23 @@ test.describe("Quiz Without Profile Flow", () => {
         },
       },
     );
+
+    if (!createEventRes.ok()) {
+      console.error(
+        `Failed to create event: ${createEventRes.status()} ${await createEventRes.text()}`,
+      );
+      throw new Error("Failed to create event");
+    }
+
     const eventData = await createEventRes.json();
     const eventId = eventData.id;
     const invitationCode = eventData.invitationCode;
+
+    if (!eventId || !invitationCode) {
+      throw new Error(
+        `Event data missing: ID=${eventId}, Code=${invitationCode}`,
+      );
+    }
 
     console.log(`Event Created: ID=${eventId}, Code=${invitationCode}`);
 
@@ -86,27 +99,33 @@ test.describe("Quiz Without Profile Flow", () => {
     await page.goto(`http://localhost:5173/events/${eventId}/quiz/edit`);
 
     // Wait for page to load
-    await page.waitForTimeout(2000);
+    await expect(page.locator("text=クイズ編集")).toBeVisible({
+      timeout: 15000,
+    });
 
     // Should see the "profile not created" alert (not an error)
     await expect(
       page.locator("text=プロフィールが作成されていません"),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 10000 });
     await expect(
       page.locator(
         "text=クイズを作成するには、まずプロフィールを作成する必要があります",
       ),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 10000 });
 
     console.log("✓ Profile not created message is displayed correctly");
 
     // Should see the "Create Profile" button
-    const createProfileButton = page.getByRole("button", { name: "プロフィールを作成" });
-    await expect(createProfileButton).toBeVisible();
+    const createProfileButton = page.getByRole("button", {
+      name: "プロフィールを作成",
+    });
+    await expect(createProfileButton).toBeVisible({ timeout: 10000 });
 
     // Should also see the "Return to Lobby" button
-    const returnToLobbyButton = page.getByRole("button", { name: "ロビーへ戻る" });
-    await expect(returnToLobbyButton).toBeVisible();
+    const returnToLobbyButton = page.getByRole("button", {
+      name: "ロビーへ戻る",
+    });
+    await expect(returnToLobbyButton).toBeVisible({ timeout: 10000 });
 
     console.log("✓ Create Profile and Return to Lobby buttons are visible");
 
@@ -114,7 +133,7 @@ test.describe("Quiz Without Profile Flow", () => {
     await createProfileButton.click();
 
     // Wait for navigation to profile edit page with returnTo parameter
-    await page.waitForURL(/\/me\/profile\/edit\?returnTo=/);
+    await page.waitForURL(/\/me\/profile\/edit\?returnTo=/, { timeout: 15000 });
 
     // Verify the returnTo parameter contains the quiz edit URL
     const currentUrl = page.url();
@@ -211,7 +230,7 @@ test.describe("Quiz Without Profile Flow", () => {
     );
 
     // Wait for page to load
-    await page.waitForSelector('text=プロフィール編集', { timeout: 10000 });
+    await page.waitForSelector("text=プロフィール編集", { timeout: 10000 });
 
     // Fill in the profile form
     await page.fill('input[placeholder="名前"]', "Guest User B");
@@ -234,17 +253,22 @@ test.describe("Quiz Without Profile Flow", () => {
     await page.click('button[type="submit"]:has-text("保存")');
 
     // Should redirect back to quiz edit page
-    await page.waitForURL(`**/events/${eventId}/quiz/edit`, { timeout: 10000 });
+    await page.waitForURL(`**/events/${eventId}/quiz/edit`, { timeout: 20000 });
+
+    // RELOAD to ensure React Query cache is cleared and fresh profile is picked up
+    await page.reload();
 
     console.log("✓ Redirected back to quiz edit page after profile creation");
 
     // Now should see the quiz editor, not the profile prompt
     await expect(
       page.locator("text=プロフィールが作成されていません"),
-    ).not.toBeVisible({ timeout: 5000 });
+    ).not.toBeVisible({ timeout: 15000 });
 
     // Should see the quiz editor title
-    await expect(page.locator("text=クイズエディタ")).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("text=クイズエディタ")).toBeVisible({
+      timeout: 20000,
+    });
 
     console.log("✓ Quiz editor is now accessible after profile creation");
   });

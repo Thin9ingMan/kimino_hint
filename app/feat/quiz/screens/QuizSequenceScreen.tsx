@@ -89,6 +89,27 @@ function QuizSequenceContent() {
     return quizProgress.completedQuizzes.length;
   }, [quizProgress]);
 
+  const currentAttendee = attendees[currentQuizIndex];
+  const isOwnQuiz =
+    !!currentAttendee && currentAttendee.attendeeUserId === meData.id;
+
+  useEffect(() => {
+    if (!currentAttendee || isOwnQuiz) return;
+
+    // Clear previous quiz answers
+    sessionStorage.removeItem(
+      `quiz_${eventId}_${currentAttendee.attendeeUserId}_answers`,
+    );
+    sessionStorage.removeItem(
+      `quiz_${eventId}_${currentAttendee.attendeeUserId}_score`,
+    );
+
+    // Redirect to first question
+    navigate(
+      `/events/${eventId}/quiz/challenge/${currentAttendee.attendeeUserId}/1`,
+    );
+  }, [eventId, currentAttendee?.attendeeUserId, isOwnQuiz, navigate]);
+
   // Check if all quizzes are completed
   if (currentQuizIndex >= attendees.length) {
     return (
@@ -121,9 +142,6 @@ function QuizSequenceContent() {
       </Stack>
     );
   }
-
-  const currentAttendee = attendees[currentQuizIndex];
-  const isOwnQuiz = currentAttendee.attendeeUserId === meData.id;
 
   // If it's the user's own quiz, show special screen
   if (isOwnQuiz) {
@@ -169,24 +187,9 @@ function QuizSequenceContent() {
     );
   }
 
-  // Otherwise, redirect to the quiz question screen
+  // Otherwise, display loading state while transitioning (handled by useEffect above)
   const displayName =
     currentAttendee.displayName || `ユーザー ${currentAttendee.attendeeUserId}`;
-
-  useEffect(() => {
-    // Clear previous quiz answers
-    sessionStorage.removeItem(
-      `quiz_${eventId}_${currentAttendee.attendeeUserId}_answers`,
-    );
-    sessionStorage.removeItem(
-      `quiz_${eventId}_${currentAttendee.attendeeUserId}_score`,
-    );
-
-    // Redirect to first question
-    navigate(
-      `/events/${eventId}/quiz/challenge/${currentAttendee.attendeeUserId}/1`,
-    );
-  }, [eventId, currentAttendee.attendeeUserId, navigate]);
 
   return (
     <Stack gap="md" align="center">

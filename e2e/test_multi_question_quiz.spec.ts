@@ -34,7 +34,6 @@ test.describe("Multi-Question Quiz Flow", () => {
       },
     );
 
-    // Create Event
     const createEventRes = await request.post(
       "https://quarkus-crud.ouchiserver.aokiapp.com/api/events",
       {
@@ -47,10 +46,22 @@ test.describe("Multi-Question Quiz Flow", () => {
         },
       },
     );
+    if (!createEventRes.ok()) {
+      console.error(
+        `Failed to create event: ${createEventRes.status()} ${await createEventRes.text()}`,
+      );
+      throw new Error("Failed to create event");
+    }
     const eventData = await createEventRes.json();
     const eventId = eventData.id;
     const invitationCode = eventData.invitationCode;
     const creatorUserId = eventData.initiatorId;
+
+    if (!eventId || !invitationCode) {
+      throw new Error(
+        `Event data missing: ID=${eventId}, Code=${invitationCode}`,
+      );
+    }
 
     console.log(
       `Event Created: ID=${eventId}, Code=${invitationCode}, CreatorID=${creatorUserId}`,
@@ -197,15 +208,45 @@ test.describe("Multi-Question Quiz Flow", () => {
 
     // Navigate to event lobby
     await page.goto(`http://localhost:5173/events/${eventId}`);
-    await page.reload(); // Ensure fresh data
-    await page.waitForTimeout(2000);
 
-    // Click "クイズに挑戦" - starts sequential quiz flow
-    await page.click("text=クイズに挑戦");
-    await page.waitForTimeout(1000);
+    // Wait for lobby to be ready (all attendees have profile and quiz)
+    let lobbyReady = false;
+    const startQuizButton = page
+      .locator("a, button")
+      .filter({ hasText: "クイズに挑戦" });
+
+    for (let i = 0; i < 15; i++) {
+      await page.reload();
+      await expect(page.getByRole("heading", { name: "参加者" })).toBeVisible({
+        timeout: 10000,
+      });
+
+      const alertVisible = await page
+        .getByText("クイズを開始できません")
+        .isVisible()
+        .catch(() => false);
+      const isEnabled = await startQuizButton.isEnabled().catch(() => false);
+
+      if (!alertVisible && isEnabled) {
+        lobbyReady = true;
+        break;
+      }
+      console.log(
+        `Lobby not ready (attempt ${i + 1}), alertVisible=${alertVisible}, isEnabled=${isEnabled}. Retrying...`,
+      );
+      await page.waitForTimeout(2000);
+    }
+
+    if (!lobbyReady) {
+      throw new Error("Lobby did not become ready within expected time");
+    }
+
+    await startQuizButton.click();
 
     // The quiz sequence will auto-navigate to first quiz (User A/Quiz Creator's quiz)
-    await page.waitForURL(/.*\/quiz\/challenge\/.*/, { timeout: 10000 });
+    await page.waitForURL(/.*\/quiz\/(challenge|sequence)(\/.*)?/, {
+      timeout: 30000,
+    });
     await page.waitForTimeout(1000);
 
     // --- Question 1: Answer correctly ---

@@ -136,7 +136,7 @@ function QuizSequenceContent() {
     navigate(
       `/events/${eventId}/quiz/challenge/${currentAttendee.attendeeUserId}/1`,
     );
-  }, [eventId, currentAttendee?.attendeeUserId, isOwnQuiz, navigate]);
+  }, [eventId, currentAttendee?.attendeeUserId, isOwnQuiz, navigate, me.id]);
 
   // Generate quiz from profile + fake answers OR use stored myQuiz
   const quiz = useMemo(() => {

@@ -258,6 +258,33 @@ function QuizEditContent() {
 
   const meData = useCurrentUser();
   const myProfile = useMyProfile();
+
+  // Handle case when profile doesn't exist (returns null for 404)
+  if (!myProfile) {
+    const returnTo = `/events/${eventId}/quiz/edit`;
+    return (
+      <Stack gap="md">
+        <Alert
+          color="yellow"
+          title="プロフィールが作成されていません"
+          icon={<IconExclamationCircle />}
+        >
+          クイズを作成するには、まずプロフィールを作成する必要があります。
+        </Alert>
+        <Button onClick={() => navigate(`/me/profile/edit?returnTo=${encodeURIComponent(returnTo)}`)} fullWidth>
+          プロフィールを作成
+        </Button>
+        <Button
+          variant="default"
+          onClick={() => navigate(`/events/${eventId}`)}
+          fullWidth
+        >
+          ロビーへ戻る
+        </Button>
+      </Stack>
+    );
+  }
+
   const profileData = myProfile.profileData || {};
 
   const displayName = (profileData.displayName as string) || "";

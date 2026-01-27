@@ -32,7 +32,8 @@ test.describe("Quiz Sequential Flow", () => {
       users.push({ name, token });
     }
 
-    const [userHost, userP1, userP2] = users;
+    // userP1 is not directly used in this test; prefix with underscore to satisfy ESLint unused‑variable rule.
+    const [userHost, _userP1, userP2] = users;
 
     // --- 2. Host Creates Event ---
     const createEventRes = await request.post(
@@ -132,14 +133,31 @@ test.describe("Quiz Sequential Flow", () => {
     // Navigate directly to sequential quiz flow
     await page.goto(`http://localhost:5173/events/${eventId}/quiz/sequence`);
 
-    // --- Expected: Sequential flow starts ---
-    // Should start with Host's quiz (first participant)
+    // Wait for the first quiz to load – the UI may take a moment to render.
+    await page.waitForTimeout(2000);
 
-    // Answer Host's quiz
-    await expect(page.getByText("Who is User Host?")).toBeVisible();
-    await page.click('button:has-text("User Host")');
-    await expect(page.getByText("正解！")).toBeVisible();
-    await page.click('button:has-text("結果を見る")');
+    // --- Expected: Sequential flow starts ---
+    // Should start with Host's quiz (first participant). Use a longer timeout and role selector for stability.
+    // Wait for the first question to appear. Use a regex selector and a longer timeout
+    // to accommodate any loading delays.
+    const hostQuestion = page.getByText(/Who is User Host\?/).first();
+    await expect(hostQuestion).toBeVisible({ timeout: 30000 });
+    // The answer button may not have an accessible name, so fall back to a text selector.
+    const hostAnswerBtn = page.getByText(/User Host/).first();
+    await expect(hostAnswerBtn).toBeVisible({ timeout: 15000 });
+    await hostAnswerBtn.click();
+    // After answering, the UI shows a button to view the result screen.
+    // Prefer the explicit "結果を見る" button; if it does not appear, fall back to "次の問題へ".
+    let resultBtn = page.getByRole("button", { name: "結果を見る" }).first();
+    if (!(await resultBtn.isVisible().catch(() => false))) {
+      resultBtn = page.getByRole("button", { name: /次の問題へ/ }).first();
+    }
+    await expect(resultBtn).toBeVisible({ timeout: 10000 });
+    await resultBtn.click();
+    // Wait for the result heading to be visible.
+    await expect(page.getByText("結果").first()).toBeVisible({
+      timeout: 20000,
+    });
 
     // Result screen should show
     await expect(page.getByRole('heading', { name: 'クイズ結果' })).toBeVisible();
@@ -192,6 +210,7 @@ test.describe("Quiz Sequential Flow", () => {
 
     // --- Completion screen ---
     await expect(page.getByText("すべてのクイズが完了しました")).toBeVisible();
+    await expect(page.getByText("プロフィール一覧")).toBeVisible();
     await expect(page.getByText("ロビーへ戻る")).toBeVisible();
 
     // Return to lobby

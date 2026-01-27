@@ -35,9 +35,11 @@ import {
   ProfileErrorPage,
 } from "./shared/ui/RouteError";
 
+import { rootAuthLoader } from "./shared/auth";
+
 export const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route>
+    <Route id="root" loader={rootAuthLoader}>
       <Route path="/" element={<Navigate to="/home" replace />} />
       <Route
         path="/home"
@@ -160,9 +162,3 @@ export const router = createBrowserRouter(
     </Route>,
   ),
 );
-
-export function AppRouter() {
-  // This component might be obsolete if we use RouterProvider directly in App.tsx
-  // but keeping it for now if needed.
-  return null;
-}

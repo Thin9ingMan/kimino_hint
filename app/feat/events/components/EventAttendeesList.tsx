@@ -161,19 +161,18 @@ export function EventAttendeesList({
       {title && (
         <Group justify="space-between">
           <Title order={4}>{title}</Title>
-          {onRefresh ? (
+          <Group>
+            <Badge variant="subtle" size="md">
+              {attendees.length}人
+            </Badge>
             <ActionIcon
-              variant="light"
+              variant="default"
               onClick={onRefresh}
               aria-label="参加者リストを更新"
             >
               <IconRefresh size={16} />
             </ActionIcon>
-          ) : (
-            <Badge variant="light" size="sm">
-              {attendees.length}人
-            </Badge>
-          )}
+          </Group>
         </Group>
       )}
 

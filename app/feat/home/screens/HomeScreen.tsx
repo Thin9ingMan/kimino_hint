@@ -58,7 +58,9 @@ function HomeContent() {
         shadow="lg"
         p="xl"
         style={{
-          backgroundColor: "var(--mantine-primary-color-filled)",
+          backgroundColor: canStartQuiz
+            ? "var(--mantine-primary-color-filled)"
+            : "var(--mantine-color-gray-5)",
           color: "white",
           textDecoration: "none",
           opacity: canStartQuiz ? 1 : 0.9,
@@ -95,7 +97,18 @@ function HomeContent() {
           color="orange"
           title="まずはプロフィール作成"
         >
-          クイズに参加するにはプロフィールが必要です。下のボタンから作成してください。
+          クイズに参加するにはプロフィールが必要です。
+          <Button
+            component={Link}
+            to="/me/profile/edit"
+            size="lg"
+            mt="sm"
+            fullWidth
+            variant="gradient"
+          >
+            プロフィール作成
+            <IconArrowRight size={16} style={{ marginLeft: 4 }} />
+          </Button>
         </Alert>
       )}
 
@@ -105,7 +118,7 @@ function HomeContent() {
           component={Link}
           to="/profiles"
           p="lg"
-          shadow="md"
+          shadow={canStartQuiz ? "md" : null}
           radius="lg"
           style={{ textDecoration: "none", color: "inherit" }}
         >
@@ -126,8 +139,9 @@ function HomeContent() {
           component={Link}
           to="/me"
           p="lg"
-          shadow="md"
+          shadow={canStartQuiz ? "md" : "xl"}
           radius="lg"
+          withBorder={!canStartQuiz}
           style={{ textDecoration: "none", color: "inherit" }}
         >
           <Stack gap="sm" align="center">
@@ -165,4 +179,3 @@ export function HomeScreen() {
 }
 
 HomeScreen.loader = loader;
-

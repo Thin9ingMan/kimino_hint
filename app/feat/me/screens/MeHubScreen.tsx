@@ -1,21 +1,21 @@
 import { Button, Stack, Text } from "@mantine/core";
 import { Link, useLoaderData } from "react-router-dom";
-import { fetchCurrentUser } from "@/shared/api";
+import { apis } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 
 export async function loader() {
-  const me = await fetchCurrentUser();
-  return { me };
+  const profileData = await apis.profiles.getMyProfile();
+  return { profileData };
 }
 
 export function MeHubScreen() {
-  const { me } = useLoaderData() as Awaited<ReturnType<typeof loader>>;
+  const { profileData } = useLoaderData() as Awaited<ReturnType<typeof loader>>;
 
   return (
     <Container title="マイページ">
       <Stack gap="sm">
         <Text c="dimmed" size="sm" ta="center">
-          こんにちは、{me.id}
+          こんにちは、{profileData?.profileData?.displayName ?? "ゲスト"}
           さん。自分の情報やイベント関連へのショートカットです。
         </Text>
 

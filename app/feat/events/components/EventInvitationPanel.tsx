@@ -40,7 +40,14 @@ export function EventInvitationPanel({ invitationCode }: Props) {
               <Text c="dimmed" size="xs">
                 招待コード
               </Text>
-              <Text size="xl" fw={700} style={{ fontFamily: "monospace" }}>
+              <Text
+                fw={700}
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: "1.7rem",
+                  lineHeight: 1.5,
+                }}
+              >
                 {invitationCode}
               </Text>
             </Stack>

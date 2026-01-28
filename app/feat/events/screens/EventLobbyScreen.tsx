@@ -306,20 +306,6 @@ function EventLobbyContent() {
         </Alert>
       )}
 
-      <EventAttendeesList
-        attendees={attendees.map((a) => ({
-          id: a.id ?? 0,
-          userId: a.userId,
-          displayName: a.displayName,
-          profileData: a.profileData,
-          joinedAt: a.createdAt,
-        }))}
-        title="参加者"
-        linkToProfile
-        showJoinTime
-        onRefresh={handleRefreshAttendees}
-      />
-
       <Stack gap="sm">
         <Button
           component={Link}
@@ -356,6 +342,20 @@ function EventLobbyContent() {
           イベント一覧へ
         </Button>
       </Stack>
+
+      <EventAttendeesList
+        attendees={attendees.map((a) => ({
+          id: a.id ?? 0,
+          userId: a.userId,
+          displayName: a.displayName,
+          profileData: a.profileData,
+          joinedAt: a.createdAt,
+        }))}
+        title="参加者"
+        linkToProfile
+        showJoinTime
+        onRefresh={handleRefreshAttendees}
+      />
     </Stack>
   );
 }

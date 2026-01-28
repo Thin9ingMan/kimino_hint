@@ -7,10 +7,12 @@ import { apis, fetchCurrentUser, AppError } from "@/shared/api"; // AppError add
 import { useQueryParam } from "@/shared/hooks/useQueryParam";
 
 export async function loader() {
-  try { // Added try block
+  try {
+    // Added try block
     const me = await fetchCurrentUser();
     return { me };
-  } catch (error) { // Added catch block
+  } catch (error) {
+    // Added catch block
     throw new AppError("ユーザー情報の読み込みに失敗しました", {
       cause: error,
       recoveryUrl: "/events",
@@ -82,7 +84,7 @@ function JoinEventContent() {
       <Alert color="blue" title="イベントに参加">
         <Text size="sm">
           招待コードを入力してイベントに参加しましょう。
-          QRコードをお持ちの場合は、QRスキャン画面をご利用ください。
+          QRコードから参加もできます。
         </Text>
       </Alert>
 
@@ -99,7 +101,7 @@ function JoinEventContent() {
 
       <TextInput
         label="招待コード"
-        placeholder="例: ABC123"
+        placeholder="例: あいう"
         value={invitationCode}
         onChange={(e) => setInvitationCode(e.currentTarget.value.toUpperCase())}
         required

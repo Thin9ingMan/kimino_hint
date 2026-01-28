@@ -13,6 +13,7 @@ import { Suspense } from "react";
 
 import { apis, AppError } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
+import { VoteUs } from "@/shared/ui/VoteUs";
 
 /**
  * Type guard for Record<string, unknown>
@@ -126,10 +127,11 @@ export function ProfileListScreen() {
         }
       >
         <ProfileListContent />
+
+        <VoteUs />
       </Suspense>
     </Container>
   );
 }
 
 ProfileListScreen.loader = loader;
-

@@ -7,6 +7,7 @@ import { apis, AppError } from "@/shared/api";
 import { ProfileCard } from "@/shared/ui/ProfileCard";
 import { mapProfileDataToUiProfile } from "@/shared/profile/profileUi";
 import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
+import { VoteUs } from "@/shared/ui/VoteUs";
 
 type ExchangeStatus = "idle" | "saving" | "done" | "error";
 
@@ -188,10 +189,10 @@ export function QuizRewardsScreen() {
         }
       >
         <QuizRewardsContent />
+        <VoteUs />
       </Suspense>
     </Container>
   );
 }
 
 QuizRewardsScreen.loader = loader;
-

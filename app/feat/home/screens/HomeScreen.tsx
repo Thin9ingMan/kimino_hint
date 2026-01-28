@@ -23,6 +23,7 @@ import { ResponseError } from "@yuki-js/quarkus-crud-js-fetch-client";
 import { apis, AppError } from "@/shared/api";
 import { Container } from "@/shared/ui/Container";
 import { Loading } from "@/shared/ui/Loading";
+import { VoteUs } from "@/shared/ui/VoteUs";
 
 export async function loader() {
   try {
@@ -164,6 +165,8 @@ function HomeContent() {
       >
         使い方を見る
       </Button>
+
+      <VoteUs />
     </Stack>
   );
 }

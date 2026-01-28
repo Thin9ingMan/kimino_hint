@@ -154,6 +154,8 @@ function QuizQuestionContent() {
   const timerRef = useRef<number | null>(null);
 
   const handleAutoSubmit = useCallback(() => {
+    if (showResult) return; // Prevent multiple submissions
+    
     // Auto-submit with no answer (null)
     setShowResult(true);
 
@@ -171,7 +173,7 @@ function QuizQuestionContent() {
 
     sessionStorage.setItem(storageKey, JSON.stringify(answers));
     // Score remains unchanged (no correct answer)
-  }, [eventId, targetUserId, questionIndex, question.id]);
+  }, [eventId, targetUserId, questionIndex, question, showResult]);
 
   // Timer effect
   useEffect(() => {
